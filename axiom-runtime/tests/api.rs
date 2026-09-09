@@ -280,41 +280,78 @@ async fn health_is_not_model_readiness() {
 async fn authenticated_readiness_reports_exact_model_inventory() {
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
     let port = listener.local_addr().unwrap().port();
-    let mock = Router::new().route("/api/tags", axum::routing::get(|| async {
-        Json(serde_json::json!({"models":[
-            {"name":"test:latest","size":1234,"digest":"sha256:abc"},
-            {"name":"test:other","size":9,"digest":"sha256:def"}
-        ]}))
-    }));
-    let server = tokio::spawn(async move { axum::serve(listener, mock).await.unwrap(); });
-    let app = router(AppState::local("test:latest".into()).unwrap().with_loopback_port(port), token());
-    let req = Request::builder().method("GET").uri("/readiness")
+    let mock = Router::new().route(
+        "/api/tags",
+        axum::routing::get(|| async {
+            Json(serde_json::json!({"models":[
+                {"name":"test:latest","size":1234,"digest":"sha256:abc"},
+                {"name":"test:other","size":9,"digest":"sha256:def"}
+            ]}))
+        }),
+    );
+    let server = tokio::spawn(async move {
+        axum::serve(listener, mock).await.unwrap();
+    });
+    let app = router(
+        AppState::local("test:latest".into())
+            .unwrap()
+            .with_loopback_port(port),
+        token(),
+    );
+    let req = Request::builder()
+        .method("GET")
+        .uri("/readiness")
         .header("host", "127.0.0.1:7437")
         .header("authorization", format!("Bearer {}", "a".repeat(64)))
-        .body(Body::empty()).unwrap();
+        .body(Body::empty())
+        .unwrap();
     let res = app.oneshot(req).await.unwrap();
     assert_eq!(res.status(), StatusCode::OK);
-    let value: serde_json::Value = serde_json::from_slice(&to_bytes(res.into_body(), 10000).await.unwrap()).unwrap();
+    let value: serde_json::Value =
+        serde_json::from_slice(&to_bytes(res.into_body(), 10000).await.unwrap()).unwrap();
     assert_eq!(value["ready"], true);
     assert_eq!(value["configured_model"], "test:latest");
     assert_eq!(value["installed_models"][0]["size"], 1234);
     server.abort();
 }
+
 #[tokio::test]
 async fn readiness_requires_auth_and_exact_tag() {
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
     let port = listener.local_addr().unwrap().port();
-    let mock = Router::new().route("/api/tags", axum::routing::get(|| async {
-        Json(serde_json::json!({"models":[{"name":"model:other"}]}))
-    }));
-    let server = tokio::spawn(async move { axum::serve(listener, mock).await.unwrap(); });
-    let app = router(AppState::local("model:latest".into()).unwrap().with_loopback_port(port), token());
-    let no_auth = Request::builder().uri("/readiness").header("host", "127.0.0.1:7437").body(Body::empty()).unwrap();
-    assert_eq!(app.clone().oneshot(no_auth).await.unwrap().status(), StatusCode::UNAUTHORIZED);
-    let auth = Request::builder().uri("/readiness").header("host", "127.0.0.1:7437")
-        .header("authorization", format!("Bearer {}", "a".repeat(64))).body(Body::empty()).unwrap();
+    let mock = Router::new().route(
+        "/api/tags",
+        axum::routing::get(|| async {
+            Json(serde_json::json!({"models":[{"name":"model:other"}]}))
+        }),
+    );
+    let server = tokio::spawn(async move {
+        axum::serve(listener, mock).await.unwrap();
+    });
+    let app = router(
+        AppState::local("model:latest".into())
+            .unwrap()
+            .with_loopback_port(port),
+        token(),
+    );
+    let no_auth = Request::builder()
+        .uri("/readiness")
+        .header("host", "127.0.0.1:7437")
+        .body(Body::empty())
+        .unwrap();
+    assert_eq!(
+        app.clone().oneshot(no_auth).await.unwrap().status(),
+        StatusCode::UNAUTHORIZED
+    );
+    let auth = Request::builder()
+        .uri("/readiness")
+        .header("host", "127.0.0.1:7437")
+        .header("authorization", format!("Bearer {}", "a".repeat(64)))
+        .body(Body::empty())
+        .unwrap();
     let res = app.oneshot(auth).await.unwrap();
-    let value: serde_json::Value = serde_json::from_slice(&to_bytes(res.into_body(), 10000).await.unwrap()).unwrap();
+    let value: serde_json::Value =
+        serde_json::from_slice(&to_bytes(res.into_body(), 10000).await.unwrap()).unwrap();
     assert_eq!(value["ready"], false);
     server.abort();
 }
