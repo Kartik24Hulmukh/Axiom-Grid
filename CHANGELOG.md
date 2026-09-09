@@ -6,6 +6,12 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## Unreleased
+
+- Fixed rustfmt findings in the readiness API tests so the focused CI gate (fmt, test, clippy, node tests, release build) is green on main.
+- Added user cancellation propagation: the overlay Cancel button now invokes a new `cancel_materialize` Tauri command that aborts the in-flight bridge request; dropping the local HTTP request lets the runtime drop its in-flight Ollama request. Cancel with no pending work stays local.
+- Added frontend tests for cancel propagation (9 tests total).
+
 ## [0.3.0] — 2026-05-13 🎉 Production Release
 
 ### Highlights

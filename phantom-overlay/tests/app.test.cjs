@@ -22,7 +22,7 @@ test('explicit context and literal output, not HTML',async()=>{
  assert.equal(el('result').value,'<script>bad()</script>'); assert.equal(el('generate').disabled,false);
 });
 test('discard prevents late results and concurrent requests',async()=>{
- let resolve,calls=0;const el=setup(()=>{calls++;return new Promise(r=>{resolve=r;});});
+ let resolve,calls=0;const el=setup((name)=>{if(name==='cancel_materialize')return Promise.resolve(true);calls++;return new Promise(r=>{resolve=r;});});
  el('context').value='Test';const pending=el('generate').click();
  await el('generate').click(); assert.equal(calls,1);
  el('cancel').click();resolve('must not appear');await pending;
@@ -43,4 +43,15 @@ test('readiness displays exact configured model and enables generation',async()=
 test('browser readiness fails closed',async()=>{
  const el=setup(); await new Promise(r=>setImmediate(r));
  assert.match(el('model-status').textContent,/Desktop runtime required/);
+});
+
+test('cancel while pending propagates to the backend',async()=>{
+ let resolve,cancelCalls=0;const el=setup((name)=>{if(name==='cancel_materialize'){cancelCalls++;return Promise.resolve(true);}return new Promise(r=>{resolve=r;});});
+ el('context').value='Test';const pendingRun=el('generate').click();
+ el('cancel').click(); assert.equal(cancelCalls,1); assert.match(el('status').textContent,/Cancelled/);
+ resolve('late result'); await pendingRun; assert.equal(el('result').value,'');
+});
+test('cancel without pending work does not call the backend',async()=>{
+ let cancelCalls=0;const el=setup((name)=>{if(name==='cancel_materialize'){cancelCalls++;}return Promise.resolve('x');});
+ el('cancel').click(); assert.equal(cancelCalls,0); assert.match(el('status').textContent,/discarded/i);
 });

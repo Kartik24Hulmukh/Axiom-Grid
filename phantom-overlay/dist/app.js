@@ -44,8 +44,14 @@ byId("generate").addEventListener("click", async () => {
   }
 });
 byId("cancel").addEventListener("click", () => {
+  const wasPending = pending;
   ++generation;
   byId("result").value = "";
   byId("cancel").disabled = true;
-  byId("status").textContent = pending ? "Discarded. Local generation may finish in the background." : "Preview discarded.";
+  if (wasPending && window.__TAURI__?.core?.invoke) {
+    window.__TAURI__.core.invoke("cancel_materialize").catch(() => {});
+    byId("status").textContent = "Cancelled. The local generation request was stopped.";
+  } else {
+    byId("status").textContent = wasPending ? "Discarded. Local generation may finish in the background." : "Preview discarded.";
+  }
 });

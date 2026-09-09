@@ -4,6 +4,8 @@
 use anyhow::Result;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
+use std::sync::{Mutex, OnceLock};
+use tokio::sync::oneshot;
 
 const PHANTOM_PORT: u16 = 7437;
 
@@ -32,29 +34,59 @@ pub struct ReadinessResponse {
     pub installed_models: Vec<ModelInfo>,
 }
 
+fn cancel_slot() -> &'static Mutex<Option<oneshot::Sender<()>>> {
+    static SLOT: OnceLock<Mutex<Option<oneshot::Sender<()>>>> = OnceLock::new();
+    SLOT.get_or_init(|| Mutex::new(None))
+}
+
 pub struct PhantomBridge;
 
 impl PhantomBridge {
-    /// Call phantom-core to read UIA, get AI suggestion, and ghost-type it
+    /// Cancel the in-flight materialize request, if any.
+    /// Dropping the request future closes the local connection, which lets the
+    /// runtime drop its in-flight Ollama request. Returns true when one was cancelled.
+    pub fn cancel_active() -> bool {
+        match cancel_slot().lock() {
+            Ok(mut slot) => slot.take().map(|tx| tx.send(()).is_ok()).unwrap_or(false),
+            Err(_) => false,
+        }
+    }
+
+    /// Call phantom-core to generate a preview suggestion for explicit context.
     pub async fn materialize(context: String) -> Result<String> {
         let client = Client::builder()
             .no_proxy()
             .redirect(reqwest::redirect::Policy::none())
             .timeout(std::time::Duration::from_secs(95))
             .build()?;
-
-        let resp = client
-            .post(format!("http://127.0.0.1:{PHANTOM_PORT}/materialize"))
-            .bearer_auth(std::env::var("AXIOM_API_TOKEN")
-                .map_err(|_| anyhow::anyhow!("AXIOM_API_TOKEN is not set"))?)
-            .json(&MaterializeRequest { context: Some(context) })
-            .send()
-            .await?
-            .error_for_status()?
-            .json::<MaterializeResponse>()
-            .await?;
-
-        Ok(resp.suggestion)
+        let token = std::env::var("AXIOM_API_TOKEN")
+            .map_err(|_| anyhow::anyhow!("AXIOM_API_TOKEN is not set"))?;
+        let (cancel_tx, cancel_rx) = oneshot::channel::<()>();
+        if let Ok(mut slot) = cancel_slot().lock() {
+            *slot = Some(cancel_tx);
+        }
+        let request = async {
+            let resp = client
+                .post(format!("http://127.0.0.1:{PHANTOM_PORT}/materialize"))
+                .bearer_auth(token)
+                .json(&MaterializeRequest {
+                    context: Some(context),
+                })
+                .send()
+                .await?
+                .error_for_status()?
+                .json::<MaterializeResponse>()
+                .await?;
+            Ok::<String, anyhow::Error>(resp.suggestion)
+        };
+        let result = tokio::select! {
+            r = request => r,
+            _ = cancel_rx => Err(anyhow::anyhow!("Generation cancelled by the user")),
+        };
+        if let Ok(mut slot) = cancel_slot().lock() {
+            slot.take();
+        }
+        result
     }
 
     pub async fn readiness() -> Result<ReadinessResponse> {

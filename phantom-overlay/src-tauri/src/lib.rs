@@ -36,6 +36,17 @@ async fn trigger_materialize(app: AppHandle, context: String) -> Result<String, 
     }
 }
 
+/// IPC command: cancel the in-flight materialization, if any
+#[tauri::command]
+async fn cancel_materialize(app: AppHandle) -> Result<bool, String> {
+    let cancelled = PhantomBridge::cancel_active();
+    if cancelled {
+        app.emit("phantom:status", "cancelled")
+            .map_err(|e| e.to_string())?;
+    }
+    Ok(cancelled)
+}
+
 #[tauri::command]
 async fn model_readiness() -> Result<phantom_bridge::ReadinessResponse, String> {
     PhantomBridge::readiness().await.map_err(|e| format!("Readiness check failed: {e}"))
@@ -111,6 +122,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             trigger_materialize,
+            cancel_materialize,
             model_readiness,
             toggle_visibility,
         ])
