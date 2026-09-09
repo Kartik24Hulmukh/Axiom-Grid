@@ -9,3 +9,7 @@ phantom-core/.fastembed_cache/
 # Committed bytecode prevention
 __pycache__/
 *.pyc
+
+# Axiom build outputs
+/target/
+**/target/
