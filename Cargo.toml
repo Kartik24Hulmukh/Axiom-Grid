@@ -1,10 +1,10 @@
 [workspace]
 members = [
     "phantom-core",
-    "phantom-overlay/src-tauri",
     "mcp-servers/kairo-mcp",
     "kairo-agent-sdk",
 ]
+exclude = ["axiom-runtime", "phantom-overlay/src-tauri"]
 resolver = "2"
 
 [workspace.dependencies]

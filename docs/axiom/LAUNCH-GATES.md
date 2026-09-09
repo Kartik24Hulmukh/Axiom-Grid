@@ -16,3 +16,16 @@ Target dates from the requested September 9, 2026 planning context: Wednesday Se
 | Market | Hypothesis only | 5–10 target users, observed repeat use, measured time saved and willingness-to-pay interviews |
 
 Launch a limited, clearly labeled design-partner preview only after real-model + native-UI gates pass. Do not promise Word/PPT/Canva/Figma automation until per-app tests demonstrate it. Prefer one OS and two ordinary text editors for the first insertion release. Do not position the product for covert exam assistance.
+
+
+## Chunk 003 update — September 9, 2026
+
+- PASS: extracted native workspace builds on Linux without inherited core dependencies; native unit test and warnings-denied Clippy pass.
+- PASS: authenticated model inventory, exact tag matching, missing/error states and response bounds covered by tests.
+- PASS: real Linux native desktop → bridge → runtime → Ollama → displayed preview; review/discard and owned-process shutdown exercised.
+- PASS (limited): real `qwen2.5:0.5b` API smoke completed three fixtures. This validates connectivity, not usefulness.
+- FAIL: exact Unicode fixture and semantic fidelity on the tested 0.5B model. Do not ship this model as default. Validate a stronger model and representative held-out editing dataset.
+- PARTIAL: launcher provisions fresh non-persistent credentials and cleans up owned children. OS-protected pairing is still missing.
+- PENDING: Windows/macOS native behavior, signed/notarized packaging, updates/rollback, clean-machine installs, OS-level privacy tests, dependency-advisory triage and safe target-bound insertion.
+
+**Production ghost-typing release remains NO-GO.** A supervised technical preview is useful for design-partner evaluation, with manual copy only and conspicuous quality warnings. No evidence supports “100x traction” or universal app compatibility.

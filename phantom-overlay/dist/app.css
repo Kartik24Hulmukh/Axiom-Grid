@@ -1,1 +1,5 @@
 *{box-sizing:border-box}body{margin:0;background:#111827;color:#e5e7eb;font:14px system-ui}main{padding:22px}h1{margin:10px 0 0;font-size:28px}header p{color:#9ca3af;margin:6px 0 22px}.badge{color:#a5b4fc;font-size:10px;letter-spacing:2px}label{display:block;font-weight:600;margin-bottom:8px}textarea{width:100%;resize:vertical;background:#1f2937;border:1px solid #4b5563;border-radius:8px;padding:10px;color:#f9fafb;font:13px system-ui}textarea:focus,button:focus-visible{outline:2px solid #a5b4fc;outline-offset:2px}.muted,footer{font-size:11px;line-height:1.5;color:#9ca3af}.actions{display:flex;gap:8px;margin:14px 0}button{border:0;border-radius:7px;background:#6366f1;color:white;padding:10px 14px;font-weight:600;cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}#cancel{background:#374151}#status{min-height:32px;color:#c7d2fe}footer{border-top:1px solid #374151;padding-top:12px;margin-top:16px}
+
+#models { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 110px; overflow: auto; font-size: 12px; }
+#model-status { font-size: 13px; }
+button:focus-visible, textarea:focus-visible { outline: 2px solid #a5b4fc; outline-offset: 3px; }

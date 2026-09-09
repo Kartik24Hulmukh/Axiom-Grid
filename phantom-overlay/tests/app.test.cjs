@@ -34,3 +34,18 @@ test('backend failure is actionable and resets button',async()=>{
 test('browser-only preview does not fake generation',async()=>{
  const el=setup();el('context').value='Test';await el('generate').click();assert.match(el('status').textContent,/desktop app/);
 });
+
+test('readiness displays exact tag and inventory as literal text', async()=>{
+ const el=setup(async(name)=>{assert.equal(name,'model_readiness');return {ready:true,configured_model:'test:latest',message:'Installed, not benchmarked.',models:[{name:'<script>bad()</script>',size:1073741824}]};});
+ await el('check-models').click();assert.match(el('model-status').textContent,/Installed: test:latest/);assert.equal(el('models').textContent,'<script>bad()</script> (1.00 GiB on disk)');assert.equal(el('check-models').disabled,false);
+});
+test('readiness error clears stale inventory and enables retry',async()=>{
+ const el=setup(async()=>{throw Error('Runtime unavailable');});el('models').textContent='old';
+ await el('check-models').click();assert.equal(el('models').textContent,'');assert.match(el('model-status').textContent,/Runtime unavailable/);assert.equal(el('check-models').disabled,false);
+});
+test('readiness serializes requests and never generates or downloads',async()=>{
+ let resolve,calls=0;const el=setup((name)=>{assert.equal(name,'model_readiness');calls++;return new Promise(r=>resolve=r);});
+ const pending=el('check-models').click();await el('check-models').click();assert.equal(calls,1);
+ resolve({ready:false,configured_model:'missing',message:'Not installed.',models:[]});await pending;
+ assert.match(el('model-status').textContent,/Not ready/);assert.match(el('models').textContent,/never downloads/);
+});

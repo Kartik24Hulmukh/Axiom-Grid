@@ -9,12 +9,14 @@
 - Independent Rust preview runtime (`axiom-runtime`), with no inherited swarm, cloud adapters, plugins, ambient screen capture or injection in its launch path.
 - Direct loopback Ollama inference: no proxy use, no redirects, no automatic downloads, no configured cloud fallback.
 - Native IPC bearer authorization; browser-origin and invalid Host requests denied; bounded input/output and one active generation.
-- Axiom desktop preview UI with explicit context, literal text rendering and late-result discard.
+- Independently buildable Tauri desktop with explicit context, literal output and late-result discard.
+- Authenticated exact-tag model inventory/readiness and a paired-process launcher with ephemeral IPC credentials.
+- Linux native preview exercised with real Ollama inference; Windows/macOS behavior still gated.
 - Regression coverage for Unicode, session acceptance/cancellation, model identity, CRDT replacement, API security and UI behavior.
 
 ## Start here
 
-[Quickstart](QUICKSTART.md) · [Current handoff](docs/axiom/HANDOFF-002.md) · [Fork handoff](docs/axiom/HANDOFF-001.md) · [Launch gates](docs/axiom/LAUNCH-GATES.md)
+[Quickstart](QUICKSTART.md) · [Current handoff](docs/axiom/HANDOFF-003.md) · [Fork handoff](docs/axiom/HANDOFF-001.md) · [Launch gates](docs/axiom/LAUNCH-GATES.md)
 
 ```sh
 cd axiom-runtime
@@ -22,7 +24,7 @@ cargo test --locked
 cargo clippy --locked --all-targets -- -D warnings
 ```
 
-An already-installed Ollama model is required for real inference. Local tests use a mock model server, not benchmark evidence.
+An already-installed Ollama model is required for real inference. Automated tests use mock servers; a separate real-model smoke is recorded. The tested small model failed fidelity checks and is not an approved default.
 
 ## Scope and provenance
 

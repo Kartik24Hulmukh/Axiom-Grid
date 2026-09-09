@@ -1,39 +1,27 @@
 // Tauri backend for Axiom-Grid overlay
-// Manages the glassmorphic ghost UI, global shortcuts, and IPC to phantom-core
+// Explicit preview UI and authenticated IPC to the focused runtime.
 
 use tauri::{
     menu::{Menu, MenuItem},
     tray::TrayIconBuilder,
-    AppHandle, Emitter, Manager, WebviewWindow,
+    Manager, WebviewWindow,
 };
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut};
-
-#[cfg(windows)]
-use window_vibrancy::apply_acrylic;
 
 mod phantom_bridge;
 use phantom_bridge::PhantomBridge;
 
-/// IPC command: trigger AI materialization (called from frontend hotkey or button)
+/// Generate only from explicitly supplied text. No capture or insertion.
 #[tauri::command]
-async fn trigger_materialize(app: AppHandle, context: String) -> Result<String, String> {
-    app.emit("phantom:status", "capturing")
-        .map_err(|e| e.to_string())?;
+async fn trigger_materialize(context: String) -> Result<String, String> {
+    PhantomBridge::materialize(context)
+        .await
+        .map_err(|e| e.to_string())
+}
 
-    match PhantomBridge::materialize(context).await {
-        Ok(suggestion) => {
-            app.emit("phantom:suggestion", &suggestion)
-                .map_err(|e| e.to_string())?;
-            app.emit("phantom:status", "idle")
-                .map_err(|e| e.to_string())?;
-            Ok(suggestion)
-        }
-        Err(e) => {
-            app.emit("phantom:status", "error")
-                .map_err(|e| e.to_string())?;
-            Err(format!("Phantom error: {e}"))
-        }
-    }
+#[tauri::command]
+async fn model_readiness() -> Result<phantom_bridge::ReadinessResponse, String> {
+    PhantomBridge::readiness().await.map_err(|e| e.to_string())
 }
 
 /// IPC command: toggle overlay visibility
@@ -52,32 +40,22 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .setup(|app| {
-            let _window = app.get_webview_window("main").unwrap();
-
-            // Apply Windows Acrylic/Mica blur behind the overlay
-            #[cfg(windows)]
-            {
-                apply_acrylic(&_window, Some((18, 18, 18, 200)))
-                    .expect("Failed to apply acrylic blur");
-            }
-
-            // Register global Ctrl+Space hotkey
-            let _app_handle = app.handle().clone();
+            // A shortcut only shows the review window; it never generates or inserts.
             let shortcut = Shortcut::new(Some(Modifiers::CONTROL), Code::Space);
-
-            app.global_shortcut()
-                .on_shortcut(shortcut, move |app, _shortcut, _event| {
-                    let window = app.get_webview_window("main").unwrap();
-
-                    if window.is_visible().unwrap_or(false) {
-                        // Already visible — trigger materialization
-                        let _ = app.emit("phantom:hotkey", ());
-                    } else {
-                        // Show the overlay
-                        let _ = window.show();
-                        let _ = app.emit("phantom:hotkey", ());
+            // A hotkey conflict must not prevent the ordinary app from starting.
+            if app
+                .global_shortcut()
+                .on_shortcut(shortcut, move |app, _, event| {
+                    if event.state == tauri_plugin_global_shortcut::ShortcutState::Pressed {
+                        if let Some(window) = app.get_webview_window("main") {
+                            let _ = window.show();
+                        }
                     }
-                })?;
+                })
+                .is_err()
+            {
+                eprintln!("Ctrl+Space unavailable; use the application window or tray.");
+            }
 
             // System tray setup
             let quit = MenuItem::with_id(app, "quit", "Quit Axiom-Grid", true, None::<&str>)?;
@@ -106,6 +84,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             trigger_materialize,
+            model_readiness,
             toggle_visibility,
         ])
         .run(tauri::generate_context!())

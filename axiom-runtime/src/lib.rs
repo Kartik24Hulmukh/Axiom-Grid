@@ -9,6 +9,8 @@ pub mod ghost_buffer;
 pub mod ghost_session;
 #[path = "../../phantom-core/src/ollama_bootstrap.rs"]
 pub mod ollama_bootstrap;
+mod readiness;
+pub use readiness::{ModelInfo, ReadinessResponse};
 pub mod ai {
     pub const KAIRO_SYSTEM_PROMPT: &str =
         "Provide the requested writing assistance. Return only the suggested text.";
@@ -32,7 +34,7 @@ pub struct AppState {
 impl AppState {
     pub fn local(model: String) -> anyhow::Result<Self> {
         anyhow::ensure!(
-            !model.trim().is_empty() && model.len() <= 256,
+            !model.trim().is_empty() && model.len() <= 256 && !model.chars().any(char::is_control),
             "Invalid model name"
         );
         Ok(Self {
@@ -122,6 +124,7 @@ async fn preview(
 pub fn router(state: AppState, token: api_security::ApiToken) -> Router {
     let protected = Router::new()
         .route("/materialize", post(preview))
+        .route("/readiness", get(readiness::readiness))
         .layer(DefaultBodyLimit::max(64 * 1024))
         .route_layer(axum::middleware::from_fn_with_state(
             token,

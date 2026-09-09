@@ -1,0 +1,52 @@
+{
+  "model": "qwen2.5:0.5b",
+  "scope": "real installed model; synthetic fixtures; not a benchmark or quality certification",
+  "samples": [
+    {
+      "prompt": "Rewrite clearly in one sentence, preserving the Friday deadline: We are in the process of doing the work and will have it done by Friday.",
+      "elapsed_seconds": 2.745,
+      "response": {
+        "suggestion": "We are currently working on completing our task and expect to finish it by Friday.",
+        "word_count": 15,
+        "char_count": 82
+      }
+    },
+    {
+      "prompt": "Return exactly this text without any commentary: Hello 🌍 — café.",
+      "elapsed_seconds": 1.198,
+      "response": {
+        "suggestion": "Hello - café.",
+        "word_count": 3,
+        "char_count": 13
+      }
+    },
+    {
+      "prompt": "Rewrite politely without inventing details: Send the invoice today.",
+      "elapsed_seconds": 1.604,
+      "response": {
+        "suggestion": "Please send the invoice immediately.",
+        "word_count": 5,
+        "char_count": 36
+      }
+    }
+  ],
+  "readiness": {
+    "configured_model": "qwen2.5:0.5b",
+    "ready": true,
+    "models": [
+      {
+        "name": "qwen2.5:0.5b",
+        "size": 397821319
+      }
+    ],
+    "message": "Configured model is installed. Inference and quality are not yet verified."
+  },
+  "transport_pass": true,
+  "owned_runtime_stopped": true,
+  "quality_review": {
+    "deadline": "preserved Friday but softened commitment to expectation",
+    "unicode_exact_copy": "FAIL: model dropped emoji and changed em dash",
+    "invoice_semantics": "FAIL: today became immediately",
+    "verdict": "Transport works; this 0.5B model is NOT approved as a product default."
+  }
+}

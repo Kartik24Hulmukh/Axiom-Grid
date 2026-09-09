@@ -1,0 +1,16 @@
+✔ blank input does not invoke backend (1.597503ms)
+✔ explicit context and literal output, not HTML (0.619771ms)
+✔ discard prevents late results and concurrent requests (0.591882ms)
+✔ backend failure is actionable and resets button (1.207933ms)
+✔ browser-only preview does not fake generation (0.592801ms)
+✔ readiness displays exact tag and inventory as literal text (0.731602ms)
+✔ readiness error clears stale inventory and enables retry (0.606352ms)
+✔ readiness serializes requests and never generates or downloads (0.661921ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 88.025318

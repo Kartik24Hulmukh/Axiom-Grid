@@ -1,0 +1,19 @@
+   Compiling phantom-overlay v0.3.0 (/home/daytona/axiom-grid/phantom-overlay/src-tauri)
+    Finished `test` profile [unoptimized] target(s) in 2.43s
+     Running unittests src/lib.rs (phantom-overlay/src-tauri/target/debug/deps/phantom_overlay_lib-4484bd62cf04cbcd)
+
+running 1 test
+test phantom_bridge::tests::actionable_status_without_backend_text ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (phantom-overlay/src-tauri/target/debug/deps/phantom_overlay-246d4897297e2b79)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+    Checking phantom-overlay v0.3.0 (/home/daytona/axiom-grid/phantom-overlay/src-tauri)
+    Finished `dev` profile [unoptimized] target(s) in 1.64s
+   Compiling phantom-overlay v0.3.0 (/home/daytona/axiom-grid/phantom-overlay/src-tauri)
+    Finished `dev` profile [unoptimized] target(s) in 1.24s
