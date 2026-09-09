@@ -74,70 +74,7 @@ pub struct HistoryEntry {
 
 // ─── Ghost Buffer ─────────────────────────────────────────────────────────────
 
-/// Holds the streamed tokens and tracks word-by-word acceptance.
-#[derive(Debug, Default)]
-pub struct GhostBuffer {
-    /// The full generated text (both alternatives)
-    pub text_a: String,
-    pub text_b: String,
-    /// Which alternative is currently selected (false = A, true = B)
-    pub using_b: bool,
-    /// How many characters the user has "word-accepted"
-    pub accepted_chars: usize,
-}
-
-impl GhostBuffer {
-    pub fn active_text(&self) -> &str {
-        if self.using_b {
-            &self.text_b
-        } else {
-            &self.text_a
-        }
-    }
-
-    pub fn accepted_text(&self) -> &str {
-        let text = self.active_text();
-        &text[..self.accepted_chars.min(text.len())]
-    }
-
-    /// Accept the next word boundary
-    pub fn accept_next_word(&mut self) {
-        let text = self.active_text();
-        let remaining = &text[self.accepted_chars..];
-        // Find next word boundary (space after a non-space)
-        let mut found = false;
-        let mut i = 0;
-        for (idx, ch) in remaining.char_indices() {
-            if ch == ' ' && found {
-                i = idx + 1;
-                break;
-            }
-            if ch != ' ' {
-                found = true;
-            }
-            i = idx + ch.len_utf8();
-        }
-        self.accepted_chars = (self.accepted_chars + i).min(text.len());
-    }
-
-    /// Un-accept the last word
-    pub fn undo_last_word(&mut self) {
-        let text = self.active_text();
-        let accepted = &text[..self.accepted_chars];
-        // Find last word boundary
-        if let Some(pos) = accepted.rfind(' ') {
-            self.accepted_chars = pos;
-        } else {
-            self.accepted_chars = 0;
-        }
-    }
-
-    pub fn toggle_alternative(&mut self) {
-        self.using_b = !self.using_b;
-        // Reset word-by-word acceptance when switching
-        self.accepted_chars = 0;
-    }
-}
+pub use crate::ghost_buffer::GhostBuffer;
 
 // ─── Ghost Session ────────────────────────────────────────────────────────────
 
@@ -171,6 +108,18 @@ impl GhostSession {
         }
     }
 
+    /// Freeze the completed preview. Never revive a cancelled session.
+    pub fn finish_stream(&mut self) {
+        if !self.cancel_token.is_cancelled()
+            && matches!(
+                self.state,
+                SessionState::Streaming | SessionState::Correcting
+            )
+        {
+            self.state = SessionState::Review;
+        }
+    }
+
     /// Cancel the ongoing stream (user pressed Esc)
     pub fn cancel(&mut self) {
         info!("🛑 Ghost session cancelled by user (Esc)");
@@ -179,13 +128,22 @@ impl GhostSession {
     }
 
     /// Accept all text generated so far (Tab)
-    pub fn accept_all(&mut self) -> String {
-        let buf = self.buffer.blocking_lock();
+    pub async fn accept_all(&mut self) -> Result<String, &'static str> {
+        if self.cancel_token.is_cancelled() || !matches!(self.state, SessionState::Review) {
+            return Err("Only a completed preview can be accepted");
+        }
+        if !self.confidence.accepts_enabled() {
+            return Err("Review required: low confidence");
+        }
+        let buf = self.buffer.lock().await;
+        if buf.active_text().is_empty() {
+            return Err("Empty preview");
+        }
         let text = buf.active_text().to_string();
         drop(buf);
         self.cancel_token.cancel(); // stop any remaining streaming
         self.state = SessionState::Accepted;
-        text
+        Ok(text)
     }
 
     /// Accept the next word only (Ctrl+Right)
@@ -214,13 +172,17 @@ impl GhostSession {
     /// Push a token to the primary stream buffer
     pub async fn push_token_a(&self, token: &str) {
         let mut buf = self.buffer.lock().await;
-        buf.text_a.push_str(token);
+        if !self.cancel_token.is_cancelled() {
+            buf.text_a.push_str(token);
+        }
     }
 
     /// Push a token to the secondary (alternative B) stream buffer
     pub async fn push_token_b(&self, token: &str) {
         let mut buf = self.buffer.lock().await;
-        buf.text_b.push_str(token);
+        if !self.cancel_token.is_cancelled() {
+            buf.text_b.push_str(token);
+        }
     }
 
     /// Store a history entry for agent-aware undo
@@ -239,8 +201,8 @@ impl GhostSession {
     }
 
     /// Human-readable session status for overlay display
-    pub fn status_line(&self) -> String {
-        let buf = self.buffer.blocking_lock();
+    pub async fn status_line(&self) -> String {
+        let buf = self.buffer.lock().await;
         let alt = if !buf.text_b.is_empty() {
             if buf.using_b {
                 " [Alt B] "
@@ -266,6 +228,9 @@ impl GhostSession {
             }
             {
                 let mut buf = self.buffer.lock().await;
+                if self.cancel_token.is_cancelled() {
+                    break;
+                }
                 buf.text_a.push(ch);
             }
             let now_ns = std::time::SystemTime::now()

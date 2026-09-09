@@ -1,4 +1,4 @@
-// Tauri backend for Kairo Phantom overlay
+// Tauri backend for Axiom-Grid overlay
 // Manages the glassmorphic ghost UI, global shortcuts, and IPC to phantom-core
 
 use tauri::{
@@ -16,11 +16,11 @@ use phantom_bridge::PhantomBridge;
 
 /// IPC command: trigger AI materialization (called from frontend hotkey or button)
 #[tauri::command]
-async fn trigger_materialize(app: AppHandle) -> Result<String, String> {
+async fn trigger_materialize(app: AppHandle, context: String) -> Result<String, String> {
     app.emit("phantom:status", "capturing")
         .map_err(|e| e.to_string())?;
 
-    match PhantomBridge::materialize().await {
+    match PhantomBridge::materialize(context).await {
         Ok(suggestion) => {
             app.emit("phantom:suggestion", &suggestion)
                 .map_err(|e| e.to_string())?;
@@ -47,22 +47,10 @@ fn toggle_visibility(window: WebviewWindow) {
     }
 }
 
-/// IPC command: get current config
-#[tauri::command]
-fn get_config() -> serde_json::Value {
-    serde_json::json!({
-        "hotkey": "Ctrl+Space",
-        "provider": "ollama",
-        "model": "llama3",
-        "typing_delay_ms": 15
-    })
-}
-
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
-        .plugin(tauri_plugin_shell::init())
         .setup(|app| {
             let _window = app.get_webview_window("main").unwrap();
 
@@ -92,13 +80,13 @@ pub fn run() {
                 })?;
 
             // System tray setup
-            let quit = MenuItem::with_id(app, "quit", "Quit Kairo Phantom", true, None::<&str>)?;
+            let quit = MenuItem::with_id(app, "quit", "Quit Axiom-Grid", true, None::<&str>)?;
             let hide = MenuItem::with_id(app, "hide", "Hide / Show", true, None::<&str>)?;
             let menu = Menu::with_items(app, &[&hide, &quit])?;
 
             let _tray = TrayIconBuilder::new()
                 .menu(&menu)
-                .tooltip("Kairo Phantom — Press Ctrl+Space to materialize")
+                .tooltip("Axiom-Grid — Ctrl+Space to show preview")
                 .on_menu_event(move |app, event| match event.id.as_ref() {
                     "quit" => app.exit(0),
                     "hide" => {
@@ -119,8 +107,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             trigger_materialize,
             toggle_visibility,
-            get_config,
         ])
         .run(tauri::generate_context!())
-        .expect("error while running Kairo Phantom overlay");
+        .expect("error while running Axiom-Grid overlay");
 }

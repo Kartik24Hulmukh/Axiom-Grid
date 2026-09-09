@@ -1,0 +1,13 @@
+{
+  "real_binary_http_smoke": "passed",
+  "ollama": "loopback mock, not real model",
+  "proxy_environment": "invalid proxy set; inference still uses direct loopback",
+  "authenticated_preview": {
+    "suggestion": "Reviewed local preview \ud83c\udf0d",
+    "word_count": 4,
+    "char_count": 24
+  },
+  "unauthenticated_status": 401,
+  "upstream_calls": 1,
+  "no_native_gui_validation": true
+}

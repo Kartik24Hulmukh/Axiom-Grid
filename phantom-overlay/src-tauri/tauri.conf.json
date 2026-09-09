@@ -1,32 +1,33 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Kairo Phantom",
+  "productName": "Axiom-Grid",
   "version": "0.1.0",
-  "identifier": "dev.docscode.kairo-phantom",
+  "identifier": "dev.axiomgrid.desktop",
   "build": {
     "frontendDist": "../dist"
   },
   "app": {
     "windows": [
       {
-        "title": "Kairo Phantom",
-        "width": 380,
-        "height": 520,
+        "title": "Axiom-Grid",
+        "width": 420,
+        "height": 620,
         "resizable": false,
         "fullscreen": false,
-        "decorations": false,
-        "transparent": true,
+        "decorations": true,
+        "transparent": false,
         "alwaysOnTop": true,
         "skipTaskbar": true,
-        "contentProtected": true,
+        "contentProtected": false,
         "focus": false,
         "x": 40,
         "y": 100
       }
     ],
     "security": {
-      "csp": null
-    }
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self'; connect-src ipc: http://ipc.localhost; img-src 'self' data:; object-src 'none'; base-uri 'none'"
+    },
+    "withGlobalTauri": true
   },
   "bundle": {
     "active": false,

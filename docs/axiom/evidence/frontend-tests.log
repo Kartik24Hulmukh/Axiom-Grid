@@ -1,0 +1,13 @@
+✔ blank input does not invoke backend (1.548654ms)
+✔ explicit context and literal output, not HTML (0.664372ms)
+✔ discard prevents late results and concurrent requests (0.619532ms)
+✔ backend failure is actionable and resets button (0.603912ms)
+✔ browser-only preview does not fake generation (0.617292ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 49.293656

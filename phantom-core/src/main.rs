@@ -403,7 +403,6 @@ async fn async_main() -> Result<()> {
     _startup_timer.checkpoint("logger init");
 
     // P0-A2: Ollama bootstrap — detect + background model pull
-    ollama_bootstrap::OllamaBootstrap::bootstrap("qwen2.5:7b").await;
     _startup_timer.checkpoint("ollama check");
 
     // Startup and periodic CUA health checks
@@ -5454,3 +5453,6 @@ fn print_help() {
     println!("  Alt+Shift+M            Capture screen context");
     println!("\nFor docs: https://github.com/KairoPhantom/Kairo-Phantom");
 }
+
+pub mod ghost_buffer;
+pub mod api_security;

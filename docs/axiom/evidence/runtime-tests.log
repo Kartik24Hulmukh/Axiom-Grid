@@ -1,0 +1,49 @@
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 8 tests
+test authenticated_preview_roundtrip ... ok
+test concurrent_generation_is_rejected ... ok
+test health_is_not_model_readiness ... ok
+test bounded_explicit_input_and_removed_routes ... ok
+test invalid_token_config_fails_closed ... ok
+test redirects_and_http_errors_are_not_success ... ok
+test rejects_untrusted_clients ... ok
+test invalid_model_output_fails_without_leaking_content ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+
+running 9 tests
+test acceptance_is_async_and_review_gated ... ok
+test cancellation_is_terminal_and_drops_late_tokens ... ok
+test download_policy_is_explicit_and_offline_wins ... ok
+test crdt_unicode_replacement_uses_document_offsets ... ok
+test every_external_offset_is_safe ... ok
+test empty_and_low_confidence_are_not_accepted ... ok
+test model_identity_is_not_a_prefix ... ok
+test unicode_boundaries_and_undo ... ok
+test whitespace_and_alternative_reset ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Compiling axiom-grid v0.1.0 (/home/daytona/axiom-work/axiom-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.66s
+     Running unittests src/lib.rs (target/debug/deps/axiom_grid-a98bb474ec67d26d)
+     Running unittests src/main.rs (target/debug/deps/axiom_grid-7df19633bb2632fb)
+     Running tests/api.rs (target/debug/deps/api-1c33f932a7f67d95)
+     Running tests/regressions.rs (target/debug/deps/regressions-9a3ed1d9407fe0e2)
+   Doc-tests axiom_grid

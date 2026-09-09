@@ -25,7 +25,7 @@ impl CrdtSession {
         let mut txn = self.doc.transact_mut();
         let content = txn.get_or_insert_text("content");
 
-        let current_len = content.get_string(&txn).len() as u32;
+        let current_len = content.len(&txn);
         if current_len > 0 {
             content.remove_range(&mut txn, 0, current_len);
         }
@@ -37,7 +37,7 @@ impl CrdtSession {
         let mut txn = self.doc.transact_mut();
         let ai_response = txn.get_or_insert_text("ai_suggestion");
 
-        let current_len = ai_response.get_string(&txn).len() as u32;
+        let current_len = ai_response.len(&txn);
         if current_len > 0 {
             ai_response.remove_range(&mut txn, 0, current_len);
         }

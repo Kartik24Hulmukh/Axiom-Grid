@@ -23,16 +23,21 @@ pub struct PhantomBridge;
 
 impl PhantomBridge {
     /// Call phantom-core to read UIA, get AI suggestion, and ghost-type it
-    pub async fn materialize() -> Result<String> {
+    pub async fn materialize(context: String) -> Result<String> {
         let client = Client::builder()
-            .timeout(std::time::Duration::from_secs(30))
+            .no_proxy()
+            .redirect(reqwest::redirect::Policy::none())
+            .timeout(std::time::Duration::from_secs(95))
             .build()?;
 
         let resp = client
             .post(format!("http://127.0.0.1:{PHANTOM_PORT}/materialize"))
-            .json(&MaterializeRequest { context: None })
+            .bearer_auth(std::env::var("AXIOM_API_TOKEN")
+                .map_err(|_| anyhow::anyhow!("AXIOM_API_TOKEN is not set"))?)
+            .json(&MaterializeRequest { context: Some(context) })
             .send()
             .await?
+            .error_for_status()?
             .json::<MaterializeResponse>()
             .await?;
 
@@ -42,12 +47,12 @@ impl PhantomBridge {
     /// Ping phantom-core to check if it's running
     #[allow(dead_code)]
     pub async fn ping() -> bool {
-        let client = Client::new();
+        let client = match Client::builder().no_proxy().redirect(reqwest::redirect::Policy::none()).build() { Ok(c) => c, Err(_) => return false };
         client
             .get(format!("http://127.0.0.1:{PHANTOM_PORT}/health"))
             .timeout(std::time::Duration::from_secs(1))
             .send()
             .await
-            .is_ok()
+            .map(|r| r.status().is_success()).unwrap_or(false)
     }
 }

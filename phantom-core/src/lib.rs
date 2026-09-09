@@ -140,3 +140,6 @@ pub mod app_watcher; // Win32 foreground window polling → AppChangedEvent
 pub mod cua;
 
 pub mod monitor;
+
+pub mod ghost_buffer;
+pub mod api_security;

@@ -1,0 +1,10 @@
+{
+  "identifier": "default",
+  "description": "Axiom preview window, no filesystem or shell access",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:default"
+  ]
+}

@@ -1,6 +1,5 @@
 //! Ollama Bootstrap — P0-A2
-//! Silently detects and configures Ollama for offline AI.
-//! Called at startup; model pull is non-blocking.
+//! Detection is local-only; downloads require explicit opt-in and never run offline.
 
 use tokio::time::Duration;
 
@@ -9,10 +8,10 @@ pub struct OllamaBootstrap;
 impl OllamaBootstrap {
     /// Returns true if Ollama API is reachable.
     pub async fn is_running() -> bool {
-        crate::config::get_client_builder()
+        local_client_builder()
             .build()
-            .unwrap_or_default()
-            .get("http://localhost:11434/api/tags")
+            .expect("local HTTP client configuration")
+            .get("http://127.0.0.1:11434/api/tags")
             .timeout(Duration::from_secs(2))
             .send()
             .await
@@ -22,33 +21,47 @@ impl OllamaBootstrap {
 
     /// Pull a model in the background. Non-blocking — fires and forgets.
     pub async fn ensure_model(model: &str) -> anyhow::Result<()> {
-        tracing::info!("🦙 Ensuring Ollama model: {}", model);
-        let client = crate::config::get_client_builder()
+        anyhow::ensure!(
+            download_allowed(
+                std::env::var("KAIRO_OFFLINE").ok().as_deref(),
+                std::env::var("AXIOM_ALLOW_MODEL_DOWNLOAD").ok().as_deref()
+            ),
+            "Model downloads disabled: explicit consent required; offline mode always wins"
+        );
+        anyhow::ensure!(
+            !model.trim().is_empty() && model.len() <= 256,
+            "Invalid model name"
+        );
+        if Self::has_model(model).await {
+            return Ok(());
+        }
+        tracing::info!("User-approved model download requested");
+        let client = local_client_builder()
             .build()
-            .unwrap_or_default();
+            .expect("local HTTP client configuration");
         let body = serde_json::json!({"name": model, "stream": false});
         let resp = client
-            .post("http://localhost:11434/api/pull")
+            .post("http://127.0.0.1:11434/api/pull")
             .json(&body)
             .timeout(Duration::from_secs(600))
             .send()
             .await?;
-        if resp.status().is_success() {
-            tracing::info!("✅ Ollama model '{}' ready", model);
-        } else {
-            tracing::warn!("⚠️  Model pull returned: {}", resp.status());
-        }
+        resp.error_for_status()?;
+        anyhow::ensure!(
+            Self::has_model(model).await,
+            "Downloaded model not found in local inventory"
+        );
         Ok(())
     }
 
     /// Returns true if the given model is available locally in Ollama.
     pub async fn has_model(model: &str) -> bool {
-        let client = match crate::config::get_client_builder().build() {
+        let client = match local_client_builder().build() {
             Ok(c) => c,
             Err(_) => return false,
         };
         let resp = match client
-            .get("http://localhost:11434/api/tags")
+            .get("http://127.0.0.1:11434/api/tags")
             .timeout(Duration::from_secs(2))
             .send()
             .await
@@ -70,38 +83,57 @@ impl OllamaBootstrap {
         }
 
         if let Ok(tags) = resp.json::<OllamaTags>().await {
-            let target_base = model.split(':').next().unwrap_or(model);
-            tags.models
-                .iter()
-                .any(|m| m.name == model || m.name == target_base || m.name.starts_with(model))
+            tags.models.iter().any(|m| model_matches(model, &m.name))
         } else {
             false
         }
     }
 
-    /// Full bootstrap: detect → log → pull model in background.
+    /// Detect locally without silently downloading model weights.
     pub async fn bootstrap(default_model: &str) {
-        if std::env::var("KAIRO_OFFLINE").unwrap_or_default() == "1" {
-            if Self::is_running().await {
-                tracing::info!(
-                    "✅ Ollama running locally at http://localhost:11434 (offline mode)"
-                );
-            }
+        if !Self::is_running().await {
+            tracing::warn!(
+                "Ollama not detected on 127.0.0.1:11434; start Ollama before generating"
+            );
             return;
         }
-
-        if Self::is_running().await {
-            tracing::info!("✅ Ollama running at http://localhost:11434");
-            let model = default_model.to_string();
-            tokio::spawn(async move {
-                if let Err(e) = Self::ensure_model(&model).await {
-                    tracing::warn!("⚠️  Model pull failed: {}", e);
-                }
-            });
-        } else {
-            tracing::warn!(
-                "⚠️  Ollama not detected. For offline AI: winget install Ollama.Ollama && ollama serve"
-            );
+        if Self::has_model(default_model).await {
+            return;
         }
+        if !download_allowed(
+            std::env::var("KAIRO_OFFLINE").ok().as_deref(),
+            std::env::var("AXIOM_ALLOW_MODEL_DOWNLOAD").ok().as_deref(),
+        ) {
+            tracing::warn!("Configured model missing; install it explicitly before offline use");
+            return;
+        }
+        let model = default_model.to_string();
+        tokio::spawn(async move {
+            if let Err(error) = Self::ensure_model(&model).await {
+                tracing::warn!("Approved model setup failed: {}", error);
+            }
+        });
     }
+}
+
+fn local_client_builder() -> reqwest::ClientBuilder {
+    reqwest::Client::builder()
+        .no_proxy()
+        .redirect(reqwest::redirect::Policy::none())
+        .connect_timeout(Duration::from_secs(2))
+}
+
+pub fn download_allowed(offline: Option<&str>, consent: Option<&str>) -> bool {
+    offline != Some("1") && consent == Some("1")
+}
+
+pub fn model_matches(requested: &str, installed: &str) -> bool {
+    if requested.is_empty() {
+        return false;
+    }
+    if requested == installed {
+        return true;
+    }
+    // Only the implicit latest tag is equivalent; never prefix-match sizes/tags.
+    !requested.contains(':') && installed == format!("{requested}:latest")
 }

@@ -362,15 +362,8 @@ async fn materialize(
     State(state): State<ApiState>,
     Json(req): Json<MaterializeRequest>,
 ) -> Result<Json<MaterializeResponse>, (StatusCode, String)> {
-    let context = if let Some(ctx) = req.context {
-        ctx
-    } else {
-        state
-            .uia
-            .get_focused_text()
-            .or_else(|_| state.uia.get_clipboard_text())
-            .unwrap_or_default()
-    };
+    // No ambient UIA/clipboard capture: the caller must explicitly supply context.
+    let context = req.context.unwrap_or_default();
 
     if context.is_empty() {
         return Err((StatusCode::BAD_REQUEST, "No text context available".into()));
@@ -388,13 +381,11 @@ async fn materialize(
 
     state.crdt.insert_ai_text(&suggestion);
 
-    let injector = state.injector.clone();
-    let suggestion_clone = suggestion.clone();
-    tokio::task::spawn_blocking(move || injector.type_text(&suggestion_clone));
+    // Preview only. Insertion requires a future target-bound approval protocol.
 
     Ok(Json(MaterializeResponse {
         word_count: suggestion.split_whitespace().count(),
-        char_count: suggestion.len(),
+        char_count: suggestion.chars().count(),
         suggestion,
     }))
 }
@@ -585,19 +576,24 @@ async fn mobile_sync_post(
 }
 
 pub async fn start_api_server(state: ApiState) {
+    let token = match std::env::var("AXIOM_API_TOKEN").ok()
+        .and_then(|value| crate::api_security::ApiToken::parse(value).ok()) {
+        Some(token) => token,
+        None => {
+            tracing::error!("IPC disabled: set AXIOM_API_TOKEN to 64 random hexadecimal characters");
+            return;
+        }
+    };
+    // Deliberately narrow the launch surface. Legacy injection, swarm, export,
+    // mobile and context-scraping endpoints are not mounted.
+    let protected = Router::new()
+        .route("/materialize", post(materialize))
+        .route("/api/complete", post(complete))
+        .layer(axum::extract::DefaultBodyLimit::max(64 * 1024))
+        .route_layer(axum::middleware::from_fn_with_state(token, crate::api_security::authorize));
     let app = Router::new()
         .route("/health", get(health))
-        .route("/materialize", post(materialize))
-        .route("/context", get(get_context))
-        .route("/inject", post(inject))
-        .route("/ask", post(ask))
-        .route("/api/complete", post(complete))
-        .route("/app", get(get_app))
-        .route("/agent", post(set_agent))
-        .route("/generate_image", post(generate_image))
-        .route("/kami/export", post(kami_export))
-        .route("/mobile/sync", post(mobile_sync_post))
-        .route("/capabilities", get(get_capabilities))
+        .merge(protected)
         .with_state(state);
 
     let addr = format!("127.0.0.1:{PORT}");
