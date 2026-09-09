@@ -20,8 +20,11 @@ use axum::{
     Json, Router,
 };
 use serde::{Deserialize, Serialize};
-use std::{sync::Arc, time::Duration};
-use tokio::sync::Semaphore;
+use std::{
+    sync::{Arc, Mutex},
+    time::Duration,
+};
+use tokio::sync::{oneshot, Semaphore};
 #[derive(Clone)]
 pub struct AppState {
     client: reqwest::Client,
@@ -29,6 +32,7 @@ pub struct AppState {
     inference_url: String,
     tags_url: String,
     slots: Arc<Semaphore>,
+    cancel_slot: Arc<Mutex<Option<oneshot::Sender<()>>>>,
 }
 impl AppState {
     pub fn local(model: String) -> anyhow::Result<Self> {
@@ -47,6 +51,7 @@ impl AppState {
             inference_url: "http://127.0.0.1:11434/api/generate".into(),
             tags_url: "http://127.0.0.1:11434/api/tags".into(),
             slots: Arc::new(Semaphore::new(1)),
+            cancel_slot: Arc::new(Mutex::new(None)),
         })
     }
     /// Test harness can target a loopback mock, never external inference.
@@ -131,24 +136,25 @@ async fn readiness(State(state): State<AppState>) -> Result<Json<ReadinessRespon
         installed_models,
     }))
 }
-async fn preview(
-    State(state): State<AppState>,
-    Json(input): Json<PreviewRequest>,
-) -> Result<Json<PreviewResponse>, ApiError> {
-    if input.context.trim().is_empty() || input.context.chars().count() > 16000 {
-        return Err((
-            StatusCode::BAD_REQUEST,
-            "Provide between 1 and 16000 characters of explicit context",
-        ));
+/// Non-standard but widely understood status for a client-initiated abort.
+fn cancelled_status() -> StatusCode {
+    StatusCode::from_u16(499).expect("499 is a valid status code")
+}
+fn arm_cancel(state: &AppState) -> oneshot::Receiver<()> {
+    let (tx, rx) = oneshot::channel();
+    if let Ok(mut slot) = state.cancel_slot.lock() {
+        *slot = Some(tx);
     }
-    let _permit = state.slots.try_acquire().map_err(|_| {
-        (
-            StatusCode::TOO_MANY_REQUESTS,
-            "Generation already running; retry after it finishes",
-        )
-    })?;
+    rx
+}
+fn disarm_cancel(state: &AppState) {
+    if let Ok(mut slot) = state.cancel_slot.lock() {
+        slot.take();
+    }
+}
+async fn generate(state: &AppState, prompt: String) -> Result<PreviewResponse, ApiError> {
     let mut response = state.client.post(&state.inference_url).json(&serde_json::json!({
-        "model": state.model, "prompt": input.context, "system": ai::KAIRO_SYSTEM_PROMPT,
+        "model": state.model, "prompt": prompt, "system": ai::KAIRO_SYSTEM_PROMPT,
         "stream": false, "options": {"num_predict": 2048}
     })).send().await.map_err(|_| (StatusCode::BAD_GATEWAY, "Local model unavailable or timed out; start Ollama and install the configured model"))?
         .error_for_status().map_err(|_| (StatusCode::BAD_GATEWAY, "Local model rejected generation; verify the installed model"))?;
@@ -174,16 +180,63 @@ async fn preview(
             "Local model returned an incomplete or empty preview",
         ));
     }
-    Ok(Json(PreviewResponse {
+    Ok(PreviewResponse {
         word_count: output.response.split_whitespace().count(),
         char_count: output.response.chars().count(),
         suggestion: output.response,
-    }))
+    })
+}
+async fn preview(
+    State(state): State<AppState>,
+    Json(input): Json<PreviewRequest>,
+) -> Result<Json<PreviewResponse>, ApiError> {
+    if input.context.trim().is_empty() || input.context.chars().count() > 16000 {
+        return Err((
+            StatusCode::BAD_REQUEST,
+            "Provide between 1 and 16000 characters of explicit context",
+        ));
+    }
+    let _permit = state.slots.try_acquire().map_err(|_| {
+        (
+            StatusCode::TOO_MANY_REQUESTS,
+            "Generation already running; retry after it finishes",
+        )
+    })?;
+    let cancel_rx = arm_cancel(&state);
+    // Racing the model request against the cancel signal drops the in-flight
+    // reqwest future on cancel, which closes the loopback connection so the
+    // local model stops generating instead of running to completion.
+    let result = tokio::select! {
+        r = generate(&state, input.context) => r,
+        _ = cancel_rx => Err((
+            cancelled_status(),
+            "Generation cancelled; the local model request was aborted",
+        )),
+    };
+    disarm_cancel(&state);
+    result.map(Json)
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CancelResponse {
+    pub cancelled: bool,
+}
+/// Abort the in-flight generation, if any. Idempotent: reports `cancelled: false`
+/// when nothing was running.
+async fn cancel_generation(State(state): State<AppState>) -> Json<CancelResponse> {
+    let cancelled = state
+        .cancel_slot
+        .lock()
+        .ok()
+        .and_then(|mut slot| slot.take())
+        .map(|tx| tx.send(()).is_ok())
+        .unwrap_or(false);
+    Json(CancelResponse { cancelled })
 }
 pub fn router(state: AppState, token: api_security::ApiToken) -> Router {
     let protected = Router::new()
         .route("/materialize", post(preview))
         .route("/readiness", get(readiness))
+        .route("/cancel", post(cancel_generation))
         .layer(DefaultBodyLimit::max(64 * 1024))
         .route_layer(axum::middleware::from_fn_with_state(
             token,

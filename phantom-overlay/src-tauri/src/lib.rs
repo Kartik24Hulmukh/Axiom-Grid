@@ -11,7 +11,7 @@ use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut}
 #[cfg(windows)]
 use window_vibrancy::apply_acrylic;
 
-mod phantom_bridge;
+pub mod phantom_bridge;
 use phantom_bridge::PhantomBridge;
 
 /// IPC command: trigger AI materialization (called from frontend hotkey or button)
@@ -49,7 +49,9 @@ async fn cancel_materialize(app: AppHandle) -> Result<bool, String> {
 
 #[tauri::command]
 async fn model_readiness() -> Result<phantom_bridge::ReadinessResponse, String> {
-    PhantomBridge::readiness().await.map_err(|e| format!("Readiness check failed: {e}"))
+    PhantomBridge::readiness()
+        .await
+        .map_err(|e| format!("Readiness check failed: {e}"))
 }
 
 /// IPC command: toggle overlay visibility

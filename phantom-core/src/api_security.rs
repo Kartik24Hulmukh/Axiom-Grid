@@ -5,6 +5,10 @@ use axum::{
     middleware::Next,
     response::Response,
 };
+#[path = "ipc_pairing.rs"]
+pub mod ipc_pairing;
+pub use ipc_pairing::PairingError;
+use std::path::PathBuf;
 
 #[derive(Clone)]
 pub struct ApiToken(String);
@@ -14,6 +18,24 @@ impl ApiToken {
             return Err("AXIOM_API_TOKEN must be 64 hexadecimal characters (32 random bytes)");
         }
         Ok(Self(value))
+    }
+    /// Load the per-user paired token, creating an OS-protected one when absent.
+    /// `AXIOM_API_TOKEN` still overrides for CI and tests; otherwise the token lives at
+    /// [`ApiToken::pairing_file_path`] with `0700`/`0600` permissions and never in the environment.
+    pub fn load_or_create_paired() -> Result<Self, PairingError> {
+        Ok(Self(ipc_pairing::load_or_create_paired()?))
+    }
+    /// Load an already paired token (environment override or pairing file); fails closed.
+    pub fn load_paired() -> Result<Self, PairingError> {
+        Ok(Self(ipc_pairing::load_paired()?))
+    }
+    /// Generate a fresh random token from the OS CSPRNG without persisting it.
+    pub fn generate_random() -> Result<Self, PairingError> {
+        Ok(Self(ipc_pairing::generate_random()?))
+    }
+    /// Per-user pairing file location (see `ipc_pairing::pairing_file_path`).
+    pub fn pairing_file_path() -> Result<PathBuf, PairingError> {
+        ipc_pairing::pairing_file_path()
     }
     fn matches(&self, supplied: &str) -> bool {
         if supplied.len() != self.0.len() {
