@@ -2,6 +2,24 @@
 const byId = id => document.getElementById(id);
 let generation = 0;
 let pending = false;
+async function checkReadiness() {
+  const status = byId("model-status");
+  if (!window.__TAURI__?.core?.invoke) { status.textContent = "Desktop runtime required."; return; }
+  status.textContent = "Checking local model…";
+  try {
+    const info = await window.__TAURI__.core.invoke("model_readiness");
+    const count = Array.isArray(info.installed_models) ? info.installed_models.length : 0;
+    status.textContent = info.ready
+      ? `Ready: ${info.configured_model} (${count} installed model${count === 1 ? "" : "s"}).`
+      : `Not ready: configured model ${info.configured_model} is not installed. Install it explicitly, then retry.`;
+    byId("generate").disabled = !info.ready;
+  } catch (error) {
+    status.textContent = `Not ready: ${String(error)}`;
+    byId("generate").disabled = true;
+  }
+}
+byId("retry-model").addEventListener("click", checkReadiness);
+checkReadiness();
 byId("generate").addEventListener("click", async () => {
   if (pending) return;
   const context = byId("context").value.trim();

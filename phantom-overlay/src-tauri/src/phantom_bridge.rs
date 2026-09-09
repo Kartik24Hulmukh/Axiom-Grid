@@ -19,6 +19,19 @@ struct MaterializeResponse {
     word_count: usize,
 }
 
+#[derive(Deserialize, Serialize)]
+pub struct ModelInfo {
+    pub name: String,
+    pub size: u64,
+    pub digest: String,
+}
+#[derive(Deserialize, Serialize)]
+pub struct ReadinessResponse {
+    pub ready: bool,
+    pub configured_model: String,
+    pub installed_models: Vec<ModelInfo>,
+}
+
 pub struct PhantomBridge;
 
 impl PhantomBridge {
@@ -42,6 +55,23 @@ impl PhantomBridge {
             .await?;
 
         Ok(resp.suggestion)
+    }
+
+    pub async fn readiness() -> Result<ReadinessResponse> {
+        let client = Client::builder()
+            .no_proxy()
+            .redirect(reqwest::redirect::Policy::none())
+            .timeout(std::time::Duration::from_secs(3))
+            .build()?;
+        Ok(client
+            .get(format!("http://127.0.0.1:{PHANTOM_PORT}/readiness"))
+            .bearer_auth(std::env::var("AXIOM_API_TOKEN")
+                .map_err(|_| anyhow::anyhow!("AXIOM_API_TOKEN is not set"))?)
+            .send()
+            .await?
+            .error_for_status()?
+            .json::<ReadinessResponse>()
+            .await?)
     }
 
     /// Ping phantom-core to check if it's running

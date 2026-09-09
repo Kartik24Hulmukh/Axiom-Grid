@@ -8,13 +8,14 @@
 
 - Independent Rust preview runtime (`axiom-runtime`), with no inherited swarm, cloud adapters, plugins, ambient screen capture or injection in its launch path.
 - Direct loopback Ollama inference: no proxy use, no redirects, no automatic downloads, no configured cloud fallback.
+- Authenticated model-readiness inventory with exact-tag matching and a fail-closed desktop status UI.
 - Native IPC bearer authorization; browser-origin and invalid Host requests denied; bounded input/output and one active generation.
 - Axiom desktop preview UI with explicit context, literal text rendering and late-result discard.
 - Regression coverage for Unicode, session acceptance/cancellation, model identity, CRDT replacement, API security and UI behavior.
 
 ## Start here
 
-[Quickstart](QUICKSTART.md) · [Current handoff](docs/axiom/HANDOFF-002.md) · [Fork handoff](docs/axiom/HANDOFF-001.md) · [Launch gates](docs/axiom/LAUNCH-GATES.md)
+[Quickstart](QUICKSTART.md) · [Current handoff](docs/axiom/HANDOFF-003.md) · [Fork handoff](docs/axiom/HANDOFF-001.md) · [Launch gates](docs/axiom/LAUNCH-GATES.md)
 
 ```sh
 cd axiom-runtime

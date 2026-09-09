@@ -8,6 +8,7 @@ function setup(invoke) {
   const elements = {};
   const document = {getElementById(id) { return elements[id] ||= {value:'',textContent:'',disabled:false,addEventListener(type,fn){this[type]=fn;}}; }};
   const window = invoke ? {__TAURI__:{core:{invoke}}} : {};
+  if(invoke){ const original=invoke; window.__TAURI__.core.invoke=(name,args)=> name==='model_readiness' ? Promise.resolve({ready:true,configured_model:'test:latest',installed_models:[{name:'test:latest'}]}) : original(name,args); }
   vm.runInNewContext(script,{document,window});
   return id => document.getElementById(id);
 }
@@ -33,4 +34,13 @@ test('backend failure is actionable and resets button',async()=>{
 });
 test('browser-only preview does not fake generation',async()=>{
  const el=setup();el('context').value='Test';await el('generate').click();assert.match(el('status').textContent,/desktop app/);
+});
+
+test('readiness displays exact configured model and enables generation',async()=>{
+ const el=setup(async()=> 'ok'); await new Promise(r=>setImmediate(r));
+ assert.match(el('model-status').textContent,/Ready: test:latest/); assert.equal(el('generate').disabled,false);
+});
+test('browser readiness fails closed',async()=>{
+ const el=setup(); await new Promise(r=>setImmediate(r));
+ assert.match(el('model-status').textContent,/Desktop runtime required/);
 });

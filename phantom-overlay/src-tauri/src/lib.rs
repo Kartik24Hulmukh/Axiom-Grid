@@ -36,6 +36,11 @@ async fn trigger_materialize(app: AppHandle, context: String) -> Result<String, 
     }
 }
 
+#[tauri::command]
+async fn model_readiness() -> Result<phantom_bridge::ReadinessResponse, String> {
+    PhantomBridge::readiness().await.map_err(|e| format!("Readiness check failed: {e}"))
+}
+
 /// IPC command: toggle overlay visibility
 #[tauri::command]
 fn toggle_visibility(window: WebviewWindow) {
@@ -106,6 +111,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             trigger_materialize,
+            model_readiness,
             toggle_visibility,
         ])
         .run(tauri::generate_context!())

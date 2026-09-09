@@ -20,7 +20,7 @@ cargo run --locked
 
 `AXIOM_MODEL` must match an entry in `ollama list`. Never paste your GitHub token into `AXIOM_API_TOKEN`: it is a separate random local IPC secret. Missing/invalid settings fail startup. Keep the token out of screenshots, logs and committed files. Provision a fresh token each launch.
 
-The service binds only to `127.0.0.1:7437`. `/health` is process liveness, **not** model readiness. If a model is absent, generation returns an actionable error rather than downloading it or calling a cloud provider.
+The service binds only to `127.0.0.1:7437`. `/health` is process liveness. Authenticated `GET /readiness` queries Ollama’s local inventory and reports whether the exact configured tag is installed, plus local model names, sizes and digests. It never downloads a model. If a model is absent, generation returns an actionable error rather than downloading it or calling a cloud provider.
 
 ## Use the API
 
@@ -42,7 +42,7 @@ npm ci
 RUSTUP_TOOLCHAIN=1.98.1 npm run dev
 ```
 
-Paste the instruction and selected text, choose **Generate preview**, review, and manually copy. **Discard** hides the preview and rejects late results; it does not terminate inference already executing inside Ollama. No automatic insertion or ambient application capture is enabled. The native Ctrl+Space shortcut currently only shows the window; it does not invoke generation.
+The overlay checks the authenticated readiness endpoint on startup, shows the exact configured model, and fails closed until that tag is installed. Use **Retry check** after an explicit `ollama pull`. Paste the instruction and selected text, choose **Generate preview**, review, and manually copy. **Discard** hides the preview and rejects late results; it does not terminate inference already executing inside Ollama. No automatic insertion or ambient application capture is enabled. The native Ctrl+Space shortcut currently only shows the window; it does not invoke generation.
 
 The Tauri project still lives inside the inherited workspace and requires separate platform build validation before distribution. Bundling remains disabled. Do not ship unsigned inherited artifacts.
 

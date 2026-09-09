@@ -27,6 +27,7 @@ pub struct AppState {
     client: reqwest::Client,
     model: String,
     inference_url: String,
+    tags_url: String,
     slots: Arc<Semaphore>,
 }
 impl AppState {
@@ -44,12 +45,14 @@ impl AppState {
                 .build()?,
             model,
             inference_url: "http://127.0.0.1:11434/api/generate".into(),
+            tags_url: "http://127.0.0.1:11434/api/tags".into(),
             slots: Arc::new(Semaphore::new(1)),
         })
     }
     /// Test harness can target a loopback mock, never external inference.
     pub fn with_loopback_port(mut self, port: u16) -> Self {
         self.inference_url = format!("http://127.0.0.1:{port}/api/generate");
+        self.tags_url = format!("http://127.0.0.1:{port}/api/tags");
         self
     }
 }
@@ -70,6 +73,64 @@ struct OllamaResponse {
     done: bool,
 }
 type ApiError = (StatusCode, &'static str);
+#[derive(Deserialize)]
+struct OllamaTags {
+    models: Vec<OllamaModel>,
+}
+#[derive(Deserialize)]
+struct OllamaModel {
+    name: String,
+    #[serde(default)]
+    size: u64,
+    #[serde(default)]
+    digest: String,
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ModelInfo {
+    pub name: String,
+    pub size: u64,
+    pub digest: String,
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ReadinessResponse {
+    pub ready: bool,
+    pub configured_model: String,
+    pub installed_models: Vec<ModelInfo>,
+}
+async fn readiness(State(state): State<AppState>) -> Result<Json<ReadinessResponse>, ApiError> {
+    let response = state
+        .client
+        .get(&state.tags_url)
+        .send()
+        .await
+        .map_err(|_| {
+            (
+                StatusCode::SERVICE_UNAVAILABLE,
+                "Local model service unavailable; start Ollama",
+            )
+        })?
+        .error_for_status()
+        .map_err(|_| (StatusCode::BAD_GATEWAY, "Local model inventory unavailable"))?;
+    let tags: OllamaTags = response
+        .json()
+        .await
+        .map_err(|_| (StatusCode::BAD_GATEWAY, "Invalid local model inventory"))?;
+    let ready = tags.models.iter().any(|m| m.name == state.model);
+    let installed_models = tags
+        .models
+        .into_iter()
+        .map(|m| ModelInfo {
+            name: m.name,
+            size: m.size,
+            digest: m.digest,
+        })
+        .collect();
+    Ok(Json(ReadinessResponse {
+        ready,
+        configured_model: state.model.clone(),
+        installed_models,
+    }))
+}
 async fn preview(
     State(state): State<AppState>,
     Json(input): Json<PreviewRequest>,
@@ -122,6 +183,7 @@ async fn preview(
 pub fn router(state: AppState, token: api_security::ApiToken) -> Router {
     let protected = Router::new()
         .route("/materialize", post(preview))
+        .route("/readiness", get(readiness))
         .layer(DefaultBodyLimit::max(64 * 1024))
         .route_layer(axum::middleware::from_fn_with_state(
             token,

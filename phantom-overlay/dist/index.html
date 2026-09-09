@@ -4,6 +4,6 @@
 <label for="context">Your instruction and selected text</label><textarea id="context" maxlength="16000" rows="6" placeholder="Paste only the text you want the model to read, then describe your edit."></textarea>
 <p class="muted">Nothing is captured from your other apps. Review the result and copy it manually. Automatic insertion is disabled.</p>
 <div class="actions"><button id="generate">Generate preview</button><button id="cancel" disabled>Discard</button></div>
-<p id="status" role="status" aria-live="polite">Start the core and overlay with the same IPC token.</p>
+<div class="readiness"><strong>Local model</strong><p id="model-status" role="status">Checking runtime and configured model…</p><button id="retry-model" type="button">Retry check</button></div><p id="status" role="status" aria-live="polite">Start the core and overlay with the same IPC token.</p>
 <label for="result">Review the suggestion</label><textarea id="result" rows="8" readonly></textarea><p class="muted">Select the result and use Ctrl+C / ⌘C. Check factual accuracy before use.</p>
 <footer>Local model must be installed separately. This preview is not a zero-egress certification.</footer></main></body></html>
