@@ -1,0 +1,15 @@
+{
+  "missing_model": {
+    "http": 200,
+    "ready": false
+  },
+  "missing_daemon": {
+    "http": 503
+  },
+  "daemon_restored": {
+    "http": 200,
+    "ready": true
+  },
+  "runtime_restart": "passed; same pairing token retained",
+  "token_mode": "0600"
+}

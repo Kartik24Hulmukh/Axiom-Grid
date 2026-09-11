@@ -28,6 +28,8 @@ jobs:
         env:
           RUSTUP_TOOLCHAIN: 1.98.1
       - run: node --test phantom-overlay/tests/app.test.cjs
+      - name: Validate real-model runner syntax
+        run: python3 -m py_compile scripts/axiom-live-e2e.py
       - run: cargo build --manifest-path axiom-runtime/Cargo.toml --locked --release
         env:
           RUSTUP_TOOLCHAIN: 1.98.1
