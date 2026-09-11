@@ -355,3 +355,90 @@ async fn readiness_requires_auth_and_exact_tag() {
     assert_eq!(value["ready"], false);
     server.abort();
 }
+
+#[tokio::test]
+async fn readiness_rejects_oversized_and_redirected_inventory() {
+    for (status, body) in [
+        (
+            StatusCode::FOUND,
+            r#"{"models":[{"name":"test:latest"}]}"#.to_string(),
+        ),
+        (
+            StatusCode::OK,
+            serde_json::json!({"models":[{"name":"x".repeat(256 * 1024)}]}).to_string(),
+        ),
+    ] {
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+        let server = tokio::spawn(async move {
+            axum::serve(
+                listener,
+                Router::new().route(
+                    "/api/tags",
+                    axum::routing::get(move || async move {
+                        (status, [("content-type", "application/json")], body)
+                    }),
+                ),
+            )
+            .await
+            .unwrap();
+        });
+        let app = router(
+            AppState::local("test:latest".into())
+                .unwrap()
+                .with_loopback_port(port),
+            token(),
+        );
+        let res = app
+            .oneshot(
+                Request::builder()
+                    .uri("/readiness")
+                    .header("host", "127.0.0.1:7437")
+                    .header("authorization", format!("Bearer {}", "a".repeat(64)))
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(res.status(), StatusCode::BAD_GATEWAY);
+        server.abort();
+    }
+}
+
+#[tokio::test]
+async fn redirect_with_valid_generation_json_is_not_success() {
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let port = listener.local_addr().unwrap().port();
+    let server = tokio::spawn(async move {
+        axum::serve(
+            listener,
+            Router::new().route(
+                "/api/generate",
+                post(|| async {
+                    (
+                        StatusCode::FOUND,
+                        Json(serde_json::json!({"response":"must reject", "done":true})),
+                    )
+                }),
+            ),
+        )
+        .await
+        .unwrap();
+    });
+    let app = router(
+        AppState::local("test:latest".into())
+            .unwrap()
+            .with_loopback_port(port),
+        token(),
+    );
+    let res = app
+        .oneshot(
+            request("")
+                .body(Body::from(r#"{"context":"test"}"#))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(res.status(), StatusCode::BAD_GATEWAY);
+    server.abort();
+}

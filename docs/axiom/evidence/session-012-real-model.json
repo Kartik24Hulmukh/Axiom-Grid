@@ -1,0 +1,489 @@
+{
+  "kind": "real installed Ollama model; synthetic prompts",
+  "cases": [
+    {
+      "name": "liveness",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "name": "unauthenticated readiness",
+      "status": 401,
+      "expected": 401
+    },
+    {
+      "name": "wrong token",
+      "status": 401,
+      "expected": 401
+    },
+    {
+      "name": "cross origin",
+      "status": 403,
+      "expected": 403
+    },
+    {
+      "name": "empty input",
+      "status": 400,
+      "expected": 400
+    },
+    {
+      "name": "unknown field",
+      "status": 422,
+      "expected": 422
+    },
+    {
+      "name": "oversize context",
+      "status": 400,
+      "expected": 400
+    },
+    {
+      "name": "model readiness",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "name": "model metadata",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "name": "prompt 1",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "name": "prompt 2",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "name": "prompt 3",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "name": "prompt 4",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "name": "prompt 5",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "name": "prompt 6",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "name": "prompt 7",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "name": "prompt 8",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "name": "prompt 9",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "name": "prompt 10",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "name": "prompt 11",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "name": "prompt 12",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "name": "prompt 13",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "name": "prompt 14",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "name": "prompt 15",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "name": "prompt 16",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "name": "prompt 17",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "name": "prompt 18",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "name": "prompt 19",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "name": "prompt 20",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "name": "cancelled generation",
+      "status": 499,
+      "expected": 499
+    },
+    {
+      "name": "idempotent cancel",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "name": "generation after cancel",
+      "status": 200,
+      "expected": 200
+    }
+  ],
+  "prompts": [
+    {
+      "index": 1,
+      "prompt": "Fix the grammar, return one sentence: She go to school every day.",
+      "status": 200,
+      "elapsed_seconds": 7.791,
+      "result": {
+        "suggestion": "She goes to school every day.",
+        "word_count": 6,
+        "char_count": 29
+      }
+    },
+    {
+      "index": 2,
+      "prompt": "Make this polite in one sentence: Send the report now.",
+      "status": 200,
+      "elapsed_seconds": 1.303,
+      "result": {
+        "suggestion": "Please send the report immediately.",
+        "word_count": 5,
+        "char_count": 35
+      }
+    },
+    {
+      "index": 3,
+      "prompt": "Summarize in one sentence: The meeting moved from Monday to Tuesday because the office is closed Monday.",
+      "status": 200,
+      "elapsed_seconds": 4.997,
+      "result": {
+        "suggestion": "The meeting was moved to Tuesday due to the office closing on Monday.",
+        "word_count": 13,
+        "char_count": 69
+      }
+    },
+    {
+      "index": 4,
+      "prompt": "Write a short subject line for an email requesting a project update.",
+      "status": 200,
+      "elapsed_seconds": 2.198,
+      "result": {
+        "suggestion": "\"Project Update Request: Current Status\"",
+        "word_count": 5,
+        "char_count": 40
+      }
+    },
+    {
+      "index": 5,
+      "prompt": "Translate to French: Thank you for your help.",
+      "status": 200,
+      "elapsed_seconds": 3.303,
+      "result": {
+        "suggestion": "Je vous en prie, merci.",
+        "word_count": 5,
+        "char_count": 23
+      }
+    },
+    {
+      "index": 6,
+      "prompt": "Translate to English: Buenos días, ¿cómo estás?",
+      "status": 200,
+      "elapsed_seconds": 1.599,
+      "result": {
+        "suggestion": "Hello, how are you?",
+        "word_count": 4,
+        "char_count": 19
+      }
+    },
+    {
+      "index": 7,
+      "prompt": "Preserve the name Zoë and rewrite politely: Zoë, fix this now.",
+      "status": 200,
+      "elapsed_seconds": 2.401,
+      "result": {
+        "suggestion": "Zoë, please fix this immediately.",
+        "word_count": 5,
+        "char_count": 33
+      }
+    },
+    {
+      "index": 8,
+      "prompt": "Write one sentence thanking a colleague for reviewing a document.",
+      "status": 200,
+      "elapsed_seconds": 3.402,
+      "result": {
+        "suggestion": "Thank you for reviewing my document, it helped me identify issues and improve my work.",
+        "word_count": 15,
+        "char_count": 86
+      }
+    },
+    {
+      "index": 9,
+      "prompt": "Simplify: We endeavor to facilitate the implementation of the proposal.",
+      "status": 200,
+      "elapsed_seconds": 2.1,
+      "result": {
+        "suggestion": "We aim to facilitate the implementation of the proposal.",
+        "word_count": 9,
+        "char_count": 56
+      }
+    },
+    {
+      "index": 10,
+      "prompt": "Rewrite actively: The report was reviewed by the manager.",
+      "status": 200,
+      "elapsed_seconds": 2.001,
+      "result": {
+        "suggestion": "The report was reviewed by the manager.",
+        "word_count": 7,
+        "char_count": 39
+      }
+    },
+    {
+      "index": 11,
+      "prompt": "Correct punctuation: Lets eat grandma",
+      "status": 200,
+      "elapsed_seconds": 1.1,
+      "result": {
+        "suggestion": "Lets eat grandma!",
+        "word_count": 3,
+        "char_count": 17
+      }
+    },
+    {
+      "index": 12,
+      "prompt": "Write a short reminder about a meeting tomorrow at 10 AM.",
+      "status": 200,
+      "elapsed_seconds": 4.306,
+      "result": {
+        "suggestion": "Dear colleagues,\n\nPlease attend the meeting at 10 AM tomorrow.\n\nBest regards,\n[Your Name]",
+        "word_count": 14,
+        "char_count": 89
+      }
+    },
+    {
+      "index": 13,
+      "prompt": "Shorten: At this point in time we are currently reviewing the proposal.",
+      "status": 200,
+      "elapsed_seconds": 3.5,
+      "result": {
+        "suggestion": "At this point in time, we are currently reviewing the proposal.",
+        "word_count": 11,
+        "char_count": 63
+      }
+    },
+    {
+      "index": 14,
+      "prompt": "Write a one-sentence apology for a delayed reply.",
+      "status": 200,
+      "elapsed_seconds": 2.299,
+      "result": {
+        "suggestion": "I am truly sorry for the inconvenience caused by the delay in my reply.",
+        "word_count": 14,
+        "char_count": 71
+      }
+    },
+    {
+      "index": 15,
+      "prompt": "Turn into a question: You can attend the meeting on Friday.",
+      "status": 200,
+      "elapsed_seconds": 1.697,
+      "result": {
+        "suggestion": "Can you attend the meeting on Friday?",
+        "word_count": 7,
+        "char_count": 37
+      }
+    },
+    {
+      "index": 16,
+      "prompt": "Rewrite professionally: This idea is really bad and will never work.",
+      "status": 200,
+      "elapsed_seconds": 1.6,
+      "result": {
+        "suggestion": "This idea is so bad and will never work.",
+        "word_count": 9,
+        "char_count": 40
+      }
+    },
+    {
+      "index": 17,
+      "prompt": "Explain in one sentence what a project deadline is.",
+      "status": 200,
+      "elapsed_seconds": 2.401,
+      "result": {
+        "suggestion": "A project deadline is the specific time frame within which a project must be completed or started.",
+        "word_count": 17,
+        "char_count": 98
+      }
+    },
+    {
+      "index": 18,
+      "prompt": "Write one sentence celebrating a team's successful product demo.",
+      "status": 200,
+      "elapsed_seconds": 1.902,
+      "result": {
+        "suggestion": "The team had a successful product demo that exceeded all expectations!",
+        "word_count": 11,
+        "char_count": 70
+      }
+    },
+    {
+      "index": 19,
+      "prompt": "Keep the emoji and improve grammar: We is happy 🌍.",
+      "status": 200,
+      "elapsed_seconds": 1.297,
+      "result": {
+        "suggestion": "We are happy 🌍.",
+        "word_count": 4,
+        "char_count": 15
+      }
+    },
+    {
+      "index": 20,
+      "prompt": "Return a brief title for a document about reducing office paper waste.",
+      "status": 200,
+      "elapsed_seconds": 2.4,
+      "result": {
+        "suggestion": "\"Efficient Paper Usage: A Guide to Reducing Office Paper Waste\"",
+        "word_count": 10,
+        "char_count": 63
+      }
+    }
+  ],
+  "human_usefulness_review": "NOT PERFORMED",
+  "minimum_hardware_certification": false,
+  "readiness": {
+    "ready": true,
+    "configured_model": "qwen2.5:0.5b",
+    "installed_models": [
+      {
+        "name": "qwen2.5:0.5b",
+        "size": 397821319,
+        "digest": "a8b0c51577010a279d933d14c2a8ab4b268079d44c5c8830c0a93900f1827c67"
+      }
+    ]
+  },
+  "ollama_version": {
+    "version": "0.34.0"
+  },
+  "model": {
+    "license": "\n                                 Apache License\n                           Version 2.0, January 2004\n                        http://www.apache.org/licenses/\n\n   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION\n\n   1. Definitions.\n\n      \"License\" shall mean the terms and conditions for use, reproduction,\n      and distribution as defined by Sections 1 through 9 of this document.\n\n      \"Licensor\" shall mean the copyright owner or entity authorized by\n      the copyright owner that is granting the License.\n\n      \"Legal Entity\" shall mean the union of the acting entity and all\n      other entities that control, are controlled by, or are under common\n      control with that entity. For the purposes of this definition,\n      \"control\" means (i) the power, direct or indirect, to cause the\n      direction or management of such entity, whether by contract or\n      otherwise, or (ii) ownership of fifty percent (50%) or more of the\n      outstanding shares, or (iii) beneficial ownership of such entity.\n\n      \"You\" (or \"Your\") shall mean an individual or Legal Entity\n      exercising permissions granted by this License.\n\n      \"Source\" form shall mean the preferred form for making modifications,\n      including but not limited to software source code, documentation\n      source, and configuration files.\n\n      \"Object\" form shall mean any form resulting from mechanical\n      transformation or translation of a Source form, including but\n      not limited to compiled object code, generated documentation,\n      and conversions to other media types.\n\n      \"Work\" shall mean the work of authorship, whether in Source or\n      Object form, made available under the License, as indicated by a\n      copyright notice that is included in or attached to the work\n      (an example is provided in the Appendix below).\n\n      \"Derivative Works\" shall mean any work, whether in Source or Object\n      form, that is based on (or derived from) the Work and for which the\n      editorial revisions, annotations, elaborations, or other modifications\n      represent, as a whole, an original work of authorship. For the purposes\n      of this License, Derivative Works shall not include works that remain\n      separable from, or merely link (or bind by name) to the interfaces of,\n      the Work and Derivative Works thereof.\n\n      \"Contribution\" shall mean any work of authorship, including\n      the original version of the Work and any modifications or additions\n      to that Work or Derivative Works thereof, that is intentionally\n      submitted to Licensor for inclusion in the Work by the copyright owner\n      or by an individual or Legal Entity authorized to submit on behalf of\n      the copyright owner. For the purposes of this definition, \"submitted\"\n      means any form of electronic, verbal, or written communication sent\n      to the Licensor or its representatives, including but not limited to\n      communication on electronic mailing lists, source code control systems,\n      and issue tracking systems that are managed by, or on behalf of, the\n      Licensor for the purpose of discussing and improving the Work, but\n      excluding communication that is conspicuously marked or otherwise\n      designated in writing by the copyright owner as \"Not a Contribution.\"\n\n      \"Contributor\" shall mean Licensor and any individual or Legal Entity\n      on behalf of whom a Contribution has been received by Licensor and\n      subsequently incorporated within the Work.\n\n   2. Grant of Copyright License. Subject to the terms and conditions of\n      this License, each Contributor hereby grants to You a perpetual,\n      worldwide, non-exclusive, no-charge, royalty-free, irrevocable\n      copyright license to reproduce, prepare Derivative Works of,\n      publicly display, publicly perform, sublicense, and distribute the\n      Work and such Derivative Works in Source or Object form.\n\n   3. Grant of Patent License. Subject to the terms and conditions of\n      this License, each Contributor hereby grants to You a perpetual,\n      worldwide, non-exclusive, no-charge, royalty-free, irrevocable\n      (except as stated in this section) patent license to make, have made,\n      use, offer to sell, sell, import, and otherwise transfer the Work,\n      where such license applies only to those patent claims licensable\n      by such Contributor that are necessarily infringed by their\n      Contribution(s) alone or by combination of their Contribution(s)\n      with the Work to which such Contribution(s) was submitted. If You\n      institute patent litigation against any entity (including a\n      cross-claim or counterclaim in a lawsuit) alleging that the Work\n      or a Contribution incorporated within the Work constitutes direct\n      or contributory patent infringement, then any patent licenses\n      granted to You under this License for that Work shall terminate\n      as of the date such litigation is filed.\n\n   4. Redistribution. You may reproduce and distribute copies of the\n      Work or Derivative Works thereof in any medium, with or without\n      modifications, and in Source or Object form, provided that You\n      meet the following conditions:\n\n      (a) You must give any other recipients of the Work or\n          Derivative Works a copy of this License; and\n\n      (b) You must cause any modified files to carry prominent notices\n          stating that You changed the files; and\n\n      (c) You must retain, in the Source form of any Derivative Works\n          that You distribute, all copyright, patent, trademark, and\n          attribution notices from the Source form of the Work,\n          excluding those notices that do not pertain to any part of\n          the Derivative Works; and\n\n      (d) If the Work includes a \"NOTICE\" text file as part of its\n          distribution, then any Derivative Works that You distribute must\n          include a readable copy of the attribution notices contained\n          within such NOTICE file, excluding those notices that do not\n          pertain to any part of the Derivative Works, in at least one\n          of the following places: within a NOTICE text file distributed\n          as part of the Derivative Works; within the Source form or\n          documentation, if provided along with the Derivative Works; or,\n          within a display generated by the Derivative Works, if and\n          wherever such third-party notices normally appear. The contents\n          of the NOTICE file are for informational purposes only and\n          do not modify the License. You may add Your own attribution\n          notices within Derivative Works that You distribute, alongside\n          or as an addendum to the NOTICE text from the Work, provided\n          that such additional attribution notices cannot be construed\n          as modifying the License.\n\n      You may add Your own copyright statement to Your modifications and\n      may provide additional or different license terms and conditions\n      for use, reproduction, or distribution of Your modifications, or\n      for any such Derivative Works as a whole, provided Your use,\n      reproduction, and distribution of the Work otherwise complies with\n      the conditions stated in this License.\n\n   5. Submission of Contributions. Unless You explicitly state otherwise,\n      any Contribution intentionally submitted for inclusion in the Work\n      by You to the Licensor shall be under the terms and conditions of\n      this License, without any additional terms or conditions.\n      Notwithstanding the above, nothing herein shall supersede or modify\n      the terms of any separate license agreement you may have executed\n      with Licensor regarding such Contributions.\n\n   6. Trademarks. This License does not grant permission to use the trade\n      names, trademarks, service marks, or product names of the Licensor,\n      except as required for reasonable and customary use in describing the\n      origin of the Work and reproducing the content of the NOTICE file.\n\n   7. Disclaimer of Warranty. Unless required by applicable law or\n      agreed to in writing, Licensor provides the Work (and each\n      Contributor provides its Contributions) on an \"AS IS\" BASIS,\n      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or\n      implied, including, without limitation, any warranties or conditions\n      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A\n      PARTICULAR PURPOSE. You are solely responsible for determining the\n      appropriateness of using or redistributing the Work and assume any\n      risks associated with Your exercise of permissions under this License.\n\n   8. Limitation of Liability. In no event and under no legal theory,\n      whether in tort (including negligence), contract, or otherwise,\n      unless required by applicable law (such as deliberate and grossly\n      negligent acts) or agreed to in writing, shall any Contributor be\n      liable to You for damages, including any direct, indirect, special,\n      incidental, or consequential damages of any character arising as a\n      result of this License or out of the use or inability to use the\n      Work (including but not limited to damages for loss of goodwill,\n      work stoppage, computer failure or malfunction, or any and all\n      other commercial damages or losses), even if such Contributor\n      has been advised of the possibility of such damages.\n\n   9. Accepting Warranty or Additional Liability. While redistributing\n      the Work or Derivative Works thereof, You may choose to offer,\n      and charge a fee for, acceptance of support, warranty, indemnity,\n      or other liability obligations and/or rights consistent with this\n      License. However, in accepting such obligations, You may act only\n      on Your own behalf and on Your sole responsibility, not on behalf\n      of any other Contributor, and only if You agree to indemnify,\n      defend, and hold each Contributor harmless for any liability\n      incurred by, or claims asserted against, such Contributor by reason\n      of your accepting any such warranty or additional liability.\n\n   END OF TERMS AND CONDITIONS\n\n   APPENDIX: How to apply the Apache License to your work.\n\n      To apply the Apache License to your work, attach the following\n      boilerplate notice, with the fields enclosed by brackets \"[]\"\n      replaced with your own identifying information. (Don't include\n      the brackets!)  The text should be enclosed in the appropriate\n      comment syntax for the file format. We also recommend that a\n      file or class name and description of purpose be included on the\n      same \"printed page\" as the copyright notice for easier\n      identification within third-party archives.\n\n   Copyright 2024 Alibaba Cloud\n\n   Licensed under the Apache License, Version 2.0 (the \"License\");\n   you may not use this file except in compliance with the License.\n   You may obtain a copy of the License at\n\n       http://www.apache.org/licenses/LICENSE-2.0\n\n   Unless required by applicable law or agreed to in writing, software\n   distributed under the License is distributed on an \"AS IS\" BASIS,\n   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n   See the License for the specific language governing permissions and\n   limitations under the License.",
+    "details": {
+      "parent_model": "",
+      "format": "gguf",
+      "family": "qwen2",
+      "families": [
+        "qwen2"
+      ],
+      "parameter_size": "494.03M",
+      "quantization_level": "Q4_K_M"
+    },
+    "model_info": {
+      "general.architecture": "qwen2",
+      "general.base_model.0.name": "Qwen2.5 0.5B",
+      "general.base_model.0.organization": "Qwen",
+      "general.base_model.0.repo_url": "https://huggingface.co/Qwen/Qwen2.5-0.5B",
+      "general.base_model.count": 1,
+      "general.basename": "Qwen2.5",
+      "general.file_type": 15,
+      "general.finetune": "Instruct",
+      "general.languages": null,
+      "general.license": "apache-2.0",
+      "general.license.link": "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct/blob/main/LICENSE",
+      "general.parameter_count": 494032768,
+      "general.quantization_version": 2,
+      "general.size_label": "0.5B",
+      "general.tags": null,
+      "general.type": "model",
+      "qwen2.attention.head_count": 14,
+      "qwen2.attention.head_count_kv": 2,
+      "qwen2.attention.layer_norm_rms_epsilon": 1e-06,
+      "qwen2.block_count": 24,
+      "qwen2.context_length": 32768,
+      "qwen2.embedding_length": 896,
+      "qwen2.feed_forward_length": 4864,
+      "qwen2.rope.freq_base": 1000000,
+      "tokenizer.ggml.add_bos_token": false,
+      "tokenizer.ggml.bos_token_id": 151643,
+      "tokenizer.ggml.eos_token_id": 151645,
+      "tokenizer.ggml.merges": null,
+      "tokenizer.ggml.model": "gpt2",
+      "tokenizer.ggml.padding_token_id": 151643,
+      "tokenizer.ggml.pre": "qwen2",
+      "tokenizer.ggml.token_type": null,
+      "tokenizer.ggml.tokens": null
+    },
+    "parameters": null
+  },
+  "loaded_models": {
+    "models": [
+      {
+        "name": "qwen2.5:0.5b",
+        "model": "qwen2.5:0.5b",
+        "size": 456958933,
+        "digest": "a8b0c51577010a279d933d14c2a8ab4b268079d44c5c8830c0a93900f1827c67",
+        "details": {
+          "parent_model": "",
+          "format": "gguf",
+          "family": "qwen2",
+          "families": [
+            "qwen2"
+          ],
+          "parameter_size": "494.03M",
+          "quantization_level": "Q4_K_M"
+        },
+        "expires_at": "2026-09-11T19:39:59.17113899Z",
+        "size_vram": 0,
+        "context_length": 2048
+      }
+    ]
+  },
+  "latency": {
+    "first_request_seconds": 7.791,
+    "warm_p50_seconds": 2.198,
+    "warm_p95_seconds": 4.997,
+    "percentile_method": "nearest rank; first request excluded from warm sample"
+  },
+  "passed": true,
+  "environment": {
+    "os": "PRETTY_NAME=\"Debian GNU/Linux 13 (trixie)\"\nNAME=\"Debian GNU/Linux\"\nVERSION_ID=\"13\"\nVERSION=\"13 (trixie)\"\nVERSION_CODENAME=trixie\nDEBIAN_VERSION_FULL=13.5\nID=debian\nHOME_URL=\"https://www.debian.org/\"\nSUPPORT_URL=\"https://www.debian.org/support\"\nBUG_REPORT_URL=\"https://bugs.debian.org/\"\n",
+    "cpu": "AMD EPYC 9254 24-Core Processor",
+    "cpu_quota": "200000 100000",
+    "memory_limit_bytes": "4294967296",
+    "notes": "Shared desktop sandbox, concurrent overlay compilation. CPU-only Ollama with cloud disabled; model explicitly pulled before validation. Model unloaded before first request; not minimum launch hardware."
+  }
+}

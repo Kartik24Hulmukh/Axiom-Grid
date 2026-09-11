@@ -116,9 +116,11 @@ async fn readiness(State(state): State<AppState>) -> Result<Json<ReadinessRespon
         })?
         .error_for_status()
         .map_err(|_| (StatusCode::BAD_GATEWAY, "Local model inventory unavailable"))?;
-    let tags: OllamaTags = response
-        .json()
-        .await
+    if !response.status().is_success() {
+        return Err((StatusCode::BAD_GATEWAY, "Local model inventory unavailable"));
+    }
+    let bytes = bounded_body(response, "Local model inventory exceeds safety limit").await?;
+    let tags: OllamaTags = serde_json::from_slice(&bytes)
         .map_err(|_| (StatusCode::BAD_GATEWAY, "Invalid local model inventory"))?;
     let ready = tags.models.iter().any(|m| m.name == state.model);
     let installed_models = tags
@@ -152,26 +154,45 @@ fn disarm_cancel(state: &AppState) {
         slot.take();
     }
 }
-async fn generate(state: &AppState, prompt: String) -> Result<PreviewResponse, ApiError> {
-    let mut response = state.client.post(&state.inference_url).json(&serde_json::json!({
-        "model": state.model, "prompt": prompt, "system": ai::KAIRO_SYSTEM_PROMPT,
-        "stream": false, "options": {"num_predict": 2048}
-    })).send().await.map_err(|_| (StatusCode::BAD_GATEWAY, "Local model unavailable or timed out; start Ollama and install the configured model"))?
-        .error_for_status().map_err(|_| (StatusCode::BAD_GATEWAY, "Local model rejected generation; verify the installed model"))?;
+/// Bound all untrusted local-model bodies, including chunked inventory responses.
+async fn bounded_body(
+    mut response: reqwest::Response,
+    oversized: &'static str,
+) -> Result<Vec<u8>, ApiError> {
+    const LIMIT: usize = 256 * 1024;
+    if response
+        .content_length()
+        .is_some_and(|size| size > LIMIT as u64)
+    {
+        return Err((StatusCode::BAD_GATEWAY, oversized));
+    }
     let mut bytes = Vec::new();
     while let Some(chunk) = response
         .chunk()
         .await
         .map_err(|_| (StatusCode::BAD_GATEWAY, "Local model response interrupted"))?
     {
-        if bytes.len() + chunk.len() > 256 * 1024 {
-            return Err((
-                StatusCode::BAD_GATEWAY,
-                "Local model output exceeds safety limit",
-            ));
+        if chunk.len() > LIMIT - bytes.len() {
+            return Err((StatusCode::BAD_GATEWAY, oversized));
         }
         bytes.extend_from_slice(&chunk);
     }
+    Ok(bytes)
+}
+
+async fn generate(state: &AppState, prompt: String) -> Result<PreviewResponse, ApiError> {
+    let response = state.client.post(&state.inference_url).json(&serde_json::json!({
+        "model": state.model, "prompt": prompt, "system": ai::KAIRO_SYSTEM_PROMPT,
+        "stream": false, "options": {"num_predict": 2048}
+    })).send().await.map_err(|_| (StatusCode::BAD_GATEWAY, "Local model unavailable or timed out; start Ollama and install the configured model"))?
+        .error_for_status().map_err(|_| (StatusCode::BAD_GATEWAY, "Local model rejected generation; verify the installed model"))?;
+    if !response.status().is_success() {
+        return Err((
+            StatusCode::BAD_GATEWAY,
+            "Local model rejected generation; verify the installed model",
+        ));
+    }
+    let bytes = bounded_body(response, "Local model output exceeds safety limit").await?;
     let output: OllamaResponse = serde_json::from_slice(&bytes)
         .map_err(|_| (StatusCode::BAD_GATEWAY, "Invalid local model response"))?;
     if !output.done || output.response.trim().is_empty() {
