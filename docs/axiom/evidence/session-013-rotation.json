@@ -1,0 +1,8 @@
+{
+  "credential_changed": true,
+  "old_token_status": 401,
+  "new_token_status": 200,
+  "new_token_ready": true,
+  "file_mode": "0o600",
+  "captured_logs_contain_no_pairing_token": true
+}

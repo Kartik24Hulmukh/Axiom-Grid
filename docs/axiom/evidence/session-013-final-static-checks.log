@@ -1,0 +1,39 @@
+$ cargo fmt --manifest-path axiom-runtime/Cargo.toml --check
+exit=0
+
+$ cargo fmt --manifest-path phantom-overlay/src-tauri/Cargo.toml --check
+exit=0
+
+$ node --test phantom-overlay/tests/app.test.cjs
+exit=0
+✔ blank input does not invoke backend (4.242037ms)
+✔ explicit context and literal output, not HTML (100.520606ms)
+✔ discard prevents late results and concurrent requests (94.586182ms)
+✔ backend failure is actionable and resets button (0.868983ms)
+✔ browser-only preview does not fake generation (0.822183ms)
+✔ readiness displays exact configured model and enables generation (0.877003ms)
+✔ browser readiness fails closed (0.943414ms)
+✔ cancel while pending propagates to the backend (0.863824ms)
+✔ cancel without pending work does not call the backend (0.580622ms)
+✔ browser readiness disables generation (94.559813ms)
+✔ generation cannot start before readiness resolves (1.481496ms)
+✔ stale readiness cannot overwrite a newer failure (1.114414ms)
+✔ readiness retry never enables generation while pending (0.973393ms)
+✔ generation completion preserves a failed readiness gate (1.035084ms)
+✔ cancellation rejection is visible and never claims generation stopped (1.113014ms)
+✔ failed cancellation acknowledgement cannot race a new generation (0.964074ms)
+✔ malformed readiness never unlocks generation (0.937124ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1197.620187
+
+$ node --check phantom-overlay/dist/app.js
+exit=0
+
+$ git diff --check
+exit=0

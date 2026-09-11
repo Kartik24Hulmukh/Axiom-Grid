@@ -4971,6 +4971,7 @@ dependencies = [
  "futures-util",
  "hex",
  "hmac",
+ "libc",
  "macos-accessibility-client",
  "madsim",
  "memchr",
@@ -5013,6 +5014,7 @@ name = "phantom-overlay"
 version = "0.3.0"
 dependencies = [
  "anyhow",
+ "libc",
  "reqwest 0.12.28",
  "serde",
  "serde_json",

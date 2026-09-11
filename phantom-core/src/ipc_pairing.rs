@@ -6,13 +6,13 @@
 //! explicit override for CI and tests; when it is unset, both processes pair via
 //! the file and no secret ever appears in a process environment or shell history.
 //!
-//! This module is intentionally `std`-only so both crates can include it via
-//! `#[path]` without sharing a dependency graph.
-use std::{
-    fmt, fs,
-    io::{self, Read, Write},
-    path::{Path, PathBuf},
-};
+//! Unix filesystem operations use descriptor-relative, no-follow opens and
+//! serialized atomic publication. Both consumers include this same implementation.
+//! File pairing on other platforms fails closed until protected storage is implemented.
+use std::{fmt, io, path::PathBuf};
+
+#[cfg(unix)]
+use std::{fs, io::Read};
 
 /// Explicit override honoured for CI and tests.
 pub const ENV_OVERRIDE: &str = "AXIOM_API_TOKEN";
@@ -119,68 +119,40 @@ fn fill_random(_buf: &mut [u8]) -> Result<(), PairingError> {
 }
 
 #[cfg(unix)]
-fn restrict_permissions(path: &Path, mode: u32) -> io::Result<()> {
-    use std::os::unix::fs::PermissionsExt;
-    if fs::metadata(path)?.permissions().mode() & 0o777 != mode {
-        fs::set_permissions(path, fs::Permissions::from_mode(mode))?;
+#[path = "ipc_pairing_unix.rs"]
+mod unix;
+
+fn file_pairing(create: bool) -> Result<String, PairingError> {
+    #[cfg(unix)]
+    {
+        unix::load(&pairing_file_path()?, create)
     }
-    Ok(())
-}
-#[cfg(not(unix))]
-fn restrict_permissions(_path: &Path, _mode: u32) -> io::Result<()> {
-    Ok(())
-}
-
-fn read_token_file(path: &Path) -> io::Result<String> {
-    let mut raw = String::new();
-    fs::File::open(path)?.take(1024).read_to_string(&mut raw)?;
-    Ok(raw.trim().to_owned())
+    #[cfg(not(unix))]
+    {
+        let _ = create;
+        Err(PairingError::Invalid(
+            "Protected file pairing is unsupported on this platform; use an explicit IPC token",
+        ))
+    }
 }
 
-/// Read a previously paired token from `AXIOM_API_TOKEN` or the pairing file.
-/// Fails closed when neither is present or the value is malformed.
+/// Load the explicit override or securely read the existing per-user credential.
+/// Unsafe permissions, links and malformed files fail closed; never repair a
+/// possibly disclosed credential silently. See the pairing recovery runbook.
 pub fn load_paired() -> Result<String, PairingError> {
     if let Ok(env_token) = std::env::var(ENV_OVERRIDE) {
         validate(&env_token)?;
         return Ok(env_token);
     }
-    let token = read_token_file(&pairing_file_path()?)?;
-    validate(&token)?;
-    Ok(token)
+    file_pairing(false)
 }
 
-/// Load the paired token, creating a fresh OS-protected one when none exists.
-/// Existing permissive permissions are tightened to `0700` / `0600`; a corrupt
-/// pairing file is replaced rather than trusted.
+/// Serialize first-time pairing and atomically publish a fully written token.
+/// Existing credentials are validated identically by runtime and overlay.
 pub fn load_or_create_paired() -> Result<String, PairingError> {
     if let Ok(env_token) = std::env::var(ENV_OVERRIDE) {
         validate(&env_token)?;
         return Ok(env_token);
     }
-    let path = pairing_file_path()?;
-    let dir = path.parent().ok_or(PairingError::NoUserDirectory)?;
-    fs::create_dir_all(dir)?;
-    restrict_permissions(dir, 0o700)?;
-    match read_token_file(&path) {
-        Ok(existing) if validate(&existing).is_ok() => {
-            restrict_permissions(&path, 0o600)?;
-            return Ok(existing);
-        }
-        Ok(_) => {}
-        Err(err) if err.kind() == io::ErrorKind::NotFound => {}
-        Err(err) => return Err(err.into()),
-    }
-    let token = generate_random()?;
-    let mut options = fs::OpenOptions::new();
-    options.write(true).create(true).truncate(true);
-    #[cfg(unix)]
-    {
-        use std::os::unix::fs::OpenOptionsExt;
-        options.mode(0o600);
-    }
-    let mut file = options.open(&path)?;
-    file.write_all(token.as_bytes())?;
-    file.sync_all()?;
-    restrict_permissions(&path, 0o600)?;
-    Ok(token)
+    file_pairing(true)
 }

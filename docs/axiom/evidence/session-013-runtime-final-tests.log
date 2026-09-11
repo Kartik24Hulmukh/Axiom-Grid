@@ -1,0 +1,87 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+   Compiling axiom-grid v0.1.0 (/home/daytona/Axiom-Grid/axiom-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.16s
+     Running unittests src/lib.rs (axiom-runtime/target/debug/deps/axiom_grid-ed9c4308d975da96)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (axiom-runtime/target/debug/deps/axiom_grid-3f6cbd3fb0728adc)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/api.rs (axiom-runtime/target/debug/deps/api-9fc681d2a5165eee)
+
+running 12 tests
+test authenticated_readiness_reports_exact_model_inventory ... ok
+test authenticated_preview_roundtrip ... ok
+test concurrent_generation_is_rejected ... ok
+test health_is_not_model_readiness ... ok
+test bounded_explicit_input_and_removed_routes ... ok
+test invalid_token_config_fails_closed ... ok
+test invalid_model_output_fails_without_leaking_content ... ok
+test readiness_requires_auth_and_exact_tag ... ok
+test readiness_rejects_oversized_and_redirected_inventory ... ok
+test redirect_with_valid_generation_json_is_not_success ... ok
+test rejects_untrusted_clients ... ok
+test redirects_and_http_errors_are_not_success ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/cancel.rs (axiom-runtime/target/debug/deps/cancel-59395a370ac2712f)
+
+running 3 tests
+test cancel_is_idempotent_when_nothing_is_running ... ok
+test cancel_requires_native_authentication ... ok
+test cancel_aborts_in_flight_generation_and_frees_the_slot ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.01s
+
+     Running tests/pairing.rs (axiom-runtime/target/debug/deps/pairing-5ba1213527515804)
+
+running 1 test
+test pairing_lifecycle_is_os_protected_and_fails_closed ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/pairing_security.rs (axiom-runtime/target/debug/deps/pairing_security-8d76f260288b91ae)
+
+running 2 tests
+test pairing_child ... ok
+test pairing_rejects_symlinks_without_modifying_the_target ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.10s
+
+     Running tests/regressions.rs (axiom-runtime/target/debug/deps/regressions-641cff2490530f77)
+
+running 9 tests
+test cancellation_is_terminal_and_drops_late_tokens ... ok
+test acceptance_is_async_and_review_gated ... ok
+test download_policy_is_explicit_and_offline_wins ... ok
+test empty_and_low_confidence_are_not_accepted ... ok
+test crdt_unicode_replacement_uses_document_offsets ... ok
+test every_external_offset_is_safe ... ok
+test model_identity_is_not_a_prefix ... ok
+test unicode_boundaries_and_undo ... ok
+test whitespace_and_alternative_reset ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/shutdown.rs (axiom-runtime/target/debug/deps/shutdown-afea4182e4e9c145)
+
+running 1 test
+test sigterm_drains_idle_and_stalled_connections_within_deadline ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.19s
+
+   Doc-tests axiom_grid
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
