@@ -7,7 +7,9 @@ Allows viewing source documents, highlights bbox, and accept/edit/reject.
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
+import logging
 import os
 import pathlib
 
@@ -38,6 +40,7 @@ from pydantic import BaseModel, Field, field_validator
 
 # Initialize FastAPI
 app = FastAPI(title="Kairo Phantom Web Overlay")
+logger = logging.getLogger("overlay.server")
 
 # Paths
 BASE_DIR = pathlib.Path(__file__).parents[1]
@@ -102,7 +105,8 @@ async def read_root():
     template_path = TEMPLATES_DIR / "index.html"
     if not template_path.exists():
         raise HTTPException(status_code=404, detail="Template not found")
-    return HTMLResponse(content=template_path.read_text(encoding="utf-8"))
+    content = await asyncio.to_thread(template_path.read_text, encoding="utf-8")
+    return HTMLResponse(content=content)
 
 
 @app.post("/demo")
@@ -117,7 +121,8 @@ async def run_demo(req: DemoRequest):
         # 1. Create target document
         # Real provenance digest of the exact bytes fed to the pipeline.
         try:
-            digest = hashlib.sha256(file_path.read_bytes()).hexdigest()
+            file_bytes = await asyncio.to_thread(file_path.read_bytes)
+            digest = hashlib.sha256(file_bytes).hexdigest()
         except OSError as exc:
             raise HTTPException(status_code=422, detail=f"Unable to read {req.file}: {exc}") from exc
         doc = Document(
@@ -130,7 +135,7 @@ async def run_demo(req: DemoRequest):
 
         # 3. Read raw file contents to return to UI
         if file_path.suffix.lower() in (".txt", ".md"):
-            document_text = file_path.read_text(encoding="utf-8", errors="replace")
+            document_text = await asyncio.to_thread(file_path.read_text, encoding="utf-8", errors="replace")
         else:
             # Reconstruct document text from the registered chunks
             doc_chunks = [c for c in provenance_log._chunks.values() if c.doc_id == doc.doc_id]
@@ -202,6 +207,7 @@ async def run_demo(req: DemoRequest):
         }
 
     except Exception as e:
+        logger.exception("unhandled error in overlay endpoint: %s", e)
         return {"success": False, "error": str(e)}
 
 
@@ -243,6 +249,7 @@ async def record_flywheel_correction(req: CorrectionRequest):
         memory_store.record_correction(corr)
         return {"success": True}
     except Exception as e:
+        logger.exception("unhandled error in overlay endpoint: %s", e)
         return {"success": False, "error": str(e)}
 
 
@@ -266,7 +273,8 @@ async def get_dashboard():
     """Serve the Kairo Grounding Trace dashboard."""
     dashboard_path = BASE_DIR / "kairo" / "observability" / "dashboard.html"
     if dashboard_path.exists():
-        return HTMLResponse(content=dashboard_path.read_text(), status_code=200)
+        content = await asyncio.to_thread(dashboard_path.read_text)
+        return HTMLResponse(content=content, status_code=200)
     return HTMLResponse(content="<h1>Dashboard not found</h1>", status_code=404)
 
 
@@ -309,9 +317,11 @@ async def extract_document(req: ExtractDocumentRequest):
     if not os.path.exists(filepath):
         raise HTTPException(status_code=404, detail=f"File not found: {filepath}")
 
-    # Read and classify
-    with open(filepath, "r", errors="ignore") as f:
-        text = f.read()
+    # Read and classify (blocking I/O off the event loop)
+    def _read(fp):
+        with open(fp, "r", errors="ignore") as f:
+            return f.read()
+    text = await asyncio.to_thread(_read, filepath)
 
     from kairo.core.classifier import build_source_link, classify_document
     doc_type = classify_document(text)
@@ -458,6 +468,7 @@ async def query_graph(req: dict):
         results = g.query(keyword)
         return {"keyword": keyword, "results": results, "count": len(results)}
     except Exception as e:
+        logger.exception("unhandled error in /api/graph/query: %s", e)
         return {"keyword": keyword, "results": [], "count": 0, "error": str(e)}
 
 
@@ -470,6 +481,7 @@ async def get_graph():
         g.load()
         return g.to_dict()
     except Exception as e:
+        logger.exception("unhandled error in /api/graph: %s", e)
         return {"nodes": [], "edges": [], "stats": {"total_nodes": 0, "total_edges": 0}, "error": str(e)}
 
 
@@ -494,8 +506,10 @@ async def get_figures(doc_id: str, file: str = ""):
         from kairo.core.figure_extractor import extract_figures_from_pdf
         figures = extract_figures_from_pdf(filepath)
     else:
-        with open(filepath, "r", errors="ignore") as f:
-            text = f.read()
+        def _read(fp):
+            with open(fp, "r", errors="ignore") as f:
+                return f.read()
+        text = await asyncio.to_thread(_read, filepath)
         from kairo.core.figure_extractor import extract_figures_from_text
         figures = extract_figures_from_text(text)
 

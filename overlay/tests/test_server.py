@@ -94,3 +94,25 @@ def test_demo_rejects_empty_file_name(client):
     for bad in ("", "   ", ".", "fixtures"):
         response = client.post("/demo", json={"file": bad})
         assert response.status_code in (404, 422), (bad, response.status_code)
+
+
+def test_demo_logs_unexpected_exceptions(client, caplog):
+    """Unhandled errors on /demo are logged (not silently swallowed) and still
+    return a fail-closed structured error, never a raw traceback to the client."""
+    from overlay import server
+
+    def boom(_doc):
+        raise RuntimeError("synthetic failure for logging regression test")
+
+    original_run = server.orchestrator.run
+    server.orchestrator.run = boom
+    try:
+        with caplog.at_level("ERROR", logger="overlay.server"):
+            response = client.post("/demo", json={"file": "sample_memo_01.txt"})
+    finally:
+        server.orchestrator.run = original_run
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] is False
+    assert "synthetic failure" in data["error"]
+    assert any("unhandled error in overlay endpoint" in r.message for r in caplog.records)
