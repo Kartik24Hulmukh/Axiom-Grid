@@ -116,3 +116,78 @@ def test_demo_logs_unexpected_exceptions(client, caplog):
     assert data["success"] is False
     assert "synthetic failure" in data["error"]
     assert any("unhandled error in overlay endpoint" in r.message for r in caplog.records)
+
+
+def test_concurrent_demo_requests(client):
+    """Concurrency: N parallel /demo requests must not corrupt the shared
+    SQLite-backed memory store or raise interface errors, and all must
+    complete with a well-formed structured response."""
+    import concurrent.futures
+
+    def _call():
+        return client.post("/demo", json={"file": "sample_memo_01.txt"})
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as pool:
+        futures = [pool.submit(_call) for _ in range(5)]
+        responses = [f.result(timeout=30) for f in futures]
+
+    assert len(responses) == 5
+    for r in responses:
+        assert r.status_code == 200
+        data = r.json()
+        assert data["success"] is True, data.get("error")
+        assert "document_text" in data
+
+
+def test_extract_document_boundaries(client):
+    """Boundary + injection guards on /api/extract-document."""
+    for bad in ("", "   ", "a\x00b"):
+        response = client.post("/api/extract-document", json={"file": bad})
+        assert response.status_code == 422, (bad, response.status_code)
+
+    response = client.post("/api/extract-document", json={"file": "definitely_missing_xyz.txt"})
+    assert response.status_code == 404
+
+
+def test_ask_document_boundaries(client):
+    """Boundary checks on /api/ask-document: blank question/file rejected."""
+    response = client.post("/api/ask-document", json={"file": "", "question": "who?"})
+    assert response.status_code == 422
+
+    response = client.post("/api/ask-document", json={"file": "axiom-grid/fixtures/wedge/sample_memo_01.txt", "question": ""})
+    assert response.status_code == 422
+
+
+def test_apply_and_correct_validation(client):
+    """Boundary: empty ext_id must not be silently accepted."""
+    response = client.post("/apply", json={"ext_id": "", "accept": True})
+    assert response.status_code == 200
+    assert response.json()["success"] is False
+
+
+def test_graph_query_rejects_blank(client):
+    """Boundary: blank keyword/query on /api/graph/query is rejected (400)."""
+    response = client.post("/api/graph/query", json={"keyword": ""})
+    assert response.status_code == 400
+
+
+def test_figures_requires_file_param(client):
+    """Boundary: missing file parameter on /api/figures is rejected (400)."""
+    response = client.get("/api/figures/doc123")
+    assert response.status_code == 400
+
+
+def test_extract_document_logs_unexpected_exceptions(client, caplog, monkeypatch):
+    """Degraded-state: unexpected pipeline exceptions on /api/extract-document
+    are logged and fail closed with a 500, never a raw traceback leak."""
+    from overlay import server
+
+    def boom(*_a, **_k):
+        raise RuntimeError("synthetic extraction failure")
+
+    monkeypatch.setattr(server.OrchestratorImpl, "run", boom)
+    fixture = "axiom-grid/fixtures/wedge/sample_memo_01.txt"
+    with caplog.at_level("ERROR", logger="overlay.server"):
+        response = client.post("/api/extract-document", json={"file": fixture})
+    assert response.status_code == 500
+    assert any("extract-document" in r.message for r in caplog.records)
