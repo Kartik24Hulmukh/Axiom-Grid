@@ -14,8 +14,6 @@ import pathlib
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
-
 from kernel.core.data_model import (
     Action,
     ActionKind,
@@ -26,16 +24,17 @@ from kernel.core.data_model import (
 )
 from kernel.core.provenance import ProvenanceLogImpl
 from kernel.sidecar.action_executor import ActionExecutorImpl
-from kernel.sidecar.ingestor import IngestorImpl
 from kernel.sidecar.inference_gateway import TieredInferenceGateway
+from kernel.sidecar.ingestor import IngestorImpl
 from kernel.sidecar.memory_store import MemoryStoreImpl
 from kernel.sidecar.orchestrator import OrchestratorImpl
 from kernel.sidecar.quality_gate import LocalQualityGate
 from kernel.sidecar.security_filter import LocalSecurityFilter
+from packs.contract.pack import ContractPack
 from packs.generic.pack import GenericPack
 from packs.invoice.pack import InvoicePack
-from packs.contract.pack import ContractPack
 from packs.paper.pack import PaperPack
+from pydantic import BaseModel, Field, field_validator
 
 # Initialize FastAPI
 app = FastAPI(title="Kairo Phantom Web Overlay")
@@ -72,7 +71,16 @@ action_executor = ActionExecutorImpl(provenance_log)
 
 
 class DemoRequest(BaseModel):
-    file: str
+    """Strict schema: a non-blank, bounded file reference (no NUL bytes)."""
+
+    file: str = Field(min_length=1, max_length=4096, pattern=r"^[^\x00]+$")
+
+    @field_validator("file")
+    @classmethod
+    def _not_blank(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("file must not be blank")
+        return value
 
 
 class ApplyRequest(BaseModel):
@@ -100,21 +108,21 @@ async def read_root():
 @app.post("/demo")
 async def run_demo(req: DemoRequest):
     """Run the pipeline on a document and return data for the overlay."""
-    p = pathlib.Path(req.file)
-    if p.exists():
-        file_path = p
-    else:
-        file_path = FIXTURES_DIR / req.file
-        if not file_path.exists():
-            file_path = BASE_DIR / req.file
-            if not file_path.exists():
-                raise HTTPException(status_code=404, detail=f"File {req.file} not found")
+    candidates = (pathlib.Path(req.file), FIXTURES_DIR / req.file, BASE_DIR / req.file)
+    file_path = next((c for c in candidates if c.is_file()), None)
+    if file_path is None:
+        raise HTTPException(status_code=404, detail=f"File {req.file} not found")
 
     try:
         # 1. Create target document
+        # Real provenance digest of the exact bytes fed to the pipeline.
+        try:
+            digest = hashlib.sha256(file_path.read_bytes()).hexdigest()
+        except OSError as exc:
+            raise HTTPException(status_code=422, detail=f"Unable to read {req.file}: {exc}") from exc
         doc = Document(
             source_path=str(file_path),
-            sha256=hashlib.sha256(file_path.read_bytes()).hexdigest(),
+            sha256=digest,
         )
 
         # 2. Run Orchestrator
@@ -305,7 +313,7 @@ async def extract_document(req: ExtractDocumentRequest):
     with open(filepath, "r", errors="ignore") as f:
         text = f.read()
 
-    from kairo.core.classifier import classify_document, build_source_link
+    from kairo.core.classifier import build_source_link, classify_document
     doc_type = classify_document(text)
 
     # Select pack based on type
@@ -320,8 +328,8 @@ async def extract_document(req: ExtractDocumentRequest):
     # Run extraction pipeline
     from kernel.core.data_model import Document
     from kernel.core.provenance import ProvenanceLogImpl
-    from kernel.sidecar.ingestor import IngestorImpl
     from kernel.sidecar.inference_gateway import TieredInferenceGateway
+    from kernel.sidecar.ingestor import IngestorImpl
     from kernel.sidecar.memory_store import MemoryStoreImpl
     from kernel.sidecar.quality_gate import LocalQualityGate
     from kernel.sidecar.security_filter import LocalSecurityFilter
