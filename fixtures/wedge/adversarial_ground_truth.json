@@ -1,0 +1,1017 @@
+{
+ "generator_model": "glm-5.3",
+ "invariant": "semantics preserved, surface form perturbed",
+ "fixtures": [
+  {
+   "fixture_id": "sample_memo_01_adv1",
+   "file": "adversarial/sample_memo_01_adv1.txt",
+   "derived_from": "sample_memo_01",
+   "style": "Label-synonym attack: rename every header label to a plausible synonym and reorder the header block.",
+   "ground_truth": {
+    "classification_marking": "SECRET",
+    "portion_marks": [
+     {
+      "paragraph": 1,
+      "marking": "(S//NF)"
+     },
+     {
+      "paragraph": 2,
+      "marking": "(S)"
+     },
+     {
+      "paragraph": 3,
+      "marking": "(S//NF)"
+     },
+     {
+      "paragraph": 4,
+      "marking": "(C)"
+     }
+    ],
+    "control_markings": [
+     "NOFORN"
+    ],
+    "originating_org": "Office of the Director, Central Analysis Group (CAG)",
+    "author": "Dr. Margaret Chen",
+    "date_of_information": "2003-03-15",
+    "declassify_on": "2033-03-15",
+    "subject": "Assessment of Weapons Procurement Networks in Eastern Mediterranean Region",
+    "entities": [
+     {
+      "kind": "person",
+      "value": "Viktor Antonovich Petrov"
+     },
+     {
+      "kind": "org",
+      "value": "Al-Rashid Trading Company"
+     },
+     {
+      "kind": "org",
+      "value": "Meridian Shipping LLC"
+     },
+     {
+      "kind": "location",
+      "value": "Port of Latakia"
+     },
+     {
+      "kind": "location",
+      "value": "Free Trade Zone, Tartus"
+     },
+     {
+      "kind": "equipment",
+      "value": "Type-63 107mm Multiple Rocket Launchers"
+     }
+    ],
+    "references": [
+     "CAG Report 2003-0142",
+     "DNI Briefing Note 2003-0088",
+     "SIGINT Summary 2003-0201"
+    ],
+    "handling_instructions": "This document must be stored in an approved SCI facility. Distribution limited to personnel with SECRET//NOFORN clearance and need-to-know for CARAVEL program. No foreign dissemination without originator approval.",
+    "pii_spans": [
+     {
+      "span": "Viktor Antonovich Petrov",
+      "type": "person_name"
+     },
+     {
+      "span": "Dr. Margaret Chen",
+      "type": "person_name"
+     }
+    ]
+   }
+  },
+  {
+   "fixture_id": "sample_memo_01_adv2",
+   "file": "adversarial/sample_memo_01_adv2.txt",
+   "derived_from": "sample_memo_01",
+   "style": "Format attack: change all date formats, renumber paragraphs with letters, rewrap every line at 60 chars.",
+   "ground_truth": {
+    "classification_marking": "SECRET",
+    "portion_marks": [
+     {
+      "paragraph": 1,
+      "marking": "(S//NF)"
+     },
+     {
+      "paragraph": 2,
+      "marking": "(S)"
+     },
+     {
+      "paragraph": 3,
+      "marking": "(S//NF)"
+     },
+     {
+      "paragraph": 4,
+      "marking": "(C)"
+     }
+    ],
+    "control_markings": [
+     "NOFORN"
+    ],
+    "originating_org": "Office of the Director, Central Analysis Group (CAG)",
+    "author": "Dr. Margaret Chen",
+    "date_of_information": "2003-03-15",
+    "declassify_on": "2033-03-15",
+    "subject": "Assessment of Weapons Procurement Networks in Eastern Mediterranean Region",
+    "entities": [
+     {
+      "kind": "person",
+      "value": "Viktor Antonovich Petrov"
+     },
+     {
+      "kind": "org",
+      "value": "Al-Rashid Trading Company"
+     },
+     {
+      "kind": "org",
+      "value": "Meridian Shipping LLC"
+     },
+     {
+      "kind": "location",
+      "value": "Port of Latakia"
+     },
+     {
+      "kind": "location",
+      "value": "Free Trade Zone, Tartus"
+     },
+     {
+      "kind": "equipment",
+      "value": "Type-63 107mm Multiple Rocket Launchers"
+     }
+    ],
+    "references": [
+     "CAG Report 2003-0142",
+     "DNI Briefing Note 2003-0088",
+     "SIGINT Summary 2003-0201"
+    ],
+    "handling_instructions": "This document must be stored in an approved SCI facility. Distribution limited to personnel with SECRET//NOFORN clearance and need-to-know for CARAVEL program. No foreign dissemination without originator approval.",
+    "pii_spans": [
+     {
+      "span": "Viktor Antonovich Petrov",
+      "type": "person_name"
+     },
+     {
+      "span": "Dr. Margaret Chen",
+      "type": "person_name"
+     }
+    ]
+   }
+  },
+  {
+   "fixture_id": "sample_memo_01_adv3",
+   "file": "adversarial/sample_memo_01_adv3.txt",
+   "derived_from": "sample_memo_01",
+   "style": "Noise attack: add DISTRIBUTION and POC sections plus light OCR noise in prose (never inside a value).",
+   "ground_truth": {
+    "classification_marking": "SECRET",
+    "portion_marks": [
+     {
+      "paragraph": 1,
+      "marking": "(S//NF)"
+     },
+     {
+      "paragraph": 2,
+      "marking": "(S)"
+     },
+     {
+      "paragraph": 3,
+      "marking": "(S//NF)"
+     },
+     {
+      "paragraph": 4,
+      "marking": "(C)"
+     }
+    ],
+    "control_markings": [
+     "NOFORN"
+    ],
+    "originating_org": "Office of the Director, Central Analysis Group (CAG)",
+    "author": "Dr. Margaret Chen",
+    "date_of_information": "2003-03-15",
+    "declassify_on": "2033-03-15",
+    "subject": "Assessment of Weapons Procurement Networks in Eastern Mediterranean Region",
+    "entities": [
+     {
+      "kind": "person",
+      "value": "Viktor Antonovich Petrov"
+     },
+     {
+      "kind": "org",
+      "value": "Al-Rashid Trading Company"
+     },
+     {
+      "kind": "org",
+      "value": "Meridian Shipping LLC"
+     },
+     {
+      "kind": "location",
+      "value": "Port of Latakia"
+     },
+     {
+      "kind": "location",
+      "value": "Free Trade Zone, Tartus"
+     },
+     {
+      "kind": "equipment",
+      "value": "Type-63 107mm Multiple Rocket Launchers"
+     }
+    ],
+    "references": [
+     "CAG Report 2003-0142",
+     "DNI Briefing Note 2003-0088",
+     "SIGINT Summary 2003-0201"
+    ],
+    "handling_instructions": "This document must be stored in an approved SCI facility. Distribution limited to personnel with SECRET//NOFORN clearance and need-to-know for CARAVEL program. No foreign dissemination without originator approval.",
+    "pii_spans": [
+     {
+      "span": "Viktor Antonovich Petrov",
+      "type": "person_name"
+     },
+     {
+      "span": "Dr. Margaret Chen",
+      "type": "person_name"
+     }
+    ]
+   }
+  },
+  {
+   "fixture_id": "sample_memo_02_adv1",
+   "file": "adversarial/sample_memo_02_adv1.txt",
+   "derived_from": "sample_memo_02",
+   "style": "Label-synonym attack: rename every header label to a plausible synonym and reorder the header block.",
+   "ground_truth": {
+    "classification_marking": "CONFIDENTIAL",
+    "portion_marks": [
+     {
+      "paragraph": 1,
+      "marking": "(C)"
+     },
+     {
+      "paragraph": 2,
+      "marking": "(C)"
+     },
+     {
+      "paragraph": 3,
+      "marking": "(U//FOUO)"
+     },
+     {
+      "paragraph": 4,
+      "marking": "(C)"
+     }
+    ],
+    "control_markings": [
+     "REL TO USA, GBR, AUS, CAN, NZL"
+    ],
+    "originating_org": "Defense Intelligence Agency, Regional Analysis Division",
+    "author": "Lt. Col. James R. Harrison",
+    "date_of_information": "2004-07-22",
+    "declassify_on": "2029-07-22",
+    "subject": "Infrastructure Development Assessment \u2014 Al-Khawr Industrial Complex",
+    "entities": [
+     {
+      "kind": "location",
+      "value": "Al-Khawr Industrial Complex"
+     },
+     {
+      "kind": "org",
+      "value": "Qatar Industrial Manufacturing Company (QIMC)"
+     },
+     {
+      "kind": "person",
+      "value": "Sheikh Hamad bin Khalifa Al-Attiyah"
+     },
+     {
+      "kind": "equipment",
+      "value": "Liebherr LTM 11200-9.1"
+     }
+    ],
+    "references": [
+     "DIA Assessment 2004-0355",
+     "NGA Imagery Analysis 2004-0501"
+    ],
+    "handling_instructions": "Handle via CONFIDENTIAL channels only. REL TO USA, GBR, AUS, CAN, NZL (Five Eyes).",
+    "pii_spans": [
+     {
+      "span": "Lt. Col. James R. Harrison",
+      "type": "person_name"
+     },
+     {
+      "span": "Sheikh Hamad bin Khalifa Al-Attiyah",
+      "type": "person_name"
+     }
+    ]
+   }
+  },
+  {
+   "fixture_id": "sample_memo_02_adv2",
+   "file": "adversarial/sample_memo_02_adv2.txt",
+   "derived_from": "sample_memo_02",
+   "style": "Format attack: change all date formats, renumber paragraphs with letters, rewrap every line at 60 chars.",
+   "ground_truth": {
+    "classification_marking": "CONFIDENTIAL",
+    "portion_marks": [
+     {
+      "paragraph": 1,
+      "marking": "(C)"
+     },
+     {
+      "paragraph": 2,
+      "marking": "(C)"
+     },
+     {
+      "paragraph": 3,
+      "marking": "(U//FOUO)"
+     },
+     {
+      "paragraph": 4,
+      "marking": "(C)"
+     }
+    ],
+    "control_markings": [
+     "REL TO USA, GBR, AUS, CAN, NZL"
+    ],
+    "originating_org": "Defense Intelligence Agency, Regional Analysis Division",
+    "author": "Lt. Col. James R. Harrison",
+    "date_of_information": "2004-07-22",
+    "declassify_on": "2029-07-22",
+    "subject": "Infrastructure Development Assessment \u2014 Al-Khawr Industrial Complex",
+    "entities": [
+     {
+      "kind": "location",
+      "value": "Al-Khawr Industrial Complex"
+     },
+     {
+      "kind": "org",
+      "value": "Qatar Industrial Manufacturing Company (QIMC)"
+     },
+     {
+      "kind": "person",
+      "value": "Sheikh Hamad bin Khalifa Al-Attiyah"
+     },
+     {
+      "kind": "equipment",
+      "value": "Liebherr LTM 11200-9.1"
+     }
+    ],
+    "references": [
+     "DIA Assessment 2004-0355",
+     "NGA Imagery Analysis 2004-0501"
+    ],
+    "handling_instructions": "Handle via CONFIDENTIAL channels only. REL TO USA, GBR, AUS, CAN, NZL (Five Eyes).",
+    "pii_spans": [
+     {
+      "span": "Lt. Col. James R. Harrison",
+      "type": "person_name"
+     },
+     {
+      "span": "Sheikh Hamad bin Khalifa Al-Attiyah",
+      "type": "person_name"
+     }
+    ]
+   }
+  },
+  {
+   "fixture_id": "sample_memo_02_adv3",
+   "file": "adversarial/sample_memo_02_adv3.txt",
+   "derived_from": "sample_memo_02",
+   "style": "Noise attack: add DISTRIBUTION and POC sections plus light OCR noise in prose (never inside a value).",
+   "ground_truth": {
+    "classification_marking": "CONFIDENTIAL",
+    "portion_marks": [
+     {
+      "paragraph": 1,
+      "marking": "(C)"
+     },
+     {
+      "paragraph": 2,
+      "marking": "(C)"
+     },
+     {
+      "paragraph": 3,
+      "marking": "(U//FOUO)"
+     },
+     {
+      "paragraph": 4,
+      "marking": "(C)"
+     }
+    ],
+    "control_markings": [
+     "REL TO USA, GBR, AUS, CAN, NZL"
+    ],
+    "originating_org": "Defense Intelligence Agency, Regional Analysis Division",
+    "author": "Lt. Col. James R. Harrison",
+    "date_of_information": "2004-07-22",
+    "declassify_on": "2029-07-22",
+    "subject": "Infrastructure Development Assessment \u2014 Al-Khawr Industrial Complex",
+    "entities": [
+     {
+      "kind": "location",
+      "value": "Al-Khawr Industrial Complex"
+     },
+     {
+      "kind": "org",
+      "value": "Qatar Industrial Manufacturing Company (QIMC)"
+     },
+     {
+      "kind": "person",
+      "value": "Sheikh Hamad bin Khalifa Al-Attiyah"
+     },
+     {
+      "kind": "equipment",
+      "value": "Liebherr LTM 11200-9.1"
+     }
+    ],
+    "references": [
+     "DIA Assessment 2004-0355",
+     "NGA Imagery Analysis 2004-0501"
+    ],
+    "handling_instructions": "Handle via CONFIDENTIAL channels only. REL TO USA, GBR, AUS, CAN, NZL (Five Eyes).",
+    "pii_spans": [
+     {
+      "span": "Lt. Col. James R. Harrison",
+      "type": "person_name"
+     },
+     {
+      "span": "Sheikh Hamad bin Khalifa Al-Attiyah",
+      "type": "person_name"
+     }
+    ]
+   }
+  },
+  {
+   "fixture_id": "sample_memo_03_adv1",
+   "file": "adversarial/sample_memo_03_adv1.txt",
+   "derived_from": "sample_memo_03",
+   "style": "Label-synonym attack: rename every header label to a plausible synonym and reorder the header block.",
+   "ground_truth": {
+    "classification_marking": "SECRET",
+    "portion_marks": [
+     {
+      "paragraph": 1,
+      "marking": "(S//NF)"
+     },
+     {
+      "paragraph": 2,
+      "marking": "(S)"
+     },
+     {
+      "paragraph": 3,
+      "marking": "(S//NF)"
+     },
+     {
+      "paragraph": 4,
+      "marking": "(C)"
+     }
+    ],
+    "control_markings": [],
+    "originating_org": "National Security Agency, Operations Directorate",
+    "author": "Dr. John R. Vance",
+    "date_of_information": "2005-04-12",
+    "declassify_on": "2035-04-12",
+    "subject": "Cryptographic Equipment Interception in Eastern Europe",
+    "entities": [
+     {
+      "kind": "person",
+      "value": "Grigori Y. Smirnov"
+     },
+     {
+      "kind": "org",
+      "value": "Balt-Crypto Solutions"
+     },
+     {
+      "kind": "location",
+      "value": "Port of Tallinn"
+     },
+     {
+      "kind": "equipment",
+      "value": "K-7 High-Grade Encryption Unit"
+     }
+    ],
+    "references": [
+     "NSA Report 2005-0044",
+     "CIA Intelligence Note 2005-0021"
+    ],
+    "handling_instructions": "Handle via NSA channels only. No foreign dissemination without authorization.",
+    "pii_spans": [
+     {
+      "span": "Grigori Y. Smirnov",
+      "type": "person_name"
+     },
+     {
+      "span": "Dr. John R. Vance",
+      "type": "person_name"
+     }
+    ]
+   }
+  },
+  {
+   "fixture_id": "sample_memo_03_adv2",
+   "file": "adversarial/sample_memo_03_adv2.txt",
+   "derived_from": "sample_memo_03",
+   "style": "Format attack: change all date formats, renumber paragraphs with letters, rewrap every line at 60 chars.",
+   "ground_truth": {
+    "classification_marking": "SECRET",
+    "portion_marks": [
+     {
+      "paragraph": 1,
+      "marking": "(S//NF)"
+     },
+     {
+      "paragraph": 2,
+      "marking": "(S)"
+     },
+     {
+      "paragraph": 3,
+      "marking": "(S//NF)"
+     },
+     {
+      "paragraph": 4,
+      "marking": "(C)"
+     }
+    ],
+    "control_markings": [],
+    "originating_org": "National Security Agency, Operations Directorate",
+    "author": "Dr. John R. Vance",
+    "date_of_information": "2005-04-12",
+    "declassify_on": "2035-04-12",
+    "subject": "Cryptographic Equipment Interception in Eastern Europe",
+    "entities": [
+     {
+      "kind": "person",
+      "value": "Grigori Y. Smirnov"
+     },
+     {
+      "kind": "org",
+      "value": "Balt-Crypto Solutions"
+     },
+     {
+      "kind": "location",
+      "value": "Port of Tallinn"
+     },
+     {
+      "kind": "equipment",
+      "value": "K-7 High-Grade Encryption Unit"
+     }
+    ],
+    "references": [
+     "NSA Report 2005-0044",
+     "CIA Intelligence Note 2005-0021"
+    ],
+    "handling_instructions": "Handle via NSA channels only. No foreign dissemination without authorization.",
+    "pii_spans": [
+     {
+      "span": "Grigori Y. Smirnov",
+      "type": "person_name"
+     },
+     {
+      "span": "Dr. John R. Vance",
+      "type": "person_name"
+     }
+    ]
+   }
+  },
+  {
+   "fixture_id": "sample_memo_03_adv3",
+   "file": "adversarial/sample_memo_03_adv3.txt",
+   "derived_from": "sample_memo_03",
+   "style": "Noise attack: add DISTRIBUTION and POC sections plus light OCR noise in prose (never inside a value).",
+   "ground_truth": {
+    "classification_marking": "SECRET",
+    "portion_marks": [
+     {
+      "paragraph": 1,
+      "marking": "(S//NF)"
+     },
+     {
+      "paragraph": 2,
+      "marking": "(S)"
+     },
+     {
+      "paragraph": 3,
+      "marking": "(S//NF)"
+     },
+     {
+      "paragraph": 4,
+      "marking": "(C)"
+     }
+    ],
+    "control_markings": [],
+    "originating_org": "National Security Agency, Operations Directorate",
+    "author": "Dr. John R. Vance",
+    "date_of_information": "2005-04-12",
+    "declassify_on": "2035-04-12",
+    "subject": "Cryptographic Equipment Interception in Eastern Europe",
+    "entities": [
+     {
+      "kind": "person",
+      "value": "Grigori Y. Smirnov"
+     },
+     {
+      "kind": "org",
+      "value": "Balt-Crypto Solutions"
+     },
+     {
+      "kind": "location",
+      "value": "Port of Tallinn"
+     },
+     {
+      "kind": "equipment",
+      "value": "K-7 High-Grade Encryption Unit"
+     }
+    ],
+    "references": [
+     "NSA Report 2005-0044",
+     "CIA Intelligence Note 2005-0021"
+    ],
+    "handling_instructions": "Handle via NSA channels only. No foreign dissemination without authorization.",
+    "pii_spans": [
+     {
+      "span": "Grigori Y. Smirnov",
+      "type": "person_name"
+     },
+     {
+      "span": "Dr. John R. Vance",
+      "type": "person_name"
+     }
+    ]
+   }
+  },
+  {
+   "fixture_id": "sample_memo_04_adv1",
+   "file": "adversarial/sample_memo_04_adv1.txt",
+   "derived_from": "sample_memo_04",
+   "style": "Label-synonym attack: rename every header label to a plausible synonym and reorder the header block.",
+   "ground_truth": {
+    "classification_marking": "CONFIDENTIAL",
+    "portion_marks": [
+     {
+      "paragraph": 1,
+      "marking": "(C)"
+     },
+     {
+      "paragraph": 2,
+      "marking": "(C)"
+     },
+     {
+      "paragraph": 3,
+      "marking": "(U//FOUO)"
+     },
+     {
+      "paragraph": 4,
+      "marking": "(C)"
+     }
+    ],
+    "control_markings": [
+     "REL TO USA, AUS, JPN"
+    ],
+    "originating_org": "National Geospatial-Intelligence Agency, Maritime Monitoring Division",
+    "author": "Capt. Sarah Jenkins",
+    "date_of_information": "2006-09-30",
+    "declassify_on": "2031-09-30",
+    "subject": "Maritime Traffic Patterns in the Luzon Strait",
+    "entities": [
+     {
+      "kind": "person",
+      "value": "Capt. Sarah Jenkins"
+     },
+     {
+      "kind": "org",
+      "value": "Pacific Maritime Solutions Ltd."
+     },
+     {
+      "kind": "location",
+      "value": "Luzon Strait"
+     },
+     {
+      "kind": "equipment",
+      "value": "Vessel tracking transponders"
+     }
+    ],
+    "references": [
+     "NGA Reconnaissance Bulletin 2006-092",
+     "ONI Vessel Tracking Log 2006-11"
+    ],
+    "handling_instructions": "Handle via CONFIDENTIAL channels only. REL TO USA, AUS, JPN.",
+    "pii_spans": [
+     {
+      "span": "Capt. Sarah Jenkins",
+      "type": "person_name"
+     }
+    ]
+   }
+  },
+  {
+   "fixture_id": "sample_memo_04_adv2",
+   "file": "adversarial/sample_memo_04_adv2.txt",
+   "derived_from": "sample_memo_04",
+   "style": "Format attack: change all date formats, renumber paragraphs with letters, rewrap every line at 60 chars.",
+   "ground_truth": {
+    "classification_marking": "CONFIDENTIAL",
+    "portion_marks": [
+     {
+      "paragraph": 1,
+      "marking": "(C)"
+     },
+     {
+      "paragraph": 2,
+      "marking": "(C)"
+     },
+     {
+      "paragraph": 3,
+      "marking": "(U//FOUO)"
+     },
+     {
+      "paragraph": 4,
+      "marking": "(C)"
+     }
+    ],
+    "control_markings": [
+     "REL TO USA, AUS, JPN"
+    ],
+    "originating_org": "National Geospatial-Intelligence Agency, Maritime Monitoring Division",
+    "author": "Capt. Sarah Jenkins",
+    "date_of_information": "2006-09-30",
+    "declassify_on": "2031-09-30",
+    "subject": "Maritime Traffic Patterns in the Luzon Strait",
+    "entities": [
+     {
+      "kind": "person",
+      "value": "Capt. Sarah Jenkins"
+     },
+     {
+      "kind": "org",
+      "value": "Pacific Maritime Solutions Ltd."
+     },
+     {
+      "kind": "location",
+      "value": "Luzon Strait"
+     },
+     {
+      "kind": "equipment",
+      "value": "Vessel tracking transponders"
+     }
+    ],
+    "references": [
+     "NGA Reconnaissance Bulletin 2006-092",
+     "ONI Vessel Tracking Log 2006-11"
+    ],
+    "handling_instructions": "Handle via CONFIDENTIAL channels only. REL TO USA, AUS, JPN.",
+    "pii_spans": [
+     {
+      "span": "Capt. Sarah Jenkins",
+      "type": "person_name"
+     }
+    ]
+   }
+  },
+  {
+   "fixture_id": "sample_memo_04_adv3",
+   "file": "adversarial/sample_memo_04_adv3.txt",
+   "derived_from": "sample_memo_04",
+   "style": "Noise attack: add DISTRIBUTION and POC sections plus light OCR noise in prose (never inside a value).",
+   "ground_truth": {
+    "classification_marking": "CONFIDENTIAL",
+    "portion_marks": [
+     {
+      "paragraph": 1,
+      "marking": "(C)"
+     },
+     {
+      "paragraph": 2,
+      "marking": "(C)"
+     },
+     {
+      "paragraph": 3,
+      "marking": "(U//FOUO)"
+     },
+     {
+      "paragraph": 4,
+      "marking": "(C)"
+     }
+    ],
+    "control_markings": [
+     "REL TO USA, AUS, JPN"
+    ],
+    "originating_org": "National Geospatial-Intelligence Agency, Maritime Monitoring Division",
+    "author": "Capt. Sarah Jenkins",
+    "date_of_information": "2006-09-30",
+    "declassify_on": "2031-09-30",
+    "subject": "Maritime Traffic Patterns in the Luzon Strait",
+    "entities": [
+     {
+      "kind": "person",
+      "value": "Capt. Sarah Jenkins"
+     },
+     {
+      "kind": "org",
+      "value": "Pacific Maritime Solutions Ltd."
+     },
+     {
+      "kind": "location",
+      "value": "Luzon Strait"
+     },
+     {
+      "kind": "equipment",
+      "value": "Vessel tracking transponders"
+     }
+    ],
+    "references": [
+     "NGA Reconnaissance Bulletin 2006-092",
+     "ONI Vessel Tracking Log 2006-11"
+    ],
+    "handling_instructions": "Handle via CONFIDENTIAL channels only. REL TO USA, AUS, JPN.",
+    "pii_spans": [
+     {
+      "span": "Capt. Sarah Jenkins",
+      "type": "person_name"
+     }
+    ]
+   }
+  },
+  {
+   "fixture_id": "sample_memo_05_adv1",
+   "file": "adversarial/sample_memo_05_adv1.txt",
+   "derived_from": "sample_memo_05",
+   "style": "Label-synonym attack: rename every header label to a plausible synonym and reorder the header block.",
+   "ground_truth": {
+    "classification_marking": "SECRET",
+    "portion_marks": [
+     {
+      "paragraph": 1,
+      "marking": "(S//NF)"
+     },
+     {
+      "paragraph": 2,
+      "marking": "(S)"
+     },
+     {
+      "paragraph": 3,
+      "marking": "(S//NF)"
+     },
+     {
+      "paragraph": 4,
+      "marking": "(C)"
+     }
+    ],
+    "control_markings": [],
+    "originating_org": "Office of East Asian Analysis, Central Intelligence Agency",
+    "author": "Robert T. Vance",
+    "date_of_information": "2007-11-18",
+    "declassify_on": "2032-11-18",
+    "subject": "Technology Acquisition Networks in the Taiwan Strait",
+    "entities": [
+     {
+      "kind": "person",
+      "value": "Robert T. Vance"
+     },
+     {
+      "kind": "org",
+      "value": "Apex Chip Technologies"
+     },
+     {
+      "kind": "location",
+      "value": "Hsinchu Science Park"
+     },
+     {
+      "kind": "equipment",
+      "value": "Lithography Step-and-Scan Systems"
+     }
+    ],
+    "references": [
+     "CIA Intel Report 2007-0481",
+     "NSA SIGINT Bulletin 2007-1110"
+    ],
+    "handling_instructions": "Handle via SECRET channels only. No dissemination outside intelligence community.",
+    "pii_spans": [
+     {
+      "span": "Robert T. Vance",
+      "type": "person_name"
+     }
+    ]
+   }
+  },
+  {
+   "fixture_id": "sample_memo_05_adv2",
+   "file": "adversarial/sample_memo_05_adv2.txt",
+   "derived_from": "sample_memo_05",
+   "style": "Format attack: change all date formats, renumber paragraphs with letters, rewrap every line at 60 chars.",
+   "ground_truth": {
+    "classification_marking": "SECRET",
+    "portion_marks": [
+     {
+      "paragraph": 1,
+      "marking": "(S//NF)"
+     },
+     {
+      "paragraph": 2,
+      "marking": "(S)"
+     },
+     {
+      "paragraph": 3,
+      "marking": "(S//NF)"
+     },
+     {
+      "paragraph": 4,
+      "marking": "(C)"
+     }
+    ],
+    "control_markings": [],
+    "originating_org": "Office of East Asian Analysis, Central Intelligence Agency",
+    "author": "Robert T. Vance",
+    "date_of_information": "2007-11-18",
+    "declassify_on": "2032-11-18",
+    "subject": "Technology Acquisition Networks in the Taiwan Strait",
+    "entities": [
+     {
+      "kind": "person",
+      "value": "Robert T. Vance"
+     },
+     {
+      "kind": "org",
+      "value": "Apex Chip Technologies"
+     },
+     {
+      "kind": "location",
+      "value": "Hsinchu Science Park"
+     },
+     {
+      "kind": "equipment",
+      "value": "Lithography Step-and-Scan Systems"
+     }
+    ],
+    "references": [
+     "CIA Intel Report 2007-0481",
+     "NSA SIGINT Bulletin 2007-1110"
+    ],
+    "handling_instructions": "Handle via SECRET channels only. No dissemination outside intelligence community.",
+    "pii_spans": [
+     {
+      "span": "Robert T. Vance",
+      "type": "person_name"
+     }
+    ]
+   }
+  },
+  {
+   "fixture_id": "sample_memo_05_adv3",
+   "file": "adversarial/sample_memo_05_adv3.txt",
+   "derived_from": "sample_memo_05",
+   "style": "Noise attack: add DISTRIBUTION and POC sections plus light OCR noise in prose (never inside a value).",
+   "ground_truth": {
+    "classification_marking": "SECRET",
+    "portion_marks": [
+     {
+      "paragraph": 1,
+      "marking": "(S//NF)"
+     },
+     {
+      "paragraph": 2,
+      "marking": "(S)"
+     },
+     {
+      "paragraph": 3,
+      "marking": "(S//NF)"
+     },
+     {
+      "paragraph": 4,
+      "marking": "(C)"
+     }
+    ],
+    "control_markings": [],
+    "originating_org": "Office of East Asian Analysis, Central Intelligence Agency",
+    "author": "Robert T. Vance",
+    "date_of_information": "2007-11-18",
+    "declassify_on": "2032-11-18",
+    "subject": "Technology Acquisition Networks in the Taiwan Strait",
+    "entities": [
+     {
+      "kind": "person",
+      "value": "Robert T. Vance"
+     },
+     {
+      "kind": "org",
+      "value": "Apex Chip Technologies"
+     },
+     {
+      "kind": "location",
+      "value": "Hsinchu Science Park"
+     },
+     {
+      "kind": "equipment",
+      "value": "Lithography Step-and-Scan Systems"
+     }
+    ],
+    "references": [
+     "CIA Intel Report 2007-0481",
+     "NSA SIGINT Bulletin 2007-1110"
+    ],
+    "handling_instructions": "Handle via SECRET channels only. No dissemination outside intelligence community.",
+    "pii_spans": [
+     {
+      "span": "Robert T. Vance",
+      "type": "person_name"
+     }
+    ]
+   }
+  }
+ ]
+}

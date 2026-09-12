@@ -1,3 +1,11 @@
+## Wave 5 - 13 Sep 2026 - AI-002 measured generalization + CI gates
+
+- **AI-002 (NEW):** `packs/memo/adversarial_gen.py` uses a frontier model (Melious OpenAI-compatible gateway, GLM-5.3) at BUILD TIME ONLY to rewrite the 5 wedge fixtures into 15 adversarial surface forms (label-synonym, date/format, OCR-noise attacks) whose semantic ground truth is invariant by construction. Zero runtime egress; KAIRO_AIR_GAP untouched at serve time.
+- **Measured, not assumed:** the rule-based ClassifiedMemoPack scored **F1 0.607** on those adversarial forms (clean 0.981) - a launch-blocking generalization collapse (originating_org 0.000, entities 0.356, subject 0.400, dates 0.467).
+- **Fixed:** pack v2 header parser - synonym alias table + fuzzy label resolution, wrapped-line continuation, multi-format date normaliser (DDMMMYY, YYYYMMDD, ISO, US, DTG), lettered/bulleted portion marks and entity bullets, org trailing-place and qty-suffix cleanup, entity de-duplication.
+- **Result:** adversarial F1 **0.607 -> 0.977**, clean wedge F1 **0.981 -> 0.996**, overlay suite 30/30, SEC-006 live gauntlet PASS (1,093 rps, p99 67 ms, 0 transport errors).
+- **CI:** adversarial generalization gate and the SEC-006 auth gauntlet are now required checks in `.github/workflows/axiom.yml`.
+
 ## Unreleased — 2026-09-12 — Production Hardening Wave 4
 
 ### Security

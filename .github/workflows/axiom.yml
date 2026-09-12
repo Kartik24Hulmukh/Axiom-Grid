@@ -52,6 +52,10 @@ jobs:
           PY
       - name: Wedge pack ground-truth F1 gate (offline deterministic extraction >= 0.80)
         run: python3 packs/memo/eval_wedge.py
+      - name: Wedge pack ADVERSARIAL generalization gate (label-synonym/format invariance >= 0.80)
+        run: python3 packs/memo/eval_adversarial.py
+      - name: SEC-006 auth gauntlet (live socket, 10 traffic classes)
+        run: python3 scripts/stress_sec006_gauntlet.py
       - name: 100x Concurrency stress & security probe gate
         run: python3 stress_test.py
       - run: cargo build --manifest-path axiom-runtime/Cargo.toml --locked --release
