@@ -148,6 +148,52 @@ async def request_governor_middleware(request, call_next):
     return response
 
 
+# ------------------------------------------------------------------
+# SEC-005: token-bucket rate limiting (per-client-IP) production hardening
+# ------------------------------------------------------------------
+
+_RATE_LIMIT_PER_MIN = int(os.environ.get("AXIOM_RATE_LIMIT_PER_MIN", "300"))
+_RATE_LIMIT_WINDOW_S = 60.0
+_RATE_LIMIT_EXEMPT_PATHS = {"/healthz", "/readyz"}
+_rate_limit_buckets: dict[str, list[float]] = {}
+_rate_limit_lock = threading.Lock()
+
+
+def _client_key(request) -> str:
+    fwd = request.headers.get("x-forwarded-for")
+    if fwd:
+        return fwd.split(",")[0].strip()
+    client = request.client
+    return client.host if client else "unknown"
+
+
+@app.middleware("http")
+async def rate_limit_middleware(request, call_next):
+    """SEC-005: sliding-window per-IP rate limit. Fails closed with 429 +
+    Retry-After once a client exceeds AXIOM_RATE_LIMIT_PER_MIN requests in a
+    60s window. Health/readiness probes are exempt so orchestrators (k8s)
+    never get throttled out of their own liveness checks."""
+    if request.url.path in _RATE_LIMIT_EXEMPT_PATHS or _RATE_LIMIT_PER_MIN <= 0:
+        return await call_next(request)
+
+    key = _client_key(request)
+    now = time.monotonic()
+    with _rate_limit_lock:
+        bucket = _rate_limit_buckets.setdefault(key, [])
+        cutoff = now - _RATE_LIMIT_WINDOW_S
+        while bucket and bucket[0] < cutoff:
+            bucket.pop(0)
+        if len(bucket) >= _RATE_LIMIT_PER_MIN:
+            retry_after = max(1, int(_RATE_LIMIT_WINDOW_S - (now - bucket[0])))
+            return JSONResponse(
+                status_code=429,
+                content={"detail": "Too many requests"},
+                headers={"Retry-After": str(retry_after)},
+            )
+        bucket.append(now)
+    return await call_next(request)
+
+
 def resolve_sandbox_path(file_path_str: str) -> pathlib.Path:
     """Resolve file path strictly within WORKSPACE_ROOT or system temp directory."""
     if not file_path_str or not isinstance(file_path_str, str) or not file_path_str.strip() or "\x00" in file_path_str:

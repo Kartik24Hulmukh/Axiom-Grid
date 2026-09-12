@@ -299,3 +299,24 @@ def test_metrics_endpoint(client):
     assert data["requests_total"] >= 1
     assert "200" in data["status_counts"]
     assert data["uptime_seconds"] >= 0
+
+
+
+def test_rate_limit_enforced_and_healthz_exempt(client, monkeypatch):
+    """SEC-005: exceeding the per-IP rate budget yields 429 with Retry-After,
+    while /healthz stays exempt so liveness probes are never throttled."""
+    import overlay.server as srv
+
+    monkeypatch.setattr(srv, "_RATE_LIMIT_PER_MIN", 5)
+    srv._rate_limit_buckets.clear()
+
+    statuses = [client.get("/healthz").status_code for _ in range(20)]
+    assert all(s == 200 for s in statuses)
+
+    srv._rate_limit_buckets.clear()
+    results = [client.get("/metrics").status_code for _ in range(10)]
+    assert 429 in results
+    idx = results.index(429)
+    resp = client.get("/metrics")
+    assert resp.status_code == 429
+    assert "Retry-After" in resp.headers
