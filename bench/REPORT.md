@@ -2,7 +2,7 @@
 
 > Model ID: `kairo-test-mode-v1` | Seed: `42` | Corpus Hash: `52ceb0265dfff3ce31604ae98ebadf75a488df1f6993610d4d0ddfc810482060`
 
-> Python: `3.12.12` | Platform: `Linux-x86_64`
+> Python: `3.14.6` | Platform: `Linux-x86_64`
 
 ## Release Gates
 
