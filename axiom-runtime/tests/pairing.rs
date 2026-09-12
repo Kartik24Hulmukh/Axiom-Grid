@@ -37,23 +37,27 @@ fn pairing_lifecycle_is_os_protected_and_fails_closed() {
     ApiToken::load_or_create_paired().unwrap();
     assert_eq!(fs::read_to_string(&file).unwrap(), first);
 
-    // Overly permissive permissions are tightened, not trusted.
+    // Potentially disclosed tokens are rejected, never silently chmodded/reused.
     #[cfg(unix)]
     {
         use std::os::unix::fs::PermissionsExt;
         fs::set_permissions(&file, fs::Permissions::from_mode(0o644)).unwrap();
+        assert!(ApiToken::load_paired().is_err());
+        assert!(ApiToken::load_or_create_paired().is_err());
+        assert_eq!(mode(&file), 0o644);
+        fs::set_permissions(&file, fs::Permissions::from_mode(0o600)).unwrap();
         fs::set_permissions(dir.join("nested"), fs::Permissions::from_mode(0o755)).unwrap();
-        ApiToken::load_or_create_paired().unwrap();
-        assert_eq!(mode(&file), 0o600);
-        assert_eq!(mode(&dir.join("nested")), 0o700);
+        assert!(ApiToken::load_paired().is_err());
+        assert!(ApiToken::load_or_create_paired().is_err());
+        fs::set_permissions(dir.join("nested"), fs::Permissions::from_mode(0o700)).unwrap();
     }
 
-    // A corrupt pairing file is rejected by readers and replaced by the runtime.
+    // Corruption requires explicit recovery with all consumers stopped.
     fs::write(&file, "not-a-token\n").unwrap();
-    assert!(matches!(
-        ApiToken::load_paired(),
-        Err(PairingError::Invalid(_))
-    ));
+    assert!(ApiToken::load_paired().is_err());
+    assert!(ApiToken::load_or_create_paired().is_err());
+    assert_eq!(fs::read_to_string(&file).unwrap(), "not-a-token\n");
+    fs::remove_file(&file).unwrap();
     ApiToken::load_or_create_paired().unwrap();
     let replaced = fs::read_to_string(&file).unwrap();
     assert!(ipc_pairing::validate(&replaced).is_ok());

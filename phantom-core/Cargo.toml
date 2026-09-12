@@ -27,6 +27,7 @@ name = "debug-crash"
 path = "src/bin/debug_crash.rs"
 
 [dependencies]
+libc = "0.2"
 # Async runtime
 tokio = { version = "1.44", features = ["full"] }
 

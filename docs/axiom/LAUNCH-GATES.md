@@ -32,3 +32,14 @@ license text/digest and raw results are recorded; target-hardware qualification,
 human ratings, privacy/network auditing, signed distribution, and partner research
 remain open. Automatic insertion remains disabled. Do not merge or label a release
 production-ready solely because focused tests pass.
+
+## Session 013 continuation
+
+Unix pairing now rejects symlinked components, hardlinks, special files, unsafe
+ownership/permissions and malformed credentials. Creation uses a bounded directory
+lock and atomic publication; corruption or disclosure requires explicit recovery.
+Runtime SIGINT/SIGTERM draining is bounded to five seconds. See
+[security/recovery](PAIRING-SECURITY.md) and the
+[complete remaining backlog](SESSION-013-BACKLOG.md). These changes do not close
+Windows storage, safe insertion, onboarding, native platform qualification,
+signing, human quality or privacy audit gates. Production remains NO-GO.

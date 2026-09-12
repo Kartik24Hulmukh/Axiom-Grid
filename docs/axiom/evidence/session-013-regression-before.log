@@ -1,0 +1,23 @@
+    Blocking waiting for file lock on build directory
+   Compiling axiom-grid v0.1.0 (/home/daytona/Axiom-Grid/axiom-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.25s
+     Running tests/pairing_security.rs (axiom-runtime/target/debug/deps/pairing_security-5b9c503c79d8f5ab)
+
+running 1 test
+test pairing_rejects_symlinks_without_modifying_the_target ... FAILED
+
+failures:
+
+---- pairing_rejects_symlinks_without_modifying_the_target stdout ----
+
+thread 'pairing_rejects_symlinks_without_modifying_the_target' panicked at tests/pairing_security.rs:19:5:
+symlink must fail closed
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    pairing_rejects_symlinks_without_modifying_the_target
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `--test pairing_security`
