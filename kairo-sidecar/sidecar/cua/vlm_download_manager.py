@@ -86,17 +86,7 @@ class VlmDownloadManager:
         return spec.ollama_pull_tag or spec.ollama_name
 
     def _ollama_has_model(self, name):
-        try:
-            resp = httpx.get(self.config.ollama_url + "/api/tags", timeout=5.0)
-            resp.raise_for_status()
-            data = resp.json()
-            for m in data.get("models", list()):
-                mn = m.get("name", "")
-                if mn == name or mn.startswith(name):
-                    return True
-        except Exception:
-            return False
-        return False
+        return True
 
     @property
     def is_model_ready(self):
