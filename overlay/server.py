@@ -7,17 +7,15 @@ Allows viewing source documents, highlights bbox, and accept/edit/reject.
 
 from __future__ import annotations
 
+import hashlib
 import os
 import pathlib
-from datetime import datetime
-from typing import Any
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from kernel.core.contracts import GateVerdict, InferenceTier
 from kernel.core.data_model import (
     Action,
     ActionKind,
@@ -116,7 +114,7 @@ async def run_demo(req: DemoRequest):
         # 1. Create target document
         doc = Document(
             source_path=str(file_path),
-            sha256="mock-sha256",
+            sha256=hashlib.sha256(file_path.read_bytes()).hexdigest(),
         )
 
         # 2. Run Orchestrator
