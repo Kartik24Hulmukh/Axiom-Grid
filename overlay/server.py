@@ -21,6 +21,7 @@ import threading
 import time
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from kernel.core.data_model import (
@@ -49,6 +50,72 @@ from pydantic import BaseModel, Field, field_validator
 # Initialize FastAPI
 app = FastAPI(title="Axiom-Grid Overlay API")
 logger = logging.getLogger("overlay.server")
+
+
+# ------------------------------------------------------------------
+# OPS-002: structured JSON logging (one JSON object per line; safe for
+# Loki/Datadog/CloudWatch ingestion). Opt out with AXIOM_LOG_FORMAT=text.
+# ------------------------------------------------------------------
+class JsonLogFormatter(logging.Formatter):
+    """Render log records as single-line JSON with stable field names."""
+
+    def format(self, record: logging.LogRecord) -> str:  # noqa: D401
+        payload = {
+            "ts": time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(record.created)) + f".{int(record.msecs):03d}Z",
+            "level": record.levelname,
+            "logger": record.name,
+            "msg": record.getMessage(),
+            "service": "axiom-grid-overlay",
+        }
+        if record.exc_info:
+            payload["exc_type"] = getattr(record.exc_info[0], "__name__", "Exception")
+        for key in ("request_id", "path", "status", "latency_ms", "client"):
+            if hasattr(record, key):
+                payload[key] = getattr(record, key)
+        return json.dumps(payload, separators=(",", ":"), default=str)
+
+
+def configure_structured_logging(level: str | None = None) -> None:
+    """Idempotently install the JSON formatter on the root logger."""
+    if os.environ.get("AXIOM_LOG_FORMAT", "json").lower() == "text":
+        return
+    root = logging.getLogger()
+    if not any(isinstance(h.formatter, JsonLogFormatter) for h in root.handlers):
+        handler = logging.StreamHandler()
+        handler.setFormatter(JsonLogFormatter())
+        root.addHandler(handler)
+    root.setLevel((level or os.environ.get("AXIOM_LOG_LEVEL", "INFO")).upper())
+    # Third-party per-request chatter is not observability; keep it at WARNING
+    # so the hot path does not pay a JSON serialisation per upstream call.
+    for noisy in ("httpx", "httpcore", "uvicorn.access"):
+        logging.getLogger(noisy).setLevel(logging.WARNING)
+
+
+configure_structured_logging()
+
+
+# ------------------------------------------------------------------
+# SEC-007: strict, explicit CORS. Default is deny-all cross-origin: the
+# overlay is same-origin by design. Operators opt in per-origin via
+# AXIOM_CORS_ORIGINS (comma-separated, exact scheme://host[:port]). The
+# wildcard "*" is rejected when credentials would be allowed.
+# ------------------------------------------------------------------
+def _cors_origins() -> list[str]:
+    raw = os.environ.get("AXIOM_CORS_ORIGINS", "")
+    origins = [o.strip() for o in raw.split(",") if o.strip()]
+    return [o for o in origins if o != "*"]
+
+
+_CORS_ORIGINS = _cors_origins()
+if _CORS_ORIGINS:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=_CORS_ORIGINS,
+        allow_credentials=False,
+        allow_methods=["GET", "POST"],
+        allow_headers=["Authorization", "Content-Type", "X-API-Key"],
+        max_age=600,
+    )
 
 # Paths
 BASE_DIR = pathlib.Path(__file__).parents[1]
@@ -259,6 +326,11 @@ _RATE_LIMIT_WINDOW_S = 60.0
 _RATE_LIMIT_EXEMPT_PATHS = {"/healthz", "/livez", "/readyz"}
 _rate_limit_buckets: dict[str, deque[float]] = {}
 _RATE_LIMIT_BUCKET_HIGH_WATER = int(os.environ.get("AXIOM_RATE_LIMIT_BUCKET_HIGH_WATER", "500"))
+# Hard ceiling on distinct buckets regardless of freshness: beyond this the
+# least-recently-seen buckets are evicted so memory is O(hard_cap) even under
+# a rotating-source flood (100x load premortem #1).
+_RATE_LIMIT_BUCKET_HARD_CAP = max(_RATE_LIMIT_BUCKET_HIGH_WATER, int(os.environ.get("AXIOM_RATE_LIMIT_BUCKET_HARD_CAP", "5000")))
+_TRUST_PROXY = os.environ.get("AXIOM_TRUST_PROXY", "").lower() in {"1", "true", "yes"}
 _rate_limit_lock = threading.Lock()
 
 
@@ -272,9 +344,17 @@ def _client_key(request) -> str:
     tenant = _authenticate(request) if _API_KEY_DIGESTS else None
     if tenant:
         return f"tenant:{tenant}"
-    fwd = request.headers.get("x-forwarded-for")
-    if fwd:
-        return fwd.split(",")[0].strip()
+    # SEC-008: X-Forwarded-For is attacker-controlled unless a trusted reverse
+    # proxy is guaranteed to overwrite it. Only honour it when the operator
+    # explicitly declares that topology (AXIOM_TRUST_PROXY=1); otherwise a
+    # client could rotate the header to mint a fresh bucket per request and
+    # bypass the limit entirely while growing the bucket table.
+    if _TRUST_PROXY:
+        fwd = request.headers.get("x-forwarded-for")
+        if fwd:
+            first = fwd.split(",")[0].strip()
+            if first and len(first) <= 64:
+                return first
     client = request.client
     return client.host if client else "unknown"
 
@@ -297,6 +377,12 @@ async def rate_limit_middleware(request, call_next):
             stale = [k for k, values in _rate_limit_buckets.items() if not values or values[-1] < cutoff]
             for stale_key in stale:
                 _rate_limit_buckets.pop(stale_key, None)
+        if len(_rate_limit_buckets) >= _RATE_LIMIT_BUCKET_HARD_CAP and key not in _rate_limit_buckets:
+            # Evict least-recently-seen buckets down to 90% of the cap so we do
+            # not pay the sort on every request during a flood.
+            victims = sorted(_rate_limit_buckets, key=lambda k: _rate_limit_buckets[k][-1] if _rate_limit_buckets[k] else 0.0)
+            for victim in victims[: len(_rate_limit_buckets) - int(_RATE_LIMIT_BUCKET_HARD_CAP * 0.9)]:
+                _rate_limit_buckets.pop(victim, None)
         bucket = _rate_limit_buckets.setdefault(key, deque())
         while bucket and bucket[0] < cutoff:
             bucket.popleft()
@@ -960,7 +1046,8 @@ async def readyz():
         return result
     except Exception as exc:
         logger.exception("readiness probe failed")
-        return JSONResponse(status_code=503, content={"status": "not_ready", "error": str(exc)})
+        # Do not leak internal exception text to unauthenticated probers.
+        return JSONResponse(status_code=503, content={"status": "not_ready", "error": type(exc).__name__})
     finally:
         try:
             probe_path.unlink(missing_ok=True)
