@@ -44,7 +44,7 @@ from packs.memo.pack import ClassifiedMemoPack
 from pydantic import BaseModel, Field, field_validator
 
 # Initialize FastAPI
-app = FastAPI(title="Kairo Phantom Web Overlay")
+app = FastAPI(title="Axiom-Grid Overlay API")
 logger = logging.getLogger("overlay.server")
 
 # Paths
