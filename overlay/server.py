@@ -12,6 +12,7 @@ import hashlib
 import logging
 import os
 import pathlib
+import threading
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
@@ -72,6 +73,8 @@ orchestrator = OrchestratorImpl(
 
 action_executor = ActionExecutorImpl(provenance_log)
 
+orchestrator_lock = threading.Lock()
+
 
 class DemoRequest(BaseModel):
     """Strict schema: a non-blank, bounded file reference (no NUL bytes)."""
@@ -130,8 +133,11 @@ async def run_demo(req: DemoRequest):
             sha256=digest,
         )
 
-        # 2. Run Orchestrator
-        trace = orchestrator.run(doc)
+        # 2. Run Orchestrator (off event loop, serialized to protect shared SQLite state)
+        def _run_pipeline(document):
+            with orchestrator_lock:
+                return orchestrator.run(document)
+        trace = await asyncio.to_thread(_run_pipeline, doc)
 
         # 3. Read raw file contents to return to UI
         if file_path.suffix.lower() in (".txt", ".md"):
@@ -207,7 +213,7 @@ async def run_demo(req: DemoRequest):
         }
 
     except Exception as e:
-        logger.exception("unhandled error in overlay endpoint: %s", e)
+        logger.exception("unhandled error in overlay endpoint")
         return {"success": False, "error": str(e)}
 
 
@@ -249,7 +255,7 @@ async def record_flywheel_correction(req: CorrectionRequest):
         memory_store.record_correction(corr)
         return {"success": True}
     except Exception as e:
-        logger.exception("unhandled error in overlay endpoint: %s", e)
+        logger.exception("unhandled error in overlay endpoint")
         return {"success": False, "error": str(e)}
 
 
@@ -301,8 +307,38 @@ async def get_trace_stats():
 # ---- Phase 3: Connector Protocol ----
 
 class ExtractDocumentRequest(BaseModel):
-    file: str  # path to document file
-    extraction_schema: dict | None = None  # optional extraction schema
+    """Strict schema: bounded, non-blank file path; no NUL-byte injection."""
+
+    file: str = Field(min_length=1, max_length=4096, pattern=r"^[^\x00]+$")
+    extraction_schema: dict | None = None
+
+    @field_validator("file")
+    @classmethod
+    def _not_blank(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("file must not be blank")
+        return value
+
+
+class AskDocumentRequest(BaseModel):
+    """Strict schema for /api/ask-document."""
+
+    file: str = Field(min_length=1, max_length=4096, pattern=r"^[^\x00]+$")
+    question: str = Field(min_length=1, max_length=2048, pattern=r"^[^\x00]+$")
+
+    @field_validator("file", "question")
+    @classmethod
+    def _not_blank(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("field must not be blank")
+        return value
+
+
+class GraphQueryRequest(BaseModel):
+    """Strict schema for /api/graph/query."""
+
+    keyword: str | None = Field(default=None, max_length=1024)
+    query: str | None = Field(default=None, max_length=1024)
 
 
 @app.post("/api/extract-document")
@@ -312,16 +348,20 @@ async def extract_document(req: ExtractDocumentRequest):
     Returns fields with value, grounded status, bbox, cascade method,
     confidence, and source_link for each extracted field.
     """
-    import os
     filepath = req.file
-    if not os.path.exists(filepath):
+    exists = await asyncio.to_thread(os.path.exists, filepath)
+    if not exists:
         raise HTTPException(status_code=404, detail=f"File not found: {filepath}")
 
     # Read and classify (blocking I/O off the event loop)
     def _read(fp):
         with open(fp, "r", errors="ignore") as f:
             return f.read()
-    text = await asyncio.to_thread(_read, filepath)
+    try:
+        text = await asyncio.to_thread(_read, filepath)
+    except OSError as exc:
+        logger.exception("unable to read document for extraction")
+        raise HTTPException(status_code=422, detail=f"Unable to read {filepath}: {exc}") from exc
 
     from kairo.core.classifier import build_source_link, classify_document
     doc_type = classify_document(text)
@@ -357,7 +397,12 @@ async def extract_document(req: ExtractDocumentRequest):
     )
 
     doc = Document(source_path=filepath)
-    trace = orchestrator.run(doc)
+    try:
+        with orchestrator_lock:
+            trace = orchestrator.run(doc)
+    except Exception as exc:
+        logger.exception("unhandled error in /api/extract-document pipeline")
+        raise HTTPException(status_code=500, detail=f"Extraction pipeline failed: {exc}") from exc
 
     # Build response with grounding metadata
     fields = {}
@@ -394,21 +439,24 @@ async def extract_document(req: ExtractDocumentRequest):
 
 
 @app.post("/api/ask-document")
-async def ask_document(req: dict):
+async def ask_document(req: AskDocumentRequest):
     """Ask a question about a document. Returns answer with bbox or refusal."""
-    filepath = req.get("file", "")
-    question = req.get("question", "")
+    filepath = req.file
+    question = req.question
 
-    if not filepath:
-        raise HTTPException(status_code=400, detail="file is required")
-
-    import os
-    if not os.path.exists(filepath):
+    exists = await asyncio.to_thread(os.path.exists, filepath)
+    if not exists:
         raise HTTPException(status_code=404, detail=f"File not found: {filepath}")
 
-    # For now, extract all fields and check if the question matches any
-    extract_req = ExtractDocumentRequest(file=filepath)
-    result = await extract_document(extract_req)
+    try:
+        # For now, extract all fields and check if the question matches any
+        extract_req = ExtractDocumentRequest(file=filepath)
+        result = await extract_document(extract_req)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("unhandled error in /api/ask-document")
+        raise HTTPException(status_code=500, detail=f"ask-document failed: {exc}") from exc
 
     # Simple keyword matching: find field whose name or value matches question keywords
     question_lower = question.lower()
@@ -452,14 +500,14 @@ async def get_source_render(doc_id: str, page: int = 1, x: float = 0, y: float =
 # ---- Phase 4: Knowledge Graph ----
 
 @app.post("/api/graph/query")
-async def query_graph(req: dict):
+async def query_graph(req: GraphQueryRequest):
     """Query the grounded knowledge graph by keyword.
 
     NOT an LLM call — pure keyword + entity matching + graph traversal.
     Returns matching nodes with bbox provenance.
     """
-    keyword = req.get("keyword", req.get("query", ""))
-    if not keyword:
+    keyword = req.keyword or req.query or ""
+    if not keyword or not keyword.strip():
         raise HTTPException(status_code=400, detail="keyword or query is required")
     try:
         from kairo.graph.store import GroundedKnowledgeGraph
@@ -468,7 +516,7 @@ async def query_graph(req: dict):
         results = g.query(keyword)
         return {"keyword": keyword, "results": results, "count": len(results)}
     except Exception as e:
-        logger.exception("unhandled error in /api/graph/query: %s", e)
+        logger.exception("unhandled error in /api/graph/query")
         return {"keyword": keyword, "results": [], "count": 0, "error": str(e)}
 
 
@@ -481,7 +529,7 @@ async def get_graph():
         g.load()
         return g.to_dict()
     except Exception as e:
-        logger.exception("unhandled error in /api/graph: %s", e)
+        logger.exception("unhandled error in /api/graph")
         return {"nodes": [], "edges": [], "stats": {"total_nodes": 0, "total_edges": 0}, "error": str(e)}
 
 
@@ -495,23 +543,29 @@ async def get_figures(doc_id: str, file: str = ""):
     For text: extracts Figure/Table references from text.
     """
     filepath = file
-    if not filepath:
+    if not filepath or not filepath.strip():
         raise HTTPException(status_code=400, detail="file parameter is required")
 
-    import os
-    if not os.path.exists(filepath):
+    exists = await asyncio.to_thread(os.path.exists, filepath)
+    if not exists:
         raise HTTPException(status_code=404, detail=f"File not found: {filepath}")
 
-    if filepath.lower().endswith(".pdf"):
-        from kairo.core.figure_extractor import extract_figures_from_pdf
-        figures = extract_figures_from_pdf(filepath)
-    else:
-        def _read(fp):
-            with open(fp, "r", errors="ignore") as f:
-                return f.read()
-        text = await asyncio.to_thread(_read, filepath)
-        from kairo.core.figure_extractor import extract_figures_from_text
-        figures = extract_figures_from_text(text)
+    try:
+        if filepath.lower().endswith(".pdf"):
+            from kairo.core.figure_extractor import extract_figures_from_pdf
+            figures = await asyncio.to_thread(extract_figures_from_pdf, filepath)
+        else:
+            def _read(fp):
+                with open(fp, "r", errors="ignore") as f:
+                    return f.read()
+            text = await asyncio.to_thread(_read, filepath)
+            from kairo.core.figure_extractor import extract_figures_from_text
+            figures = extract_figures_from_text(text)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("unhandled error in /api/figures")
+        raise HTTPException(status_code=500, detail=f"figure extraction failed: {exc}") from exc
 
     return {
         "doc_id": doc_id,
