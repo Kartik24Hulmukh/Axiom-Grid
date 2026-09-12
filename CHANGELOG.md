@@ -1,3 +1,14 @@
+## Unreleased — 2026-09-12 — Production Hardening Wave 4
+
+### Security
+- **SEC-006** Bearer / API-key authentication for the network API surface (`AXIOM_API_KEYS`, `AXIOM_REQUIRE_AUTH`). Constant-time digest comparison, `401 + WWW-Authenticate`, fail-closed `503` on misconfiguration, probes/landing page exempt.
+- **SEC-005 tiering** Authenticated tenants get an isolated per-key quota (`AXIOM_RATE_LIMIT_PER_MIN_AUTH`, default 3000/min); anonymous traffic and brute-force attempts share the per-IP bucket.
+- Docker image now defaults to `AXIOM_REQUIRE_AUTH=1` (fails closed until keys are injected at runtime).
+
+### Testing
+- 7 new tests in `overlay/tests/test_server.py` (30/30 passing).
+- `scripts/stress_sec006_gauntlet.py`: live-socket 100x gauntlet (2000 req / 100 threads, ~1000 req/s, 0 transport errors, all invariants held).
+
 # Changelog — Kairo Phantom
 
 All notable changes to this project are documented here.

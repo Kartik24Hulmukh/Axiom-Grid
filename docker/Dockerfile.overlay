@@ -1,6 +1,12 @@
 # Axiom-Grid Overlay API - Production Image
 # Serves the hardened FastAPI overlay (zero-egress deterministic extraction,
-# ClassifiedMemoPack wedge, SEC-001..SEC-004 hardening, ops probes).
+# ClassifiedMemoPack wedge, SEC-001..SEC-006 hardening, ops probes).
+#
+# SEC-006: this image FAILS CLOSED. Protected routes return 503 until you
+# inject at least one API key at runtime (never bake keys into the image):
+#   docker run --rm -p 8765:8765 -e AXIOM_API_KEYS=$(openssl rand -hex 32) axiom-grid
+# Clients then send:  Authorization: Bearer <key>   (or X-API-Key: <key>)
+# For a same-origin desktop/localhost sidecar set AXIOM_REQUIRE_AUTH=0.
 #
 # Build:   docker build -t axiom-grid -f docker/Dockerfile.overlay .
 # Run:     docker run --rm -p 8765:8765 axiom-grid
@@ -15,6 +21,9 @@ ENV PYTHONUNBUFFERED=1 \
     KAIRO_GATEWAY_TEST_MODE=true \
     KAIRO_AIR_GAP=true \
     AXIOM_MAX_UPLOAD_BYTES=2097152 \
+    AXIOM_REQUIRE_AUTH=1 \
+    AXIOM_RATE_LIMIT_PER_MIN=300 \
+    AXIOM_RATE_LIMIT_PER_MIN_AUTH=3000 \
     PYTHONPATH=/app
 
 WORKDIR /app

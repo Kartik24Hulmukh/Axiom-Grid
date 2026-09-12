@@ -320,3 +320,103 @@ def test_rate_limit_enforced_and_healthz_exempt(client, monkeypatch):
     resp = client.get("/metrics")
     assert resp.status_code == 429
     assert "Retry-After" in resp.headers
+
+
+
+# ------------------------------------------------------------------
+# SEC-006: bearer / API-key authentication
+# ------------------------------------------------------------------
+
+_GOOD_KEY = "ag_test_key_0123456789abcdef"
+_GOOD_KEY_2 = "ag_second_tenant_fedcba9876543210"
+
+
+def _enable_auth(monkeypatch, *keys):
+    import hashlib
+    import overlay.server as srv
+
+    digests = {hashlib.sha256(k.encode()).hexdigest(): hashlib.sha256(k.encode()).hexdigest()[:12] for k in keys}
+    monkeypatch.setattr(srv, "_API_KEY_DIGESTS", digests)
+    monkeypatch.setattr(srv, "_AUTH_REQUIRED", True)
+    srv._rate_limit_buckets.clear()
+    return srv
+
+
+def test_auth_disabled_by_default_local_first(client):
+    """No AXIOM_API_KEYS => same-origin desktop mode: API stays open and
+    /healthz reports auth_enabled=false so operators can see the posture."""
+    import overlay.server as srv
+
+    if srv._API_KEY_DIGESTS or srv._AUTH_REQUIRED:
+        pytest.skip("auth configured in this environment")
+    r = client.get("/healthz")
+    assert r.status_code == 200 and r.json()["auth_enabled"] is False
+    assert client.get("/metrics").status_code == 200
+
+
+def test_auth_rejects_missing_and_wrong_key(client, monkeypatch):
+    _enable_auth(monkeypatch, _GOOD_KEY)
+    r = client.get("/metrics")
+    assert r.status_code == 401
+    assert r.headers["WWW-Authenticate"].startswith("Bearer")
+    assert client.get("/metrics", headers={"Authorization": "Bearer nope_nope_nope_nope"}).status_code == 401
+    assert client.get("/metrics", headers={"X-API-Key": _GOOD_KEY + "x"}).status_code == 401
+    # a prefix of the real key must never pass (constant-time digest compare)
+    assert client.get("/metrics", headers={"Authorization": f"Bearer {_GOOD_KEY[:-1]}"}).status_code == 401
+    # mutating endpoints are gated too
+    assert client.post("/demo", json={"file": "x.txt", "question": "q"}).status_code == 401
+    assert client.post("/api/extract-document", json={"file": "x.txt"}).status_code == 401
+
+
+def test_auth_accepts_bearer_and_x_api_key(client, monkeypatch):
+    _enable_auth(monkeypatch, _GOOD_KEY, _GOOD_KEY_2)
+    assert client.get("/metrics", headers={"Authorization": f"Bearer {_GOOD_KEY}"}).status_code == 200
+    assert client.get("/metrics", headers={"Authorization": f"bearer {_GOOD_KEY_2}"}).status_code == 200
+    assert client.get("/metrics", headers={"X-API-Key": _GOOD_KEY}).status_code == 200
+
+
+def test_auth_probes_and_landing_exempt(client, monkeypatch):
+    """Orchestrator probes and the landing page must never require a key,
+    otherwise k8s/Docker would kill a perfectly healthy, correctly locked-down pod."""
+    _enable_auth(monkeypatch, _GOOD_KEY)
+    assert client.get("/healthz").status_code == 200
+    assert client.get("/healthz").json()["auth_enabled"] is True
+    assert client.get("/readyz").status_code in (200, 503)
+    assert client.get("/").status_code in (200, 404)
+
+
+def test_auth_required_without_keys_fails_closed(client, monkeypatch):
+    """AXIOM_REQUIRE_AUTH=1 with no keys must return 503, never silently run open."""
+    import overlay.server as srv
+
+    monkeypatch.setattr(srv, "_API_KEY_DIGESTS", {})
+    monkeypatch.setattr(srv, "_AUTH_REQUIRED", True)
+    r = client.get("/metrics", headers={"Authorization": f"Bearer {_GOOD_KEY}"})
+    assert r.status_code == 503
+    assert client.get("/healthz").status_code == 200
+
+
+def test_auth_rejections_are_rate_limited(client, monkeypatch):
+    """Brute-forcing keys must still hit the SEC-005 per-IP limiter (429)."""
+    srv = _enable_auth(monkeypatch, _GOOD_KEY)
+    monkeypatch.setattr(srv, "_RATE_LIMIT_PER_MIN", 5)
+    results = [client.get("/metrics", headers={"X-API-Key": f"guess_{i}_0123456789"}).status_code for i in range(12)]
+    assert 401 in results and 429 in results
+    assert results.index(401) < results.index(429)
+
+
+def test_authenticated_tenant_gets_own_rate_tier(client, monkeypatch):
+    """Valid tenants are bucketed by key (not IP) with the larger authenticated
+    quota, so anonymous flooding from the same IP cannot starve a paying tenant."""
+    srv = _enable_auth(monkeypatch, _GOOD_KEY, _GOOD_KEY_2)
+    monkeypatch.setattr(srv, "_RATE_LIMIT_PER_MIN", 3)
+    monkeypatch.setattr(srv, "_RATE_LIMIT_PER_MIN_AUTH", 8)
+    # exhaust the anonymous per-IP budget
+    anon = [client.get("/metrics").status_code for _ in range(6)]
+    assert 429 in anon
+    # tenant A still has its own budget of 8
+    a = [client.get("/metrics", headers={"Authorization": f"Bearer {_GOOD_KEY}"}).status_code for _ in range(8)]
+    assert a == [200] * 8
+    assert client.get("/metrics", headers={"Authorization": f"Bearer {_GOOD_KEY}"}).status_code == 429
+    # tenant B is isolated from tenant A's exhaustion
+    assert client.get("/metrics", headers={"Authorization": f"Bearer {_GOOD_KEY_2}"}).status_code == 200

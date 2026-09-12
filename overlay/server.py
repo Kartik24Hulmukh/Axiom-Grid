@@ -10,6 +10,7 @@ from __future__ import annotations
 import asyncio
 import concurrent.futures
 import hashlib
+import hmac
 import logging
 import os
 import pathlib
@@ -149,6 +150,103 @@ async def request_governor_middleware(request, call_next):
 
 
 # ------------------------------------------------------------------
+# SEC-006: bearer / API-key authentication for the public API surface
+# ------------------------------------------------------------------
+#
+# Threat model: the overlay was born as a same-origin desktop sidecar, where
+# the origin gate (SEC-002) is sufficient. The moment it is exposed as a
+# network API every mutating endpoint (/demo, /apply, /correct, /api/*) is
+# callable by anyone who can reach the socket. SEC-006 closes that.
+#
+#   AXIOM_API_KEYS      comma-separated list of accepted keys. When set, every
+#                       non-exempt route requires `Authorization: Bearer <key>`
+#                       or `X-API-Key: <key>`. Unset => local-first mode
+#                       (auth disabled, origin gate still enforced).
+#   AXIOM_REQUIRE_AUTH  "1"/"true" => production posture. If no keys are
+#                       configured the API FAILS CLOSED with 503 on protected
+#                       routes instead of silently running open.
+#
+# Keys are compared via sha256 digests with hmac.compare_digest (constant-time,
+# length-independent). The digest prefix doubles as a stable per-tenant id so
+# the rate limiter (SEC-005) can apply a per-key quota tier instead of per-IP.
+
+_AUTH_EXEMPT_PATHS = {"/", "/healthz", "/readyz", "/dashboard", "/docs", "/openapi.json", "/redoc"}
+_AUTH_EXEMPT_PREFIXES = ("/static/",)
+
+
+def _load_api_key_digests() -> dict[str, str]:
+    raw = os.environ.get("AXIOM_API_KEYS", "")
+    digests: dict[str, str] = {}
+    for k in raw.split(","):
+        k = k.strip()
+        if len(k) >= 16:  # refuse trivially short keys
+            d = hashlib.sha256(k.encode("utf-8")).hexdigest()
+            digests[d] = d[:12]
+    return digests
+
+
+_API_KEY_DIGESTS: dict[str, str] = _load_api_key_digests()
+_AUTH_REQUIRED = os.environ.get("AXIOM_REQUIRE_AUTH", "").lower() in {"1", "true", "yes"}
+
+
+def _auth_enabled() -> bool:
+    return bool(_API_KEY_DIGESTS) or _AUTH_REQUIRED
+
+
+def _is_auth_exempt(path: str) -> bool:
+    return path in _AUTH_EXEMPT_PATHS or path.startswith(_AUTH_EXEMPT_PREFIXES)
+
+
+def _presented_key(request) -> str | None:
+    auth = request.headers.get("authorization")
+    if auth:
+        scheme, _, token = auth.partition(" ")
+        if scheme.lower() == "bearer" and token.strip():
+            return token.strip()
+    xk = request.headers.get("x-api-key")
+    return xk.strip() if xk and xk.strip() else None
+
+
+def _authenticate(request) -> str | None:
+    """Return the tenant id for a valid presented key, else None.
+    Constant-time: always hashes and compares against every configured digest."""
+    key = _presented_key(request)
+    if key is None or not _API_KEY_DIGESTS:
+        return None
+    presented = hashlib.sha256(key.encode("utf-8")).hexdigest()
+    match: str | None = None
+    for digest, tenant in _API_KEY_DIGESTS.items():
+        if hmac.compare_digest(presented, digest):
+            match = tenant
+    return match
+
+
+@app.middleware("http")
+async def api_key_auth_middleware(request, call_next):
+    """SEC-006: bearer/API-key gate. 401 + WWW-Authenticate on bad/missing key,
+    503 when production posture is demanded but no keys are configured
+    (fail closed, never fail open)."""
+    if not _auth_enabled() or _is_auth_exempt(request.url.path):
+        return await call_next(request)
+    if not _API_KEY_DIGESTS:
+        OPS_METRICS["auth_rejections_total"] = OPS_METRICS.get("auth_rejections_total", 0) + 1
+        return JSONResponse(
+            status_code=503,
+            content={"detail": "Service misconfigured: AXIOM_REQUIRE_AUTH set but no AXIOM_API_KEYS"},
+        )
+    tenant = _authenticate(request)
+    if tenant is None:
+        OPS_METRICS["auth_rejections_total"] = OPS_METRICS.get("auth_rejections_total", 0) + 1
+        return JSONResponse(
+            status_code=401,
+            content={"detail": "Unauthorized: missing or invalid API key"},
+            headers={"WWW-Authenticate": 'Bearer realm="axiom-grid"'},
+        )
+    request.state.tenant = tenant
+    return await call_next(request)
+
+
+# ------------------------------------------------------------------
 # SEC-005: token-bucket rate limiting (per-client-IP) production hardening
 # ------------------------------------------------------------------
 
@@ -159,7 +257,16 @@ _rate_limit_buckets: dict[str, list[float]] = {}
 _rate_limit_lock = threading.Lock()
 
 
+_RATE_LIMIT_PER_MIN_AUTH = int(os.environ.get("AXIOM_RATE_LIMIT_PER_MIN_AUTH", "3000"))
+
+
 def _client_key(request) -> str:
+    # SEC-006 tier: a valid API key gets its own (larger) bucket keyed by
+    # tenant id, so one noisy tenant behind a shared NAT/LB IP cannot starve
+    # the others, and per-tenant quotas can be metered/billed later.
+    tenant = _authenticate(request) if _API_KEY_DIGESTS else None
+    if tenant:
+        return f"tenant:{tenant}"
     fwd = request.headers.get("x-forwarded-for")
     if fwd:
         return fwd.split(",")[0].strip()
@@ -183,7 +290,8 @@ async def rate_limit_middleware(request, call_next):
         cutoff = now - _RATE_LIMIT_WINDOW_S
         while bucket and bucket[0] < cutoff:
             bucket.pop(0)
-        if len(bucket) >= _RATE_LIMIT_PER_MIN:
+        limit = _RATE_LIMIT_PER_MIN_AUTH if key.startswith("tenant:") else _RATE_LIMIT_PER_MIN
+        if len(bucket) >= limit:
             retry_after = max(1, int(_RATE_LIMIT_WINDOW_S - (now - bucket[0])))
             return JSONResponse(
                 status_code=429,
@@ -812,7 +920,7 @@ async def get_source_provenance(extraction_id: str):
 @app.get("/healthz")
 async def healthz():
     """Liveness probe: process is up and serving (Kubernetes-style)."""
-    return {"status": "ok", "service": "axiom-grid-overlay"}
+    return {"status": "ok", "service": "axiom-grid-overlay", "auth_enabled": _auth_enabled()}
 
 
 _readyz_probe_lock = threading.Lock()
