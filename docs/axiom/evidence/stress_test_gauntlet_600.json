@@ -1,0 +1,21 @@
+{
+  "total_requests": 600,
+  "concurrency_workers": 30,
+  "wall_time_seconds": 2.5604,
+  "throughput_req_per_sec": 234.34,
+  "status_code_distribution": {
+    "200": 300,
+    "404": 150,
+    "422": 100,
+    "403": 50
+  },
+  "unhandled_crashes": 0,
+  "success_rate_pct": 100.0,
+  "latency_ms": {
+    "p50": 17.32,
+    "p95": 307.44,
+    "p99": 1322.06,
+    "mean": 120.46
+  },
+  "note": "600-request mixed gauntlet: valid extraction, hostile traversal, schema abuse, CSRF, readiness and metrics probes under 30-thread contention"
+}

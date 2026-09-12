@@ -1,0 +1,41 @@
+# Axiom-Grid Overlay API - Production Image
+# Serves the hardened FastAPI overlay (zero-egress deterministic extraction,
+# ClassifiedMemoPack wedge, SEC-001..SEC-004 hardening, ops probes).
+#
+# Build:   docker build -t axiom-grid -f docker/Dockerfile.overlay .
+# Run:     docker run --rm -p 8765:8765 axiom-grid
+# Probes:  curl localhost:8765/healthz   (liveness)
+#          curl localhost:8765/readyz    (real pipeline readiness)
+#          curl localhost:8765/metrics   (runtime counters)
+
+FROM python:3.11-slim
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    KAIRO_GATEWAY_TEST_MODE=true \
+    KAIRO_AIR_GAP=true \
+    AXIOM_MAX_UPLOAD_BYTES=2097152 \
+    PYTHONPATH=/app
+
+WORKDIR /app
+
+RUN pip install --no-cache-dir fastapi uvicorn pydantic
+
+# Non-root runtime user (defense in depth)
+RUN useradd --create-home --uid 10001 axiom
+
+COPY overlay/ /app/overlay/
+COPY kernel/ /app/kernel/
+COPY kairo/ /app/kairo/
+COPY packs/ /app/packs/
+COPY fixtures/wedge/ /app/fixtures/wedge/
+COPY conftest.py /app/conftest.py
+
+USER axiom
+
+EXPOSE 8765
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD python3 -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8765/healthz').status==200 else 1)"
+
+CMD ["python3", "-m", "uvicorn", "overlay.server:app", "--host", "0.0.0.0", "--port", "8765", "--workers", "1"]

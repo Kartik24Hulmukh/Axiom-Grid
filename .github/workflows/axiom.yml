@@ -32,8 +32,24 @@ jobs:
         run: python3 -m py_compile scripts/axiom-live-e2e.py
       - name: Overlay server gate (real provenance digest, strict input schema)
         run: |
-          python3 -m pip install --quiet pytest fastapi httpx
+          python3 -m pip install --quiet pytest fastapi httpx uvicorn
           python3 -m pytest -q -p no:cacheprovider overlay/tests/test_server.py
+      - name: Ops endpoints smoke gate (healthz/readyz/metrics, security headers)
+        run: |
+          python3 - <<'PY'
+          import sys
+          from fastapi.testclient import TestClient
+          from overlay.server import app
+          c = TestClient(app)
+          assert c.get('/healthz').status_code == 200, 'healthz failed'
+          r = c.get('/readyz')
+          assert r.status_code == 200 and r.json()['status'] == 'ready', f'readyz failed: {r.status_code}'
+          m = c.get('/metrics').json()
+          assert m['requests_total'] >= 2, 'metrics not counting'
+          hdrs = c.get('/').headers
+          assert hdrs.get('x-frame-options') == 'DENY', 'missing security headers'
+          print('OPS SMOKE GATE: PASS')
+          PY
       - name: Wedge pack ground-truth F1 gate (offline deterministic extraction >= 0.80)
         run: python3 packs/memo/eval_wedge.py
       - name: 100x Concurrency stress & security probe gate

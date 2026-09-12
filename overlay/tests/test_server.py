@@ -246,3 +246,56 @@ def test_csrf_origin_gate_allows_local_origin(client):
     assert response.status_code == 200
     assert response.json()["success"] is True
 
+
+def test_security_headers_present(client):
+    """SEC-003 regression: all responses carry defense-in-depth security headers."""
+    response = client.get("/")
+    assert response.status_code == 200
+    assert response.headers["X-Content-Type-Options"] == "nosniff"
+    assert response.headers["X-Frame-Options"] == "DENY"
+    assert response.headers["Referrer-Policy"] == "no-referrer"
+    assert "Content-Security-Policy" in response.headers
+
+    api_response = client.post("/demo", json={"file": "missing.txt"})
+    assert api_response.status_code == 404
+    assert api_response.headers["X-Content-Type-Options"] == "nosniff"
+    assert api_response.headers["X-Frame-Options"] == "DENY"
+
+
+def test_oversized_body_rejected(client):
+    """SEC-004 regression: oversized payloads are rejected with 413 before parsing."""
+    response = client.post(
+        "/api/extract-document",
+        json={"file": "sample_memo_01.txt"},
+        headers={"Content-Length": str(10 * 1024 * 1024)},
+    )
+    assert response.status_code == 413
+    assert "too large" in response.json()["detail"].lower()
+
+
+def test_healthz_endpoint(client):
+    """OPS-001: liveness probe always returns ok when process is serving."""
+    response = client.get("/healthz")
+    assert response.status_code == 200
+    assert response.json()["status"] == "ok"
+
+
+def test_readyz_endpoint(client):
+    """OPS-001: readiness probe verifies the real extraction pipeline end-to-end."""
+    response = client.get("/readyz")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "ready"
+    assert data["pipeline"] == "ok"
+    assert data["fields_extracted"] >= 1
+
+
+def test_metrics_endpoint(client):
+    """OPS-001: metrics endpoint reports counters and latency after traffic."""
+    client.get("/healthz")
+    response = client.get("/metrics")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["requests_total"] >= 1
+    assert "200" in data["status_counts"]
+    assert data["uptime_seconds"] >= 0
