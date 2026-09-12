@@ -12,6 +12,8 @@ import concurrent.futures
 import hashlib
 import hmac
 import logging
+import json
+from collections import deque
 import os
 import pathlib
 import tempfile
@@ -100,6 +102,7 @@ OPS_METRICS = {
     "status_counts": {},
     "latency_ms_max": 0.0,
     "latency_ms_total": 0.0,
+    "latency_samples": deque(maxlen=10000),
 }
 
 MAX_UPLOAD_BYTES = int(os.environ.get("AXIOM_MAX_UPLOAD_BYTES", str(2 * 1024 * 1024)))
@@ -141,6 +144,7 @@ async def request_governor_middleware(request, call_next):
     dt_ms = (time.perf_counter() - t0) * 1000
     OPS_METRICS["requests_total"] += 1
     OPS_METRICS["latency_ms_total"] += dt_ms
+    OPS_METRICS["latency_samples"].append(dt_ms)
     OPS_METRICS["latency_ms_max"] = max(OPS_METRICS["latency_ms_max"], round(dt_ms, 2))
     sc = str(response.status_code)
     OPS_METRICS["status_counts"][sc] = OPS_METRICS["status_counts"].get(sc, 0) + 1
@@ -170,7 +174,7 @@ async def request_governor_middleware(request, call_next):
 # length-independent). The digest prefix doubles as a stable per-tenant id so
 # the rate limiter (SEC-005) can apply a per-key quota tier instead of per-IP.
 
-_AUTH_EXEMPT_PATHS = {"/", "/healthz", "/readyz", "/dashboard", "/docs", "/openapi.json", "/redoc"}
+_AUTH_EXEMPT_PATHS = {"/", "/healthz", "/livez", "/readyz", "/dashboard", "/docs", "/openapi.json", "/redoc"}
 _AUTH_EXEMPT_PREFIXES = ("/static/",)
 
 
@@ -252,8 +256,9 @@ async def api_key_auth_middleware(request, call_next):
 
 _RATE_LIMIT_PER_MIN = int(os.environ.get("AXIOM_RATE_LIMIT_PER_MIN", "300"))
 _RATE_LIMIT_WINDOW_S = 60.0
-_RATE_LIMIT_EXEMPT_PATHS = {"/healthz", "/readyz"}
-_rate_limit_buckets: dict[str, list[float]] = {}
+_RATE_LIMIT_EXEMPT_PATHS = {"/healthz", "/livez", "/readyz"}
+_rate_limit_buckets: dict[str, deque[float]] = {}
+_RATE_LIMIT_BUCKET_HIGH_WATER = int(os.environ.get("AXIOM_RATE_LIMIT_BUCKET_HIGH_WATER", "500"))
 _rate_limit_lock = threading.Lock()
 
 
@@ -286,10 +291,15 @@ async def rate_limit_middleware(request, call_next):
     key = _client_key(request)
     now = time.monotonic()
     with _rate_limit_lock:
-        bucket = _rate_limit_buckets.setdefault(key, [])
         cutoff = now - _RATE_LIMIT_WINDOW_S
+        # Bound attacker-controlled cardinality; deque gives O(1) expiry.
+        if len(_rate_limit_buckets) > _RATE_LIMIT_BUCKET_HIGH_WATER:
+            stale = [k for k, values in _rate_limit_buckets.items() if not values or values[-1] < cutoff]
+            for stale_key in stale:
+                _rate_limit_buckets.pop(stale_key, None)
+        bucket = _rate_limit_buckets.setdefault(key, deque())
         while bucket and bucket[0] < cutoff:
-            bucket.pop(0)
+            bucket.popleft()
         limit = _RATE_LIMIT_PER_MIN_AUTH if key.startswith("tenant:") else _RATE_LIMIT_PER_MIN
         if len(bucket) >= limit:
             retry_after = max(1, int(_RATE_LIMIT_WINDOW_S - (now - bucket[0])))
@@ -919,8 +929,14 @@ async def get_source_provenance(extraction_id: str):
 
 @app.get("/healthz")
 async def healthz():
-    """Liveness probe: process is up and serving (Kubernetes-style)."""
+    """Shallow service health probe."""
     return {"status": "ok", "service": "axiom-grid-overlay", "auth_enabled": _auth_enabled()}
+
+
+@app.get("/livez")
+async def livez():
+    """Constant-time process liveness; never performs dependency checks."""
+    return {"status": "alive", "uptime_seconds": round(time.time() - OPS_METRICS["started_at"], 2)}
 
 
 _readyz_probe_lock = threading.Lock()
@@ -979,14 +995,21 @@ def _run_readyz_probe(probe_path: pathlib.Path) -> dict:
 
 
 @app.get("/metrics")
-async def metrics():
-    """Lightweight runtime metrics for ops dashboards and alerts."""
+async def metrics(format: str = "json"):
+    """Bounded in-process telemetry in JSON or Prometheus exposition format."""
     total = OPS_METRICS["requests_total"]
-    return {
-        "uptime_seconds": round(time.time() - OPS_METRICS["started_at"], 2),
-        "requests_total": total,
-        "errors_total": OPS_METRICS["errors_total"],
-        "status_counts": OPS_METRICS["status_counts"],
-        "latency_ms_mean": round(OPS_METRICS["latency_ms_total"] / total, 2) if total else 0.0,
-        "latency_ms_max": OPS_METRICS["latency_ms_max"],
-    }
+    samples = sorted(OPS_METRICS["latency_samples"])
+    def percentile(q):
+        return round(samples[min(len(samples)-1, int((len(samples)-1)*q))], 2) if samples else 0.0
+    data = {"uptime_seconds": round(time.time()-OPS_METRICS["started_at"],2), "requests_total": total,
+            "errors_total": OPS_METRICS["errors_total"], "auth_rejections_total": OPS_METRICS.get("auth_rejections_total",0),
+            "status_counts": OPS_METRICS["status_counts"], "active_rate_limit_buckets": len(_rate_limit_buckets),
+            "latency_ms_mean": round(OPS_METRICS["latency_ms_total"]/total,2) if total else 0.0,
+            "latency_ms_max": OPS_METRICS["latency_ms_max"],
+            "latency_percentiles": {"p50":percentile(.5),"p90":percentile(.9),"p95":percentile(.95),"p99":percentile(.99)}}
+    if format.lower() in {"prometheus","otel"}:
+        lines=[f"axiom_requests_total {total}",f"axiom_errors_total {data['errors_total']}",
+               f"axiom_auth_rejections_total {data['auth_rejections_total']}",f"axiom_rate_limit_buckets {data['active_rate_limit_buckets']}"]
+        lines += [f'axiom_http_status_total{{code="{code}"}} {count}' for code,count in data["status_counts"].items()]
+        return HTMLResponse("\n".join(lines)+"\n", media_type="text/plain; version=0.0.4")
+    return data

@@ -420,3 +420,15 @@ def test_authenticated_tenant_gets_own_rate_tier(client, monkeypatch):
     assert client.get("/metrics", headers={"Authorization": f"Bearer {_GOOD_KEY}"}).status_code == 429
     # tenant B is isolated from tenant A's exhaustion
     assert client.get("/metrics", headers={"Authorization": f"Bearer {_GOOD_KEY_2}"}).status_code == 200
+
+
+def test_livez_and_prometheus_metrics(client):
+    live = client.get("/livez")
+    assert live.status_code == 200 and live.json()["status"] == "alive"
+    metrics = client.get("/metrics?format=prometheus")
+    assert metrics.status_code == 200
+    assert "axiom_requests_total" in metrics.text
+
+def test_metrics_include_percentiles(client):
+    body = client.get("/metrics").json()
+    assert set(body["latency_percentiles"]) == {"p50", "p90", "p95", "p99"}

@@ -1,0 +1,80 @@
+"""Resilient Melious multi-model router. Credentials are read at call time only."""
+from __future__ import annotations
+from dataclasses import dataclass
+import json, os, random, threading, time
+from typing import Callable
+from urllib import error, request
+
+@dataclass
+class CircuitBreaker:
+    failure_threshold: int = 3
+    recovery_seconds: float = 15.0
+    failures: int = 0
+    opened_at: float | None = None
+    def allow(self, now: float) -> bool:
+        return self.opened_at is None or now - self.opened_at >= self.recovery_seconds
+    def success(self) -> None:
+        self.failures, self.opened_at = 0, None
+    def failure(self, now: float) -> None:
+        self.failures += 1
+        if self.failures >= self.failure_threshold: self.opened_at = now
+    @property
+    def state(self) -> str:
+        if self.opened_at is None: return "CLOSED"
+        return "HALF_OPEN" if time.monotonic()-self.opened_at >= self.recovery_seconds else "OPEN"
+
+class RouterError(RuntimeError): pass
+
+class MeliousModelRouter:
+    """Bounded-time fallback router with independent, thread-safe breakers."""
+    DEFAULT_MODELS = ("glm-5.3", "kimi-k3", "qwen-3.8")
+    def __init__(self, models=None, base_url=None, timeout=10.0, max_retries=1,
+                 transport: Callable | None=None, sleep: Callable=time.sleep):
+        self.models=tuple(models or self.DEFAULT_MODELS)
+        self.base_url=(base_url or os.getenv("MELIOUS_BASE_URL","https://api.melious.ai/v1")).rstrip("/")
+        self.timeout=float(timeout); self.max_retries=max(0,int(max_retries))
+        self._transport=transport or self._http_transport; self._sleep=sleep
+        self._lock=threading.RLock(); self.breakers={m:CircuitBreaker() for m in self.models}
+        self.metrics={"requests":0,"successes":0,"failures":0,"fallbacks":0,"prompt_tokens":0,"completion_tokens":0,"reasoning_tokens":0,"total_tokens":0}
+    def _http_transport(self, model, payload, timeout):
+        key=os.getenv("MELIOUS_API_KEY")
+        if not key: raise RouterError("MELIOUS_API_KEY is not configured")
+        body=json.dumps({**payload,"model":model}).encode()
+        req=request.Request(self.base_url+"/chat/completions",body,{"Authorization":"Bearer "+key,"Content-Type":"application/json"})
+        try:
+            with request.urlopen(req,timeout=timeout) as r: return json.loads(r.read())
+        except error.HTTPError as exc:
+            retry=exc.headers.get("Retry-After") if exc.headers else None
+            e=RouterError(f"upstream HTTP {exc.code}"); e.retry_after=float(retry or 0); raise e
+    def complete(self, messages, **options):
+        payload={"messages":messages,**options}; trace=[]; last=None
+        with self._lock: self.metrics["requests"]+=1
+        for index,model in enumerate(self.models):
+            now=time.monotonic()
+            with self._lock: allowed=self.breakers[model].allow(now)
+            if not allowed: trace.append({"model":model,"result":"circuit_open"}); continue
+            if index: 
+                with self._lock: self.metrics["fallbacks"]+=1
+            for attempt in range(self.max_retries+1):
+                try:
+                    data=self._transport(model,payload,self.timeout)
+                    with self._lock:
+                        self.breakers[model].success(); self.metrics["successes"]+=1
+                        usage=data.get("usage",{}); details=usage.get("completion_tokens_details",{}) or {}
+                        for k in ("prompt_tokens","completion_tokens","total_tokens"): self.metrics[k]+=int(usage.get(k,0) or 0)
+                        self.metrics["reasoning_tokens"]+=int(details.get("reasoning_tokens",usage.get("reasoning_tokens",0)) or 0)
+                    data["router"]={"selected_model":model,"fallback_chain":trace+[ {"model":model,"result":"success"} ]}
+                    return data
+                except Exception as exc:
+                    last=exc; trace.append({"model":model,"result":"failure","error":type(exc).__name__})
+                    with self._lock: self.breakers[model].failure(time.monotonic())
+                    if attempt < self.max_retries:
+                        delay=min(float(getattr(exc,"retry_after",0) or 0) or .1*(2**attempt)+random.random()*.05,2.0); self._sleep(delay)
+        with self._lock: self.metrics["failures"]+=1
+        raise RouterError(f"all model routes failed: {trace}") from last
+    def get_metrics(self):
+        with self._lock: return {**self.metrics,"circuits":{m:b.state for m,b in self.breakers.items()}}
+    def get_prometheus_metrics(self):
+        m=self.get_metrics(); lines=[f"axiom_router_{k} {v}" for k,v in m.items() if isinstance(v,int)]
+        lines += [f'axiom_router_circuit_state{{model="{name}",state="{state}"}} 1' for name,state in m["circuits"].items()]
+        return "\n".join(lines)+"\n"
