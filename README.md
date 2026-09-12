@@ -1,5 +1,7 @@
 # Axiom-Grid
 
+[![Axiom-Grid focused preview gates](https://github.com/Kartik24Hulmukh/Axiom-Grid/actions/workflows/axiom.yml/badge.svg)](https://github.com/Kartik24Hulmukh/Axiom-Grid/actions/workflows/axiom.yml)
+
 **Local writing. Explicit control.** A focused writing copilot derived from Kairo-Phantom.
 
 > **Engineering preview, not production-ready.** The working slice generates a reviewable suggestion from text you explicitly provide. It does not automatically type into other applications. That feature is gated until target-bound approval and native-platform tests pass.

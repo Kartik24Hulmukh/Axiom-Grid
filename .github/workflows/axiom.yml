@@ -34,6 +34,10 @@ jobs:
         run: |
           python3 -m pip install --quiet pytest fastapi httpx
           python3 -m pytest -q -p no:cacheprovider overlay/tests/test_server.py
+      - name: Wedge pack ground-truth F1 gate (offline deterministic extraction >= 0.80)
+        run: python3 packs/memo/eval_wedge.py
+      - name: 100x Concurrency stress & security probe gate
+        run: python3 stress_test.py
       - run: cargo build --manifest-path axiom-runtime/Cargo.toml --locked --release
         env:
           RUSTUP_TOOLCHAIN: 1.98.1

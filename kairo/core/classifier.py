@@ -24,6 +24,12 @@ def classify_document(text: str, page_count: int = 1, has_tables: bool = False) 
     """
     text_lower = text.lower()
 
+    # Classified memo: strong signals (intelligence, defense, foreign relations)
+    memo_keywords = ["classification:", "declassify on:", "date of information:", "rel to"]
+    memo_score = sum(1 for kw in memo_keywords if kw in text_lower)
+    if memo_score >= 1 or re.search(r"^CLASSIFICATION:\s*", text, re.M):
+        return "memo"
+
     # Invoice: strong signals
     invoice_keywords = ["invoice", "invoice number", "amount due", "total amount",
                         "bill to", "payment terms", "subtotal", "sub-total",

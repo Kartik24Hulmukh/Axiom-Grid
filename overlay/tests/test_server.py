@@ -177,7 +177,7 @@ def test_figures_requires_file_param(client):
     assert response.status_code == 400
 
 
-def test_extract_document_logs_unexpected_exceptions(client, caplog, monkeypatch):
+def test_extract_document_logs_unexpected_exceptions(client, caplog, monkeypatch, tmp_path):
     """Degraded-state: unexpected pipeline exceptions on /api/extract-document
     are logged and fail closed with a 500, never a raw traceback leak."""
     from overlay import server
@@ -186,8 +186,63 @@ def test_extract_document_logs_unexpected_exceptions(client, caplog, monkeypatch
         raise RuntimeError("synthetic extraction failure")
 
     monkeypatch.setattr(server.OrchestratorImpl, "run", boom)
-    fixture = "axiom-grid/fixtures/wedge/sample_memo_01.txt"
+    doc_path = tmp_path / "sample_memo.txt"
+    doc_path.write_text("CLASSIFICATION: SECRET\nSUBJECT: Synthetic test\n", encoding="utf-8")
     with caplog.at_level("ERROR", logger="overlay.server"):
-        response = client.post("/api/extract-document", json={"file": fixture})
+        response = client.post("/api/extract-document", json={"file": str(doc_path)})
     assert response.status_code == 500
     assert any("extract-document" in r.message for r in caplog.records)
+
+
+def test_sandbox_escape_rejected(client):
+    """SEC-001 regression: directory traversal and absolute path leaks fail-closed with 404."""
+    probes = [
+        "/etc/passwd",
+        ("../" * 4) + "etc/passwd",
+        "fixtures/" + ("../" * 3) + "etc/passwd",
+        "/proc/self/environ",
+        "fixtures/" + ("../" * 3) + "etc/shadow",
+    ]
+    for probe in probes:
+        r_ext = client.post("/api/extract-document", json={"file": probe})
+        assert r_ext.status_code == 404, f"Failed for /api/extract-document with {probe}: {r_ext.status_code}"
+
+        r_demo = client.post("/demo", json={"file": probe})
+        assert r_demo.status_code == 404, f"Failed for /demo with {probe}: {r_demo.status_code}"
+
+        r_fig = client.get(f"/api/figures/doc1?file={probe}")
+        assert r_fig.status_code == 404, f"Failed for /api/figures with {probe}: {r_fig.status_code}"
+
+
+def test_csrf_origin_gate_rejects_evil_origin(client):
+    """SEC-002 regression: requests with non-local Origin headers are rejected with 403."""
+    response = client.post(
+        "/demo",
+        json={"file": "sample_memo_01.txt"},
+        headers={"Origin": "https://evil.example"}
+    )
+    assert response.status_code == 403
+    assert "Forbidden" in response.json()["detail"]
+
+
+def test_csrf_origin_gate_rejects_null_origin(client):
+    """SEC-002 regression: requests with opaque Origin (null) are rejected with 403."""
+    response = client.post(
+        "/demo",
+        json={"file": "sample_memo_01.txt"},
+        headers={"Origin": "null"}
+    )
+    assert response.status_code == 403
+    assert "Forbidden" in response.json()["detail"]
+
+
+def test_csrf_origin_gate_allows_local_origin(client):
+    """SEC-002 regression: local desktop and overlay UI origins are permitted."""
+    response = client.post(
+        "/demo",
+        json={"file": "sample_memo_01.txt"},
+        headers={"Origin": "http://127.0.0.1:8765"}
+    )
+    assert response.status_code == 200
+    assert response.json()["success"] is True
+

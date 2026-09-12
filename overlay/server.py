@@ -12,10 +12,11 @@ import hashlib
 import logging
 import os
 import pathlib
+import tempfile
 import threading
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from kernel.core.data_model import (
     Action,
@@ -37,6 +38,7 @@ from packs.contract.pack import ContractPack
 from packs.generic.pack import GenericPack
 from packs.invoice.pack import InvoicePack
 from packs.paper.pack import PaperPack
+from packs.memo.pack import ClassifiedMemoPack
 from pydantic import BaseModel, Field, field_validator
 
 # Initialize FastAPI
@@ -47,6 +49,62 @@ logger = logging.getLogger("overlay.server")
 BASE_DIR = pathlib.Path(__file__).parents[1]
 FIXTURES_DIR = BASE_DIR / "fixtures" / "wedge"
 TEMPLATES_DIR = BASE_DIR / "overlay" / "templates"
+WORKSPACE_ROOT = BASE_DIR.resolve()
+ALLOWED_ROOTS = [WORKSPACE_ROOT, pathlib.Path(tempfile.gettempdir()).resolve()]
+
+ALLOWED_ORIGINS = {
+    "http://localhost",
+    "http://127.0.0.1",
+    "http://testserver",
+    "https://testserver",
+    "tauri://localhost",
+}
+
+
+@app.middleware("http")
+async def enforce_origin_gate(request, call_next):
+    origin = request.headers.get("origin")
+    if origin is not None:
+        parsed = origin.rstrip("/")
+        is_allowed = False
+        if parsed in ALLOWED_ORIGINS:
+            is_allowed = True
+        elif parsed.startswith("http://127.0.0.1:") or parsed.startswith("http://localhost:"):
+            is_allowed = True
+        elif parsed.startswith("http://testserver:") or parsed.startswith("https://testserver:"):
+            is_allowed = True
+
+        if not is_allowed:
+            return JSONResponse(status_code=403, content={"detail": "Forbidden: invalid origin"})
+    return await call_next(request)
+
+
+def resolve_sandbox_path(file_path_str: str) -> pathlib.Path:
+    """Resolve file path strictly within WORKSPACE_ROOT or system temp directory."""
+    if not file_path_str or not isinstance(file_path_str, str) or not file_path_str.strip() or "\x00" in file_path_str:
+        raise HTTPException(status_code=422, detail="Invalid file path")
+
+    p = pathlib.Path(file_path_str)
+    candidates = []
+    if p.is_absolute():
+        candidates.append(p)
+    else:
+        candidates.append(FIXTURES_DIR / file_path_str)
+        candidates.append(BASE_DIR / file_path_str)
+        candidates.append(pathlib.Path.cwd() / file_path_str)
+        candidates.append(p)
+
+    for cand in candidates:
+        try:
+            resolved = cand.resolve()
+            if resolved.is_file():
+                if any(resolved.is_relative_to(root) for root in ALLOWED_ROOTS):
+                    return resolved
+        except (OSError, ValueError):
+            continue
+
+    raise HTTPException(status_code=404, detail=f"File {file_path_str} not found")
+
 
 # Initialize Core Services
 provenance_log = ProvenanceLogImpl()
@@ -115,10 +173,7 @@ async def read_root():
 @app.post("/demo")
 async def run_demo(req: DemoRequest):
     """Run the pipeline on a document and return data for the overlay."""
-    candidates = (pathlib.Path(req.file), FIXTURES_DIR / req.file, BASE_DIR / req.file)
-    file_path = next((c for c in candidates if c.is_file()), None)
-    if file_path is None:
-        raise HTTPException(status_code=404, detail=f"File {req.file} not found")
+    file_path = resolve_sandbox_path(req.file)
 
     try:
         # 1. Create target document
@@ -348,10 +403,8 @@ async def extract_document(req: ExtractDocumentRequest):
     Returns fields with value, grounded status, bbox, cascade method,
     confidence, and source_link for each extracted field.
     """
-    filepath = req.file
-    exists = await asyncio.to_thread(os.path.exists, filepath)
-    if not exists:
-        raise HTTPException(status_code=404, detail=f"File not found: {filepath}")
+    file_path = resolve_sandbox_path(req.file)
+    filepath = str(file_path)
 
     # Read and classify (blocking I/O off the event loop)
     def _read(fp):
@@ -371,6 +424,7 @@ async def extract_document(req: ExtractDocumentRequest):
         "invoice": InvoicePack,
         "contract": ContractPack,
         "paper": PaperPack,
+        "memo": ClassifiedMemoPack,
         "generic": GenericPack,
     }
     pack_class = pack_map.get(doc_type, GenericPack)
@@ -441,12 +495,9 @@ async def extract_document(req: ExtractDocumentRequest):
 @app.post("/api/ask-document")
 async def ask_document(req: AskDocumentRequest):
     """Ask a question about a document. Returns answer with bbox or refusal."""
-    filepath = req.file
+    file_path = resolve_sandbox_path(req.file)
+    filepath = str(file_path)
     question = req.question
-
-    exists = await asyncio.to_thread(os.path.exists, filepath)
-    if not exists:
-        raise HTTPException(status_code=404, detail=f"File not found: {filepath}")
 
     try:
         # For now, extract all fields and check if the question matches any
@@ -542,13 +593,10 @@ async def get_figures(doc_id: str, file: str = ""):
     For PDFs: uses PyMuPDF to detect images, find captions, classify.
     For text: extracts Figure/Table references from text.
     """
-    filepath = file
-    if not filepath or not filepath.strip():
+    if not file or not file.strip():
         raise HTTPException(status_code=400, detail="file parameter is required")
-
-    exists = await asyncio.to_thread(os.path.exists, filepath)
-    if not exists:
-        raise HTTPException(status_code=404, detail=f"File not found: {filepath}")
+    file_path = resolve_sandbox_path(file)
+    filepath = str(file_path)
 
     try:
         if filepath.lower().endswith(".pdf"):
