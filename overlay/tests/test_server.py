@@ -2,7 +2,9 @@
 Tests for overlay FastAPI server.
 """
 
-import os
+import hashlib
+import pathlib
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -60,3 +62,35 @@ def test_demo_and_actions_endpoints(client):
     })
     assert corr_response.status_code == 200
     assert corr_response.json()["success"]
+
+
+def test_demo_uses_real_sha256_provenance_digest(client):
+    """Regression: the demo path must hash the real file bytes, never a placeholder."""
+    fixture = pathlib.Path(__file__).resolve().parents[2] / "fixtures" / "wedge" / "sample_memo_01.txt"
+    if not fixture.exists():
+        pytest.skip("fixture missing")
+    expected = hashlib.sha256(fixture.read_bytes()).hexdigest()
+    from overlay import server
+
+    seen = {}
+    original = server.Document
+
+    def capture(**kwargs):
+        seen.update(kwargs)
+        return original(**kwargs)
+
+    server.Document = capture
+    try:
+        response = client.post("/demo", json={"file": "sample_memo_01.txt"})
+    finally:
+        server.Document = original
+    assert response.status_code == 200
+    assert seen["sha256"] == expected
+    assert len(seen["sha256"]) == 64 and seen["sha256"] != "mock-sha256"
+
+
+def test_demo_rejects_empty_file_name(client):
+    """Boundary: empty file name is rejected, not resolved to a directory."""
+    for bad in ("", "   ", ".", "fixtures"):
+        response = client.post("/demo", json={"file": bad})
+        assert response.status_code in (404, 422), (bad, response.status_code)
