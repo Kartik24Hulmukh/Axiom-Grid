@@ -1,0 +1,47 @@
+CLASSIFICATION: SECRET
+
+MEMORANDUM FOR THE RECORD
+
+ORIGINATING OFFICE: Office of East Asian Analysis,
+Central Intelligence Agency
+AUTHOR: Robert T. Vance
+DATE OF INFORMATION: 20071118
+SUBJECT: Technology Acquisition Networks in the Taiwan
+Strait
+
+REFERENCES:
+(a) CIA Intel Report 2007-0481, "Semiconductor Supply
+Chains"
+(b) NSA SIGINT Bulletin 2007-1110
+
+A. (S//NF) This memorandum details the ongoing
+surveillance of technology procurement front companies
+operating in the vicinity of Taipei and Hsinchu, Taiwan.
+
+B. (S) Key entities identified:
+   - PERSON: Robert T. Vance, Senior Analyst
+   - ORG: Apex Chip Technologies, Taipei, Taiwan
+   - LOCATION: Hsinchu Science Park, Taiwan
+   - EQUIPMENT: Lithography Step-and-Scan Systems (qty 2)
+
+C. (S//NF) Transshipments of specialized equipment have
+been routed through Hong Kong to mainland ports, raising
+export control concerns.
+
+D. (C) Recommendations:
+   a. Coordinate with Taiwan security services
+   b. Refine targeting indicators for front companies
+
+HANDLING INSTRUCTIONS: Handle via SECRET channels only.
+No dissemination outside intelligence community.
+
+DECLASSIFY ON: 18 NOV 2032
+
+PII NOTICE:
+- Name: Robert T. Vance (USG employee)
+
+//SIGNED//
+Robert T. Vance
+Office of East Asian Analysis, CIA
+
+CLASSIFICATION: SECRET
