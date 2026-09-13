@@ -115,7 +115,7 @@ def test_json_logging_configured_on_root():
 def test_readyz_failure_does_not_leak_internals(monkeypatch):
     monkeypatch.setattr(s, "_readyz_probe_ok", threading.Event())
 
-    def boom(_path):
+    def boom():
         raise RuntimeError("secret db password in traceback")
 
     monkeypatch.setattr(s, "_run_readyz_probe", boom)

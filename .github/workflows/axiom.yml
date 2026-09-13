@@ -36,7 +36,7 @@ jobs:
           python3 -m ruff check --select E9,F overlay kernel scripts/stress_sec006_gauntlet.py stress_test.py
       - name: Overlay server gate (real provenance digest, strict input schema)
         run: |
-          python3 -m pip install --quiet pytest pytest-asyncio hypothesis fastapi httpx uvicorn ruff psutil
+          python3 -m pip install --quiet pytest pytest-asyncio hypothesis fastapi httpx uvicorn ruff psutil opentelemetry-sdk==1.44.0
           python3 -m pytest -q -p no:cacheprovider overlay/tests kernel/tests -W error::ResourceWarning -W error::pytest.PytestUnraisableExceptionWarning
       - name: Wave 11 changed-file lint gate
         run: python3 -m ruff check overlay/server.py kernel/sidecar/melious_router.py overlay/tests/test_server_wave11.py kernel/tests/test_melious_router_wave11.py scripts/stress_wave11.py

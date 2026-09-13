@@ -47,6 +47,7 @@ from kernel.sidecar.memory_store import MemoryStoreImpl
 from kernel.sidecar.orchestrator import OrchestratorImpl
 from kernel.sidecar.quality_gate import LocalQualityGate
 from kernel.sidecar.security_filter import LocalSecurityFilter
+from overlay.telemetry import install_tracing, log_context
 from packs.contract.pack import ContractPack
 from packs.generic.pack import GenericPack
 from packs.invoice.pack import InvoicePack
@@ -93,6 +94,7 @@ class JsonLogFormatter(logging.Formatter):
             "msg": record.getMessage(),
             "service": "axiom-grid-overlay",
         }
+        payload.update(log_context())
         if record.exc_info:
             payload["exc_type"] = getattr(record.exc_info[0], "__name__", "Exception")
         for key in ("request_id", "path", "status", "latency_ms", "client"):
@@ -1184,46 +1186,39 @@ async def readyz():
     if _readyz_probe_ok.is_set():
         return {"status": "ready", "pipeline": "ok", "cached": True}
 
-    probe_path = pathlib.Path(tempfile.gettempdir()) / "axiom_readyz_probe.txt"
     try:
-        result = await asyncio.to_thread(_run_readyz_probe, probe_path)
-        _readyz_probe_ok.set()
-        return result
+        return await asyncio.to_thread(_run_readyz_probe)
     except Exception as exc:
         logger.exception("readiness probe failed")
-        # Do not leak internal exception text to unauthenticated probers.
         return JSONResponse(status_code=503, content={"status": "not_ready", "error": type(exc).__name__})
-    finally:
-        try:
-            probe_path.unlink(missing_ok=True)
-        except OSError:
-            pass
 
 
-def _run_readyz_probe(probe_path: pathlib.Path) -> dict:
-    """Synchronous readiness check: serialize concurrent first-probes so the
-    heavyweight pipeline runs exactly once."""
+def _run_readyz_probe() -> dict:
+    """Publish success under the same lock as initialization and file cleanup.
+
+    The event-loop caller must not own cleanup: it can race the next worker
+    before publishing success. A private directory also isolates processes
+    and prevents following a pre-created symlink in the shared temp directory.
+    """
     with _readyz_probe_lock:
         if _readyz_probe_ok.is_set():
             return {"status": "ready", "pipeline": "ok", "cached": True}
-        probe_path.write_text(
-            "CLASSIFICATION: UNCLASSIFIED\nSUBJECT: readiness probe\n"
-            "ORIGIN: axiom-grid ops\n",
-            encoding="utf-8",
-        )
-        text = probe_path.read_text(encoding="utf-8")
-        from kairo.core.classifier import classify_document
-        doc_type = classify_document(text)
-        from packs.memo.pack import ClassifiedMemoPack
-        fields = ClassifiedMemoPack().extract_text(text)
-        if not fields:
-            raise RuntimeError("readiness probe extracted zero fields")
-        return {
-            "status": "ready",
-            "pipeline": "ok",
-            "doc_type": doc_type,
-            "fields_extracted": len(fields),
-        }
+        with tempfile.TemporaryDirectory(prefix="axiom-readyz-") as directory:
+            probe_path = pathlib.Path(directory) / "probe.txt"
+            probe_path.write_text(
+                "CLASSIFICATION: UNCLASSIFIED\nSUBJECT: readiness probe\n"
+                "ORIGIN: axiom-grid ops\n", encoding="utf-8",
+            )
+            text = probe_path.read_text(encoding="utf-8")
+            from kairo.core.classifier import classify_document
+            doc_type = classify_document(text)
+            from packs.memo.pack import ClassifiedMemoPack
+            fields = ClassifiedMemoPack().extract_text(text)
+            if not fields:
+                raise RuntimeError("readiness probe extracted zero fields")
+        _readyz_probe_ok.set()
+        return {"status": "ready", "pipeline": "ok", "doc_type": doc_type,
+                "fields_extracted": len(fields)}
 
 
 @app.get("/metrics")
@@ -1247,3 +1242,7 @@ async def metrics(format: str = "json"):
         lines += [f'axiom_http_status_total{{code="{code}"}} {count}' for code,count in data["status_counts"].items()]
         return HTMLResponse("\n".join(lines)+"\n", media_type="text/plain; version=0.0.4")
     return data
+
+
+# Register last so spans enclose auth, rate limiting and request logging.
+install_tracing(app)
