@@ -1,0 +1,73 @@
+{
+  "scope": "one live sample/model; no percentile or capacity claim",
+  "max_requests": 4,
+  "max_completion_tokens_total": 128,
+  "results": [
+    {
+      "model": "glm-5.3",
+      "catalog_present": true,
+      "status": 200,
+      "usage": {
+        "prompt_tokens": 15,
+        "completion_tokens": 32,
+        "total_tokens": 47,
+        "cached_tokens": 0,
+        "reasoning_tokens": 32,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 32
+        }
+      },
+      "choices": 1,
+      "latency_ms": 938.55
+    },
+    {
+      "model": "glm-5.3-flash",
+      "catalog_present": true,
+      "status": 200,
+      "usage": {
+        "prompt_tokens": 19,
+        "completion_tokens": 32,
+        "total_tokens": 51,
+        "cached_tokens": 0,
+        "reasoning_tokens": 32,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 32
+        }
+      },
+      "choices": 1,
+      "latency_ms": 1065.15
+    },
+    {
+      "model": "kimi-k3",
+      "catalog_present": true,
+      "error_type": "TimeoutError",
+      "latency_ms": 20412.72
+    },
+    {
+      "model": "qwen3.8-27b",
+      "catalog_present": true,
+      "status": 200,
+      "usage": {
+        "prompt_tokens": 13,
+        "completion_tokens": 23,
+        "total_tokens": 36,
+        "cached_tokens": 0,
+        "reasoning_tokens": 19,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 19
+        }
+      },
+      "choices": 1,
+      "latency_ms": 900.52
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "requests": 2000,
+  "threads": 1,
+  "paths": [
+    "/healthz",
+    "/livez",
+    "/readyz",
+    "/metrics",
+    "/api/health"
+  ],
+  "http_successes": 2000,
+  "http_errors": 0,
+  "request_success_ratio": 1.0,
+  "slo_pass": true,
+  "scope": "short local HTTP workload, NOT uptime or 100x certification",
+  "p50_ms": 1.12,
+  "p95_ms": 1.45,
+  "p99_ms": 2.05,
+  "throughput_rps": 824.1,
+  "status_codes": {
+    "200": 2000
+  },
+  "transport_errors": 0,
+  "rss_start_mib": 79.4,
+  "rss_end_mib": 80.5,
+  "rss_peak_mib": 80.5,
+  "sigterm_seconds": 0.215
+}

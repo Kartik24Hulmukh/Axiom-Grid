@@ -1,0 +1,88 @@
+e __pycache__ / .pyc files and/or use a unique basename for your test file modules
+__________ ERROR collecting tests/test_docx_tracked_changes_oracle.py __________
+ImportError while importing test module '/home/daytona/axiom-grid/tests/test_docx_tracked_changes_oracle.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/local/lib/python3.14/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_docx_tracked_changes_oracle.py:20: in <module>
+    from docx import Document
+E   ModuleNotFoundError: No module named 'docx'
+____________ ERROR collecting tests/test_production_ops_oracles.py _____________
+ImportError while importing test module '/home/daytona/axiom-grid/tests/test_production_ops_oracles.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/local/lib/python3.14/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_production_ops_oracles.py:36: in <module>
+    from kairo.oracles.production_ops import (  # noqa: E402
+kairo/oracles/__init__.py:8: in <module>
+    from kairo.oracles.docx_tracked_changes import (
+kairo/oracles/docx_tracked_changes.py:30: in <module>
+    import docx  # python-docx, BSD-3-Clause
+    ^^^^^^^^^^^
+E   ModuleNotFoundError: No module named 'docx'
+=============================== warnings summary ===============================
+kairo-sidecar/sidecar/test_fix_loop.py:87
+  /home/daytona/axiom-grid/kairo-sidecar/sidecar/test_fix_loop.py:87: PytestCollectionWarning: cannot collect test class 'TestFixLoop' because it has a __init__ constructor (from: kairo-sidecar/sidecar/test_fix_loop.py)
+    class TestFixLoop:
+
+kairo-sidecar/sidecar/test_generator.py:14
+  /home/daytona/axiom-grid/kairo-sidecar/sidecar/test_generator.py:14: PytestCollectionWarning: cannot collect test class 'TestGenerator' because it has a __init__ constructor (from: kairo-sidecar/sidecar/test_generator.py)
+    class TestGenerator:
+
+kairo-sidecar/tests/test_kairoreal_gauntlet.py:124
+  /home/daytona/axiom-grid/kairo-sidecar/tests/test_kairoreal_gauntlet.py:124: PytestUnknownMarkWarning: Unknown pytest.mark.slow - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.slow
+
+kairo-sidecar/sidecar/test_generator.py:14
+  /home/daytona/axiom-grid/kairo-sidecar/sidecar/test_generator.py:14: PytestCollectionWarning: cannot collect test class 'TestGenerator' because it has a __init__ constructor (from: kairo-sidecar/tests/test_test_generator.py)
+    class TestGenerator:
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+ERROR kairo-sidecar/test_domain2_excel.py
+ERROR kairo-sidecar/test_domain3_pptx.py
+ERROR kairo-sidecar/test_domain4_pdf.py
+ERROR kairo-sidecar/test_phase0_1_e2e.py
+ERROR kairo-sidecar/tests/test_adjacent_unchanged.py
+ERROR kairo-sidecar/tests/test_air_gap_validation.py
+ERROR kairo-sidecar/tests/test_airgap_egress.py
+ERROR kairo-sidecar/tests/test_audit_log_ed25519.py
+ERROR kairo-sidecar/tests/test_best_of_n.py
+ERROR kairo-sidecar/tests/test_crash_safety.py
+ERROR kairo-sidecar/tests/test_creators.py
+ERROR kairo-sidecar/tests/test_domain_registry.py
+ERROR kairo-sidecar/tests/test_e2e_docx.py
+ERROR kairo-sidecar/tests/test_excel_master.py
+ERROR kairo-sidecar/tests/test_excel_oracles.py
+ERROR kairo-sidecar/tests/test_formula_validation.py
+ERROR kairo-sidecar/tests/test_gui_artifact_oracle.py
+ERROR kairo-sidecar/tests/test_legal_redline_e2e.py
+ERROR kairo-sidecar/tests/test_offline.py
+ERROR kairo-sidecar/tests/test_oracle_hardening_adversarial.py
+ERROR kairo-sidecar/tests/test_oracle_hardening_challenger.py
+ERROR kairo-sidecar/tests/test_oracles.py
+ERROR kairo-sidecar/tests/test_parallel_sandbox.py
+ERROR kairo-sidecar/tests/test_phase10_loop.py
+ERROR kairo-sidecar/tests/test_phase11_drift_alarm.py
+ERROR kairo-sidecar/tests/test_production_gates.py
+ERROR kairo-sidecar/tests/test_production_gates_v2.py
+ERROR kairo-sidecar/tests/test_prompt_leak.py
+ERROR kairo-sidecar/tests/test_rapid_fire.py
+ERROR kairo-sidecar/tests/test_router.py
+ERROR kairo-sidecar/tests/test_sm3_sm4.py
+ERROR kairo-sidecar/tests/test_sprints_new.py
+ERROR kairo-sidecar/tests/test_undo.py
+ERROR kairo-sidecar/tests/test_wedge_gauntlet.py
+ERROR kairo-sidecar/tests/test_word_master.py
+ERROR kairo-sidecar/tests/test_word_style.py
+ERROR legacy/wedge/test_wedge_pack.py
+ERROR tests/latency_test.py
+ERROR tests/memory_leak_test.py
+ERROR tests/test_docx_tracked_changes_oracle.py
+ERROR tests/test_production_ops_oracles.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 41 errors during collection !!!!!!!!!!!!!!!!!!!
+2606 tests collected, 41 errors in 7.50s

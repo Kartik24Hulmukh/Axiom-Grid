@@ -1,0 +1,25 @@
+✔ blank input does not invoke backend (1.753344ms)
+✔ explicit context and literal output, not HTML (6.581977ms)
+✔ discard prevents late results and concurrent requests (3.234509ms)
+✔ backend failure is actionable and resets button (0.943333ms)
+✔ browser-only preview does not fake generation (0.749932ms)
+✔ readiness displays exact configured model and enables generation (1.040962ms)
+✔ browser readiness fails closed (0.818592ms)
+✔ cancel while pending propagates to the backend (0.779582ms)
+✔ cancel without pending work does not call the backend (0.588522ms)
+✔ browser readiness disables generation (0.936782ms)
+✔ generation cannot start before readiness resolves (0.722122ms)
+✔ stale readiness cannot overwrite a newer failure (0.746632ms)
+✔ readiness retry never enables generation while pending (0.762652ms)
+✔ generation completion preserves a failed readiness gate (0.841623ms)
+✔ cancellation rejection is visible and never claims generation stopped (0.918312ms)
+✔ failed cancellation acknowledgement cannot race a new generation (0.837662ms)
+✔ malformed readiness never unlocks generation (0.814323ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 69.404153

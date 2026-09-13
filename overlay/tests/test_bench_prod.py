@@ -19,7 +19,7 @@ def test_benchmark_gate_checks_http_success(monkeypatch, capsys, status, expecte
         def poll(self):
             return 0
     monkeypatch.setattr(bench.subprocess, "Popen", lambda *a, **kw: Process())
-    monkeypatch.setattr(bench, "_rss_bytes", lambda pid: 1000)
+    monkeypatch.setattr(bench, "_rss_bytes", lambda pid, field="VmRSS": 1000)
     monkeypatch.setattr(bench.sys, "argv", ["bench", "10", "1"])
     monkeypatch.setattr(bench, "_hit", lambda base, i, *paths: (1.0, status if paths else 200))
     assert bench.main() == expected_exit

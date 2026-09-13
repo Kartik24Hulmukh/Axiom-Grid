@@ -22,10 +22,10 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PATHS = ("/healthz", "/livez", "/readyz", "/metrics", "/api/health")
 
 
-def _rss_bytes(pid: int) -> int:
+def _rss_bytes(pid: int, field: str = "VmRSS") -> int:
     with open(f"/proc/{pid}/status", encoding="utf-8") as fh:
         for line in fh:
-            if line.startswith("VmRSS:"):
+            if line.startswith(field + ":"):
                 return int(line.split()[1]) * 1024
     return 0
 
@@ -80,6 +80,7 @@ def main() -> int:
             samples = list(pool.map(lambda i: _hit(base, i, paths), range(n)))
         wall = time.perf_counter() - t0
         rss1 = _rss_bytes(proc.pid)
+        peak_rss = _rss_bytes(proc.pid, "VmHWM")
         lat = sorted(s[0] for s in samples)
         codes: dict[int, int] = {}
         for _, c in samples:
@@ -104,6 +105,7 @@ def main() -> int:
             "transport_errors": codes.get(0, 0),
             "rss_start_mib": round(rss0 / 2**20, 1),
             "rss_end_mib": round(rss1 / 2**20, 1),
+            "rss_peak_mib": round(peak_rss / 2**20, 1),
             "sigterm_seconds": round(time.perf_counter() - t1, 3),
         }
         print(json.dumps(report, indent=2))
