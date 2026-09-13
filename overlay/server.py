@@ -57,11 +57,21 @@ from packs.paper.pack import PaperPack
 # Initialize FastAPI
 @contextlib.asynccontextmanager
 async def _lifespan(_app: FastAPI):
-    """OPS-007: drain the durable SQLite handle on graceful shutdown."""
+    """Reopen durable state and join extraction workers before closing SQLite."""
+    global _extraction_pool
+    memory_store.reopen()
+    if _extraction_pool._shutdown:
+        _extraction_pool = concurrent.futures.ThreadPoolExecutor(
+            max_workers=4, thread_name_prefix="axiom-extract"
+        )
     try:
         yield
     finally:
-        memory_store.close()  # idempotent; defined at module import below
+        # ASGI server has drained ingress; do not close state while work runs.
+        # Running Python threads cannot be forcibly stopped: supervisors still
+        # need a termination grace period for a genuinely hung native parser.
+        await asyncio.to_thread(_extraction_pool.shutdown, wait=True, cancel_futures=True)
+        memory_store.close()
 
 
 app = FastAPI(title="Axiom-Grid Overlay API", lifespan=_lifespan)

@@ -148,15 +148,27 @@ class MemoryStoreImpl:
         self._db_path = str(db_path)
         if self._db_path != ":memory:":
             pathlib.Path(self._db_path).parent.mkdir(parents=True, exist_ok=True)
-        self._conn = sqlite3.connect(self._db_path, check_same_thread=False)
-        self._conn.row_factory = sqlite3.Row
-        self._conn.execute("PRAGMA journal_mode=WAL")
-        self._conn.executescript(_SCHEMA)
         self._lock = threading.RLock()
-        # Safety net: if a caller forgets close(), release the SQLite handle
-        # deterministically at GC instead of leaking an fd / ResourceWarning.
-        self._finalizer = weakref.finalize(self, _close_connection, self._conn)
+        self._connect()
+
+    def _connect(self) -> None:
+        conn = sqlite3.connect(self._db_path, check_same_thread=False)
+        try:
+            conn.row_factory = sqlite3.Row
+            conn.execute("PRAGMA journal_mode=WAL")
+            conn.executescript(_SCHEMA)
+        except sqlite3.Error:
+            conn.close()
+            raise
+        self._conn = conn
+        self._finalizer = weakref.finalize(self, _close_connection, conn)
         logger.info("MemoryStore initialized: %s", self._db_path)
+
+    def reopen(self) -> None:
+        """Reopen after an ASGI restart, preserving all service references."""
+        with self._lock:
+            if self.closed:
+                self._connect()
 
     @property
     def closed(self) -> bool:
