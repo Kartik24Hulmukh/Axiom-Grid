@@ -1,0 +1,17 @@
+{
+  "requests": 2000,
+  "threads": 100,
+  "p50_ms": 103.18,
+  "p95_ms": 136.43,
+  "p99_ms": 167.48,
+  "throughput_rps": 1088.1,
+  "status_codes": {
+    "200": 1350,
+    "404": 150,
+    "429": 500
+  },
+  "transport_errors": 0,
+  "rss_start_mib": 78.3,
+  "rss_end_mib": 100.3,
+  "sigterm_seconds": 0.164
+}

@@ -1,0 +1,1719 @@
+I001 [*] Import block is un-sorted or un-formatted
+  --> kernel/core/audit_export.py:12:1
+   |
+10 |   """
+11 |
+12 | / from __future__ import annotations
+13 | |
+14 | | import json
+15 | | from datetime import datetime, timezone
+16 | | from typing import Any
+17 | |
+18 | | from kernel.core.audit_log import SignedAuditLog, AuditEntry
+   | |____________________________________________________________^
+help: Organize imports
+   |
+17 |
+   - from kernel.core.audit_log import SignedAuditLog, AuditEntry
+18 + from kernel.core.audit_log import AuditEntry, SignedAuditLog
+19 |
+   |
+
+F401 [*] `typing.Any` imported but unused
+  --> kernel/core/audit_export.py:16:20
+   |
+14 | import json
+15 | from datetime import datetime, timezone
+16 | from typing import Any
+   |                    ^^^
+17 |
+18 | from kernel.core.audit_log import SignedAuditLog, AuditEntry
+   |
+help: Remove unused import: `typing.Any`
+   |
+15 | from datetime import datetime, timezone
+   - from typing import Any
+16 |
+   |
+
+F401 [*] `kernel.core.audit_log.AuditEntry` imported but unused
+  --> kernel/core/audit_export.py:18:51
+   |
+16 | from typing import Any
+17 |
+18 | from kernel.core.audit_log import SignedAuditLog, AuditEntry
+   |                                                   ^^^^^^^^^^
+help: Remove unused import: `kernel.core.audit_log.AuditEntry`
+   |
+17 |
+   - from kernel.core.audit_log import SignedAuditLog, AuditEntry
+18 + from kernel.core.audit_log import SignedAuditLog
+19 |
+   |
+
+F541 [*] f-string without any placeholders
+   --> kernel/core/audit_export.py:103:30
+    |
+101 |             if e.source_region:
+102 |                 region = e.source_region
+103 |                 lines.append(f"- **Source region:**")
+    |                              ^^^^^^^^^^^^^^^^^^^^^^^
+104 |                 lines.append(f"  - Page: {region.get('page', 'N/A')}")
+105 |                 lines.append(f"  - Chunk ID: {region.get('chunk_id', 'N/A')}")
+    |
+help: Remove extraneous `f` prefix
+    |
+102 |                 region = e.source_region
+    -                 lines.append(f"- **Source region:**")
+103 +                 lines.append("- **Source region:**")
+104 |                 lines.append(f"  - Page: {region.get('page', 'N/A')}")
+    |
+
+F541 [*] f-string without any placeholders
+   --> kernel/core/audit_export.py:129:26
+    |
+127 |             lines.append(f"- **Model:** {e.model_id}")
+128 |             lines.append(f"- **Document hash:** `{e.document_hash}`")
+129 |             lines.append(f"- **Refusal reason:** Could not ground the answer to source text")
+    |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+130 |             lines.append(f"- **Cascade stage that blocked:** {e.cascade_stage}")
+131 |             lines.append(f"- **Signature:** `{e.signature[:16]}...`")
+    |
+help: Remove extraneous `f` prefix
+    |
+128 |             lines.append(f"- **Document hash:** `{e.document_hash}`")
+    -             lines.append(f"- **Refusal reason:** Could not ground the answer to source text")
+129 +             lines.append("- **Refusal reason:** Could not ground the answer to source text")
+130 |             lines.append(f"- **Cascade stage that blocked:** {e.cascade_stage}")
+    |
+
+F541 [*] f-string without any placeholders
+   --> kernel/core/audit_export.py:138:18
+    |
+136 |     lines.append("## Chain Verification")
+137 |     lines.append("")
+138 |     lines.append(f"The audit log uses HMAC-SHA256 hash chaining. Each entry's signature "
+    |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+139 |                  f"covers its content plus the previous entry's signature.")
+140 |     lines.append(f"")
+    |
+help: Remove extraneous `f` prefix
+    |
+137 |     lines.append("")
+    -     lines.append(f"The audit log uses HMAC-SHA256 hash chaining. Each entry's signature "
+138 +     lines.append("The audit log uses HMAC-SHA256 hash chaining. Each entry's signature "
+139 |                  f"covers its content plus the previous entry's signature.")
+    |
+
+F541 [*] f-string without any placeholders
+   --> kernel/core/audit_export.py:139:18
+    |
+137 |     lines.append("")
+138 |     lines.append(f"The audit log uses HMAC-SHA256 hash chaining. Each entry's signature "
+139 |                  f"covers its content plus the previous entry's signature.")
+    |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+140 |     lines.append(f"")
+141 |     lines.append(f"**Chain status:** {'VALID — no tampering detected' if chain_valid else 'BROKEN — tampering detected'}")
+    |
+help: Remove extraneous `f` prefix
+    |
+138 |     lines.append(f"The audit log uses HMAC-SHA256 hash chaining. Each entry's signature "
+    -                  f"covers its content plus the previous entry's signature.")
+139 +                  "covers its content plus the previous entry's signature.")
+140 |     lines.append(f"")
+    |
+
+F541 [*] f-string without any placeholders
+   --> kernel/core/audit_export.py:140:18
+    |
+138 |     lines.append(f"The audit log uses HMAC-SHA256 hash chaining. Each entry's signature "
+139 |                  f"covers its content plus the previous entry's signature.")
+140 |     lines.append(f"")
+    |                  ^^^
+141 |     lines.append(f"**Chain status:** {'VALID — no tampering detected' if chain_valid else 'BROKEN — tampering detected'}")
+142 |     lines.append("")
+    |
+help: Remove extraneous `f` prefix
+    |
+139 |                  f"covers its content plus the previous entry's signature.")
+    -     lines.append(f"")
+140 +     lines.append("")
+141 |     lines.append(f"**Chain status:** {'VALID — no tampering detected' if chain_valid else 'BROKEN — tampering detected'}")
+    |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> kernel/core/audit_log.py:18:1
+   |
+16 |   """
+17 |
+18 | / from __future__ import annotations
+19 | |
+20 | | import hashlib
+21 | | import hmac
+22 | | import json
+23 | | import logging
+24 | | import uuid
+25 | | from dataclasses import dataclass, field, asdict
+26 | | from datetime import datetime, timezone
+27 | | from typing import Any, Sequence
+28 | |
+29 | | from kernel.core.data_model import Answer, Anchor, BBox, GroundingMethod
+   | |________________________________________________________________________^
+30 |
+31 |   logger = logging.getLogger(__name__)
+   |
+help: Organize imports
+   |
+24 | import uuid
+   - from dataclasses import dataclass, field, asdict
+25 + from dataclasses import asdict, dataclass, field
+26 | from datetime import datetime, timezone
+27 | from typing import Any, Sequence
+28 |
+   - from kernel.core.data_model import Answer, Anchor, BBox, GroundingMethod
+29 + from kernel.core.data_model import Anchor, Answer, BBox, GroundingMethod
+30 |
+   |
+
+F401 [*] `dataclasses.field` imported but unused
+  --> kernel/core/audit_log.py:25:36
+   |
+23 | import logging
+24 | import uuid
+25 | from dataclasses import dataclass, field, asdict
+   |                                    ^^^^^
+26 | from datetime import datetime, timezone
+27 | from typing import Any, Sequence
+   |
+help: Remove unused import
+   |
+24 | import uuid
+   - from dataclasses import dataclass, field, asdict
+25 + from dataclasses import dataclass
+26 | from datetime import datetime, timezone
+   |
+
+F401 [*] `dataclasses.asdict` imported but unused
+  --> kernel/core/audit_log.py:25:43
+   |
+23 | import logging
+24 | import uuid
+25 | from dataclasses import dataclass, field, asdict
+   |                                           ^^^^^^
+26 | from datetime import datetime, timezone
+27 | from typing import Any, Sequence
+   |
+help: Remove unused import
+   |
+24 | import uuid
+   - from dataclasses import dataclass, field, asdict
+25 + from dataclasses import dataclass
+26 | from datetime import datetime, timezone
+   |
+
+UP035 [*] Import from `collections.abc` instead: `Sequence`
+  --> kernel/core/audit_log.py:27:1
+   |
+25 | from dataclasses import dataclass, field, asdict
+26 | from datetime import datetime, timezone
+27 | from typing import Any, Sequence
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+28 |
+29 | from kernel.core.data_model import Answer, Anchor, BBox, GroundingMethod
+   |
+help: Import from `collections.abc`
+   |
+26 | from datetime import datetime, timezone
+   - from typing import Any, Sequence
+27 + from typing import Any
+28 + from collections.abc import Sequence
+29 |
+   |
+
+F401 [*] `typing.Sequence` imported but unused
+  --> kernel/core/audit_log.py:27:25
+   |
+25 | from dataclasses import dataclass, field, asdict
+26 | from datetime import datetime, timezone
+27 | from typing import Any, Sequence
+   |                         ^^^^^^^^
+28 |
+29 | from kernel.core.data_model import Answer, Anchor, BBox, GroundingMethod
+   |
+help: Remove unused import: `typing.Sequence`
+   |
+26 | from datetime import datetime, timezone
+   - from typing import Any, Sequence
+27 + from typing import Any
+28 |
+   |
+
+F401 [*] `kernel.core.data_model.BBox` imported but unused
+  --> kernel/core/audit_log.py:29:52
+   |
+27 | from typing import Any, Sequence
+28 |
+29 | from kernel.core.data_model import Answer, Anchor, BBox, GroundingMethod
+   |                                                    ^^^^
+30 |
+31 | logger = logging.getLogger(__name__)
+   |
+help: Remove unused import
+   |
+28 |
+   - from kernel.core.data_model import Answer, Anchor, BBox, GroundingMethod
+29 + from kernel.core.data_model import Answer, Anchor
+30 |
+   |
+
+F401 [*] `kernel.core.data_model.GroundingMethod` imported but unused
+  --> kernel/core/audit_log.py:29:58
+   |
+27 | from typing import Any, Sequence
+28 |
+29 | from kernel.core.data_model import Answer, Anchor, BBox, GroundingMethod
+   |                                                          ^^^^^^^^^^^^^^^
+30 |
+31 | logger = logging.getLogger(__name__)
+   |
+help: Remove unused import
+   |
+28 |
+   - from kernel.core.data_model import Answer, Anchor, BBox, GroundingMethod
+29 + from kernel.core.data_model import Answer, Anchor
+30 |
+   |
+
+UP037 [*] Remove quotes from type annotation
+   --> kernel/core/audit_log.py:274:58
+    |
+273 |     @classmethod
+274 |     def from_json(cls, data: str, session_key: bytes) -> "SignedAuditLog":
+    |                                                          ^^^^^^^^^^^^^^^^
+275 |         """Reconstruct a SignedAuditLog from JSON. Raises if chain is broken."""
+276 |         obj = json.loads(data)
+    |
+help: Remove quotes
+    |
+273 |     @classmethod
+    -     def from_json(cls, data: str, session_key: bytes) -> "SignedAuditLog":
+274 +     def from_json(cls, data: str, session_key: bytes) -> SignedAuditLog:
+275 |         """Reconstruct a SignedAuditLog from JSON. Raises if chain is broken."""
+    |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> kernel/core/contracts.py:11:1
+   |
+ 9 |   """
+10 |
+11 | / from __future__ import annotations
+12 | |
+13 | | import enum
+14 | | from dataclasses import dataclass, field
+15 | | from datetime import datetime
+16 | | from typing import Any, Protocol, runtime_checkable
+17 | |
+18 | | from kernel.core.data_model import (
+19 | |     Action,
+20 | |     Chain,
+21 | |     Chunk,
+22 | |     Correction,
+23 | |     Document,
+24 | |     Extraction,
+25 | |     Suggestion,
+26 | |     Trace,
+27 | |     GroundingMethod,
+28 | |     Anchor,
+29 | | )
+   | |_^
+help: Organize imports
+   |
+19 |     Action,
+20 +     Anchor,
+21 |     Chain,
+--------------------------------------------------------------------------------
+25 |     Extraction,
+26 +     GroundingMethod,
+27 |     Suggestion,
+28 |     Trace,
+   -     GroundingMethod,
+   -     Anchor,
+29 | )
+   |
+
+F401 [*] `datetime.datetime` imported but unused
+  --> kernel/core/contracts.py:15:22
+   |
+13 | import enum
+14 | from dataclasses import dataclass, field
+15 | from datetime import datetime
+   |                      ^^^^^^^^
+16 | from typing import Any, Protocol, runtime_checkable
+   |
+help: Remove unused import: `datetime.datetime`
+   |
+14 | from dataclasses import dataclass, field
+   - from datetime import datetime
+15 | from typing import Any, Protocol, runtime_checkable
+   |
+
+SIM103 Return the condition `self.chunk.bbox is not None` directly
+   --> kernel/core/data_model.py:221:9
+    |
+219 |           if self.extraction.chunk_id != self.chunk.chunk_id:
+220 |               return False
+221 | /         if self.chunk.bbox is None:
+222 | |             return False
+223 | |         return True
+    | |___________________^
+help: Replace with `return self.chunk.bbox is not None`
+
+UP035 [*] Import from `collections.abc` instead: `Sequence`
+  --> kernel/core/embeddings.py:9:1
+   |
+ 7 | import hashlib
+ 8 | import logging
+ 9 | from typing import Sequence
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+10 |
+11 | logger = logging.getLogger(__name__)
+   |
+help: Import from `collections.abc`
+   |
+8  | import logging
+   - from typing import Sequence
+9  + from collections.abc import Sequence
+10 |
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> kernel/core/embeddings.py:69:12
+   |
+67 |             return 0.0
+68 |         return float(np.dot(a, b) / (norm_a * norm_b))
+69 |     except Exception:
+   |            ^^^^^^^^^
+70 |         # Non-numpy fallback
+71 |         import math
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> kernel/core/grounding.py:7:1
+   |
+ 5 |   NORMALIZE → EXACT → FUZZY(≥0.92) → SEMANTIC(≥0.86, with re-verify) → BLOCK.
+ 6 |   """
+ 7 | / from __future__ import annotations
+ 8 | |
+ 9 | | import logging
+10 | | import re
+11 | | from typing import Any
+12 | |
+13 | | from kernel.core.data_model import (
+14 | |     Anchor,
+15 | |     BBox,
+16 | |     Chunk,
+17 | |     Extraction,
+18 | |     ExtractionStatus,
+19 | |     GroundingMethod,
+20 | | )
+21 | | from kernel.core.embeddings import get_embedding, cosine_similarity
+   | |___________________________________________________________________^
+22 |
+23 |   logger = logging.getLogger(__name__)
+   |
+help: Organize imports
+   |
+20 | )
+   - from kernel.core.embeddings import get_embedding, cosine_similarity
+21 + from kernel.core.embeddings import cosine_similarity, get_embedding
+22 |
+   |
+
+F401 [*] `typing.Any` imported but unused
+  --> kernel/core/grounding.py:11:20
+   |
+ 9 | import logging
+10 | import re
+11 | from typing import Any
+   |                    ^^^
+12 |
+13 | from kernel.core.data_model import (
+   |
+help: Remove unused import: `typing.Any`
+   |
+10 | import re
+   - from typing import Any
+11 |
+   |
+
+F401 [*] `kernel.core.data_model.Extraction` imported but unused
+  --> kernel/core/grounding.py:17:5
+   |
+15 |     BBox,
+16 |     Chunk,
+17 |     Extraction,
+   |     ^^^^^^^^^^
+18 |     ExtractionStatus,
+19 |     GroundingMethod,
+   |
+help: Remove unused import
+   |
+16 |     Chunk,
+   -     Extraction,
+   -     ExtractionStatus,
+17 |     GroundingMethod,
+   |
+
+F401 [*] `kernel.core.data_model.ExtractionStatus` imported but unused
+  --> kernel/core/grounding.py:18:5
+   |
+16 |     Chunk,
+17 |     Extraction,
+18 |     ExtractionStatus,
+   |     ^^^^^^^^^^^^^^^^
+19 |     GroundingMethod,
+20 | )
+   |
+help: Remove unused import
+   |
+16 |     Chunk,
+   -     Extraction,
+   -     ExtractionStatus,
+17 |     GroundingMethod,
+   |
+
+F401 [*] `typing.Any` imported but unused
+  --> kernel/core/provenance.py:17:20
+   |
+16 | import logging
+17 | from typing import Any
+   |                    ^^^
+18 |
+19 | from kernel.core.data_model import (
+   |
+help: Remove unused import: `typing.Any`
+   |
+16 | import logging
+   - from typing import Any
+17 |
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> kernel/core/reproducibility.py:11:1
+   |
+ 9 |   """
+10 |
+11 | / from __future__ import annotations
+12 | |
+13 | | import hashlib
+14 | | import json
+15 | | import random
+16 | | from dataclasses import dataclass, field
+17 | | from datetime import datetime, timezone
+18 | | from typing import Any, Sequence
+19 | |
+20 | | from kernel.core.data_model import Answer, Anchor, BBox, GroundingMethod
+   | |________________________________________________________________________^
+help: Organize imports
+   |
+19 |
+   - from kernel.core.data_model import Answer, Anchor, BBox, GroundingMethod
+20 + from kernel.core.data_model import Anchor, Answer, BBox, GroundingMethod
+21 |
+   |
+
+F401 [*] `dataclasses.field` imported but unused
+  --> kernel/core/reproducibility.py:16:36
+   |
+14 | import json
+15 | import random
+16 | from dataclasses import dataclass, field
+   |                                    ^^^^^
+17 | from datetime import datetime, timezone
+18 | from typing import Any, Sequence
+   |
+help: Remove unused import: `dataclasses.field`
+   |
+15 | import random
+   - from dataclasses import dataclass, field
+16 + from dataclasses import dataclass
+17 | from datetime import datetime, timezone
+   |
+
+UP035 [*] Import from `collections.abc` instead: `Sequence`
+  --> kernel/core/reproducibility.py:18:1
+   |
+16 | from dataclasses import dataclass, field
+17 | from datetime import datetime, timezone
+18 | from typing import Any, Sequence
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+19 |
+20 | from kernel.core.data_model import Answer, Anchor, BBox, GroundingMethod
+   |
+help: Import from `collections.abc`
+   |
+17 | from datetime import datetime, timezone
+   - from typing import Any, Sequence
+18 + from typing import Any
+19 + from collections.abc import Sequence
+20 |
+   |
+
+F401 [*] `typing.Sequence` imported but unused
+  --> kernel/core/reproducibility.py:18:25
+   |
+16 | from dataclasses import dataclass, field
+17 | from datetime import datetime, timezone
+18 | from typing import Any, Sequence
+   |                         ^^^^^^^^
+19 |
+20 | from kernel.core.data_model import Answer, Anchor, BBox, GroundingMethod
+   |
+help: Remove unused import: `typing.Sequence`
+   |
+17 | from datetime import datetime, timezone
+   - from typing import Any, Sequence
+18 + from typing import Any
+19 |
+   |
+
+F401 [*] `kernel.core.data_model.Anchor` imported but unused
+  --> kernel/core/reproducibility.py:20:44
+   |
+18 | from typing import Any, Sequence
+19 |
+20 | from kernel.core.data_model import Answer, Anchor, BBox, GroundingMethod
+   |                                            ^^^^^^
+help: Remove unused import
+   |
+19 |
+   - from kernel.core.data_model import Answer, Anchor, BBox, GroundingMethod
+20 + from kernel.core.data_model import Answer
+21 |
+   |
+
+F401 [*] `kernel.core.data_model.BBox` imported but unused
+  --> kernel/core/reproducibility.py:20:52
+   |
+18 | from typing import Any, Sequence
+19 |
+20 | from kernel.core.data_model import Answer, Anchor, BBox, GroundingMethod
+   |                                                    ^^^^
+help: Remove unused import
+   |
+19 |
+   - from kernel.core.data_model import Answer, Anchor, BBox, GroundingMethod
+20 + from kernel.core.data_model import Answer
+21 |
+   |
+
+F401 [*] `kernel.core.data_model.GroundingMethod` imported but unused
+  --> kernel/core/reproducibility.py:20:58
+   |
+18 | from typing import Any, Sequence
+19 |
+20 | from kernel.core.data_model import Answer, Anchor, BBox, GroundingMethod
+   |                                                          ^^^^^^^^^^^^^^^
+help: Remove unused import
+   |
+19 |
+   - from kernel.core.data_model import Answer, Anchor, BBox, GroundingMethod
+20 + from kernel.core.data_model import Answer
+21 |
+   |
+
+F541 [*] f-string without any placeholders
+   --> kernel/core/reproducibility.py:235:13
+    |
+233 |             details.append(f"  {f}: {getattr(r1, f)!r} != {getattr(r2, f)!r}")
+234 |         raise AssertionError(
+235 |             f"Receipts are not byte-identical. Mismatched fields:\n" + "\n".join(details)
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+236 |         )
+    |
+help: Remove extraneous `f` prefix
+    |
+234 |         raise AssertionError(
+    -             f"Receipts are not byte-identical. Mismatched fields:\n" + "\n".join(details)
+235 +             "Receipts are not byte-identical. Mismatched fields:\n" + "\n".join(details)
+236 |         )
+    |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> kernel/core/verifier_standalone.py:23:1
+   |
+21 |   inference gateways.
+22 |   """
+23 | / from __future__ import annotations
+24 | |
+25 | | import math
+26 | | import re
+27 | | from dataclasses import dataclass, field
+28 | | from enum import Enum
+29 | | from typing import Sequence
+   | |___________________________^
+help: Organize imports
+   |
+30 |
+   -
+31 | # ---------------------------------------------------------------------------
+   |
+
+F401 [*] `math` imported but unused
+  --> kernel/core/verifier_standalone.py:25:8
+   |
+23 | from __future__ import annotations
+24 |
+25 | import math
+   |        ^^^^
+26 | import re
+27 | from dataclasses import dataclass, field
+   |
+help: Remove unused import: `math`
+   |
+24 |
+   - import math
+25 | import re
+   |
+
+F401 [*] `dataclasses.field` imported but unused
+  --> kernel/core/verifier_standalone.py:27:36
+   |
+25 | import math
+26 | import re
+27 | from dataclasses import dataclass, field
+   |                                    ^^^^^
+28 | from enum import Enum
+29 | from typing import Sequence
+   |
+help: Remove unused import: `dataclasses.field`
+   |
+26 | import re
+   - from dataclasses import dataclass, field
+27 + from dataclasses import dataclass
+28 | from enum import Enum
+   |
+
+UP035 [*] Import from `collections.abc` instead: `Sequence`
+  --> kernel/core/verifier_standalone.py:29:1
+   |
+27 | from dataclasses import dataclass, field
+28 | from enum import Enum
+29 | from typing import Sequence
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+help: Import from `collections.abc`
+   |
+28 | from enum import Enum
+   - from typing import Sequence
+29 + from collections.abc import Sequence
+30 |
+   |
+
+F401 [*] `typing.Sequence` imported but unused
+  --> kernel/core/verifier_standalone.py:29:20
+   |
+27 | from dataclasses import dataclass, field
+28 | from enum import Enum
+29 | from typing import Sequence
+   |                    ^^^^^^^^
+help: Remove unused import: `typing.Sequence`
+   |
+28 | from enum import Enum
+   - from typing import Sequence
+29 |
+   |
+
+SIM103 Return the negated condition directly
+   --> kernel/core/verifier_standalone.py:144:5
+    |
+142 |       if bbox.x0 < 0 or bbox.y0 < 0:
+143 |           return False
+144 | /     if bbox.x1 > page.width or bbox.y1 > page.height:
+145 | |         return False
+146 | |     return True
+    | |_______________^
+help: Inline condition
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> kernel/sidecar/action_executor.py:11:1
+   |
+ 9 |   """
+10 |
+11 | / from __future__ import annotations
+12 | |
+13 | | import logging
+14 | | from datetime import datetime, timezone
+15 | | from typing import Any, Final
+16 | |
+17 | | from kernel.core.contracts import ApplyResult
+18 | | from kernel.core.data_model import Action, ActionStatus, ActionKind, Suggestion
+19 | | from kernel.core.provenance import ProvenanceLogImpl
+   | |____________________________________________________^
+20 |
+21 |   logger = logging.getLogger(__name__)
+   |
+help: Organize imports
+   |
+17 | from kernel.core.contracts import ApplyResult
+   - from kernel.core.data_model import Action, ActionStatus, ActionKind, Suggestion
+18 + from kernel.core.data_model import Action, ActionKind, ActionStatus, Suggestion
+19 | from kernel.core.provenance import ProvenanceLogImpl
+   |
+
+F401 [*] `typing.Any` imported but unused
+  --> kernel/sidecar/action_executor.py:15:20
+   |
+13 | import logging
+14 | from datetime import datetime, timezone
+15 | from typing import Any, Final
+   |                    ^^^
+16 |
+17 | from kernel.core.contracts import ApplyResult
+   |
+help: Remove unused import: `typing.Any`
+   |
+14 | from datetime import datetime, timezone
+   - from typing import Any, Final
+15 + from typing import Final
+16 |
+   |
+
+F401 [*] `kernel.core.data_model.ActionStatus` imported but unused
+  --> kernel/sidecar/action_executor.py:18:44
+   |
+17 | from kernel.core.contracts import ApplyResult
+18 | from kernel.core.data_model import Action, ActionStatus, ActionKind, Suggestion
+   |                                            ^^^^^^^^^^^^
+19 | from kernel.core.provenance import ProvenanceLogImpl
+   |
+help: Remove unused import
+   |
+17 | from kernel.core.contracts import ApplyResult
+   - from kernel.core.data_model import Action, ActionStatus, ActionKind, Suggestion
+18 + from kernel.core.data_model import Action, Suggestion
+19 | from kernel.core.provenance import ProvenanceLogImpl
+   |
+
+F401 [*] `kernel.core.data_model.ActionKind` imported but unused
+  --> kernel/sidecar/action_executor.py:18:58
+   |
+17 | from kernel.core.contracts import ApplyResult
+18 | from kernel.core.data_model import Action, ActionStatus, ActionKind, Suggestion
+   |                                                          ^^^^^^^^^^
+19 | from kernel.core.provenance import ProvenanceLogImpl
+   |
+help: Remove unused import
+   |
+17 | from kernel.core.contracts import ApplyResult
+   - from kernel.core.data_model import Action, ActionStatus, ActionKind, Suggestion
+18 + from kernel.core.data_model import Action, Suggestion
+19 | from kernel.core.provenance import ProvenanceLogImpl
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> kernel/sidecar/demo.py:10:1
+   |
+ 8 |   """
+ 9 |
+10 | / from __future__ import annotations
+11 | |
+12 | | import argparse
+13 | | import os
+14 | | import pathlib
+15 | | import sys
+16 | | from datetime import datetime
+17 | |
+18 | | from kernel.core.data_model import Document
+19 | | from kernel.sidecar.ingestor import IngestorImpl
+20 | | from kernel.sidecar.security_filter import LocalSecurityFilter
+21 | | from kernel.sidecar.inference_gateway import TieredInferenceGateway
+22 | | from kernel.sidecar.quality_gate import LocalQualityGate
+23 | | from kernel.core.provenance import ProvenanceLogImpl
+24 | | from kernel.sidecar.memory_store import MemoryStoreImpl
+25 | | from packs.invoice.pack import InvoicePack
+26 | | from kernel.sidecar.orchestrator import OrchestratorImpl
+   | |________________________________________________________^
+help: Organize imports
+   |
+18 | from kernel.core.data_model import Document
+19 + from kernel.core.provenance import ProvenanceLogImpl
+20 + from kernel.sidecar.inference_gateway import TieredInferenceGateway
+21 | from kernel.sidecar.ingestor import IngestorImpl
+22 + from kernel.sidecar.memory_store import MemoryStoreImpl
+23 + from kernel.sidecar.orchestrator import OrchestratorImpl
+24 + from kernel.sidecar.quality_gate import LocalQualityGate
+25 | from kernel.sidecar.security_filter import LocalSecurityFilter
+   - from kernel.sidecar.inference_gateway import TieredInferenceGateway
+   - from kernel.sidecar.quality_gate import LocalQualityGate
+   - from kernel.core.provenance import ProvenanceLogImpl
+   - from kernel.sidecar.memory_store import MemoryStoreImpl
+26 | from packs.invoice.pack import InvoicePack
+   - from kernel.sidecar.orchestrator import OrchestratorImpl
+27 |
+   |
+
+F401 [*] `datetime.datetime` imported but unused
+  --> kernel/sidecar/demo.py:16:22
+   |
+14 | import pathlib
+15 | import sys
+16 | from datetime import datetime
+   |                      ^^^^^^^^
+17 |
+18 | from kernel.core.data_model import Document
+   |
+help: Remove unused import: `datetime.datetime`
+   |
+15 | import sys
+   - from datetime import datetime
+16 |
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> kernel/sidecar/demo.py:130:12
+    |
+128 |         for field, acc in sorted(accuracies.items()):
+129 |             print(f"  Field: {field:<25} Accuracy: {acc*100.0:>6.1f}%")
+130 |     except Exception as e:
+    |            ^^^^^^^^^
+131 |         print(f"  Failed to compute accuracy: {e}")
+    |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> kernel/sidecar/ingestor.py:13:1
+   |
+11 |   """
+12 |
+13 | / from __future__ import annotations
+14 | |
+15 | | import hashlib
+16 | | import logging
+17 | | import pathlib
+18 | | import re
+19 | | from datetime import datetime, timezone
+20 | | from dataclasses import replace
+21 | |
+22 | | from kernel.core.data_model import BBox, Chunk, Document, Page
+   | |______________________________________________________________^
+23 |
+24 |   logger = logging.getLogger(__name__)
+   |
+help: Organize imports
+   |
+18 | import re
+19 + from dataclasses import replace
+20 | from datetime import datetime, timezone
+   - from dataclasses import replace
+21 |
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> kernel/sidecar/ingestor.py:226:16
+    |
+224 |             if chunks:
+225 |                 return chunks, page_count, pages
+226 |         except Exception as e:
+    |                ^^^^^^^^^
+227 |             logger.warning("Docling failed to parse PDF, trying PyMuPDF: %s", e)
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> kernel/sidecar/ingestor.py:259:20
+    |
+257 |                 if not image_path.exists():
+258 |                     image_path.write_bytes(img_data)
+259 |             except Exception as e:
+    |                    ^^^^^^^^^
+260 |                 logger.warning("Failed to render page image: %s", e)
+    |
+
+F401 [*] `kernel.core.contracts.ActionExecutor` imported but unused
+  --> kernel/sidecar/orchestrator.py:21:5
+   |
+20 | from kernel.core.contracts import (
+21 |     ActionExecutor,
+   |     ^^^^^^^^^^^^^^
+22 |     GateVerdict,
+23 |     InferenceGateway,
+   |
+help: Remove unused import
+   |
+20 | from kernel.core.contracts import (
+   -     ActionExecutor,
+21 |     GateVerdict,
+22 |     InferenceGateway,
+   -     InferenceTier,
+23 |     PackInterface,
+   |
+
+F401 [*] `kernel.core.contracts.InferenceTier` imported but unused
+  --> kernel/sidecar/orchestrator.py:24:5
+   |
+22 |     GateVerdict,
+23 |     InferenceGateway,
+24 |     InferenceTier,
+   |     ^^^^^^^^^^^^^
+25 |     PackInterface,
+26 |     ProvenanceLog,
+   |
+help: Remove unused import
+   |
+20 | from kernel.core.contracts import (
+   -     ActionExecutor,
+21 |     GateVerdict,
+22 |     InferenceGateway,
+   -     InferenceTier,
+23 |     PackInterface,
+   |
+
+F401 [*] `kernel.core.data_model.Action` imported but unused
+  --> kernel/sidecar/orchestrator.py:31:5
+   |
+29 | )
+30 | from kernel.core.data_model import (
+31 |     Action,
+   |     ^^^^^^
+32 |     ActionKind,
+33 |     ActionStatus,
+   |
+help: Remove unused import
+   |
+30 | from kernel.core.data_model import (
+   -     Action,
+   -     ActionKind,
+   -     ActionStatus,
+   -     Chunk,
+31 |     Document,
+   |
+
+F401 [*] `kernel.core.data_model.ActionKind` imported but unused
+  --> kernel/sidecar/orchestrator.py:32:5
+   |
+30 | from kernel.core.data_model import (
+31 |     Action,
+32 |     ActionKind,
+   |     ^^^^^^^^^^
+33 |     ActionStatus,
+34 |     Chunk,
+   |
+help: Remove unused import
+   |
+30 | from kernel.core.data_model import (
+   -     Action,
+   -     ActionKind,
+   -     ActionStatus,
+   -     Chunk,
+31 |     Document,
+   |
+
+F401 [*] `kernel.core.data_model.ActionStatus` imported but unused
+  --> kernel/sidecar/orchestrator.py:33:5
+   |
+31 |     Action,
+32 |     ActionKind,
+33 |     ActionStatus,
+   |     ^^^^^^^^^^^^
+34 |     Chunk,
+35 |     Document,
+   |
+help: Remove unused import
+   |
+30 | from kernel.core.data_model import (
+   -     Action,
+   -     ActionKind,
+   -     ActionStatus,
+   -     Chunk,
+31 |     Document,
+   |
+
+F401 [*] `kernel.core.data_model.Chunk` imported but unused
+  --> kernel/sidecar/orchestrator.py:34:5
+   |
+32 |     ActionKind,
+33 |     ActionStatus,
+34 |     Chunk,
+   |     ^^^^^
+35 |     Document,
+36 |     Extraction,
+   |
+help: Remove unused import
+   |
+30 | from kernel.core.data_model import (
+   -     Action,
+   -     ActionKind,
+   -     ActionStatus,
+   -     Chunk,
+31 |     Document,
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> kernel/sidecar/orchestrator.py:85:16
+   |
+83 |         try:
+84 |             chunks, ingested_doc, pages = self._ingestor.ingest(doc.source_path)
+85 |         except Exception as e:
+   |                ^^^^^^^^^
+86 |             return Trace(
+87 |                 stages=(TraceStage(
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+   --> kernel/sidecar/orchestrator.py:175:13
+    |
+173 |         compression_stats = None
+174 |         try:
+175 |             from kairo.context.compressor import compress_document_chunks, record_compression
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+176 |             compressed_chunks, compression_stats = compress_document_chunks(chunks)
+177 |             record_compression(compression_stats)
+    |
+help: Organize imports
+    |
+174 |         try:
+    -             from kairo.context.compressor import compress_document_chunks, record_compression
+175 +             from kairo.context.compressor import (
+176 +                 compress_document_chunks,
+177 +                 record_compression,
+178 +             )
+179 |             compressed_chunks, compression_stats = compress_document_chunks(chunks)
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+   --> kernel/sidecar/orchestrator.py:204:16
+    |
+202 |         try:
+203 |             extractions = self._pack.extract(extraction_chunks)
+204 |         except Exception as e:
+    |                ^^^^^^^^^
+205 |             stages.append(TraceStage(
+206 |                 name="extractor",
+    |
+
+ISC004 Unparenthesized implicit string concatenation in collection
+   --> kernel/sidecar/security_filter.py:312:17
+    |
+310 |           if total_score >= self._injection_threshold:
+311 |               return [
+312 | /                 f"INJECTION_BLOCKED: score={total_score:.2f} "
+313 | |                 f"(threshold={self._injection_threshold:.2f}), "
+314 | |                 f"signals=[{', '.join(triggered)}]"
+    | |___________________________________________________^
+315 |               ]
+316 |           return []
+    |
+help: Did you forget a comma?
+help: Wrap implicitly concatenated strings in parentheses
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> kernel/tests/test_action_executor.py:5:1
+   |
+ 3 |   """
+ 4 |
+ 5 | / import pytest
+ 6 | | from datetime import datetime
+ 7 | |
+ 8 | | from kernel.core.contracts import ApplyResult
+ 9 | | from kernel.core.data_model import (
+10 | |     Action,
+11 | |     ActionKind,
+12 | |     ActionStatus,
+13 | |     BBox,
+14 | |     Chunk,
+15 | |     Document,
+16 | |     Extraction,
+17 | |     Suggestion,
+18 | | )
+19 | | from kernel.core.provenance import ProvenanceLogImpl
+20 | | from kernel.sidecar.action_executor import ActionExecutorImpl
+   | |_____________________________________________________________^
+help: Organize imports
+  |
+4 |
+  - import pytest
+5 | from datetime import datetime
+6 |
+7 + import pytest
+8 +
+9 | from kernel.core.contracts import ApplyResult
+  |
+
+F401 [*] `pytest` imported but unused
+ --> kernel/tests/test_action_executor.py:5:8
+  |
+3 | """
+4 |
+5 | import pytest
+  |        ^^^^^^
+6 | from datetime import datetime
+  |
+help: Remove unused import: `pytest`
+  |
+4 |
+  - import pytest
+5 | from datetime import datetime
+  |
+
+F401 [*] `datetime.datetime` imported but unused
+ --> kernel/tests/test_action_executor.py:6:22
+  |
+5 | import pytest
+6 | from datetime import datetime
+  |                      ^^^^^^^^
+7 |
+8 | from kernel.core.contracts import ApplyResult
+  |
+help: Remove unused import: `datetime.datetime`
+  |
+5 | import pytest
+  - from datetime import datetime
+6 |
+  |
+
+F401 [*] `kernel.core.contracts.ApplyResult` imported but unused
+  --> kernel/tests/test_action_executor.py:8:35
+   |
+ 6 | from datetime import datetime
+ 7 |
+ 8 | from kernel.core.contracts import ApplyResult
+   |                                   ^^^^^^^^^^^
+ 9 | from kernel.core.data_model import (
+10 |     Action,
+   |
+help: Remove unused import: `kernel.core.contracts.ApplyResult`
+  |
+7 |
+  - from kernel.core.contracts import ApplyResult
+8 | from kernel.core.data_model import (
+  |
+
+F401 [*] `kernel.core.data_model.ActionStatus` imported but unused
+  --> kernel/tests/test_action_executor.py:12:5
+   |
+10 |     Action,
+11 |     ActionKind,
+12 |     ActionStatus,
+   |     ^^^^^^^^^^^^
+13 |     BBox,
+14 |     Chunk,
+   |
+help: Remove unused import: `kernel.core.data_model.ActionStatus`
+   |
+11 |     ActionKind,
+   -     ActionStatus,
+12 |     BBox,
+   |
+
+F401 [*] `pytest` imported but unused
+  --> kernel/tests/test_flywheel_integration.py:13:8
+   |
+11 | from __future__ import annotations
+12 |
+13 | import pytest
+   |        ^^^^^^
+14 |
+15 | from kernel.core.contracts import GateVerdict
+   |
+help: Remove unused import: `pytest`
+   |
+12 |
+   - import pytest
+13 |
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> kernel/tests/test_grounding.py:5:1
+  |
+3 |   """
+4 |
+5 | / from kernel.core.data_model import Chunk, BBox, GroundingMethod
+6 | | from kernel.core.grounding import GroundingVerifierImpl, normalize_text, levenshtein_ratio
+  | |__________________________________________________________________________________________^
+help: Organize imports
+   |
+4  |
+   - from kernel.core.data_model import Chunk, BBox, GroundingMethod
+   - from kernel.core.grounding import GroundingVerifierImpl, normalize_text, levenshtein_ratio
+5  + from kernel.core.data_model import BBox, Chunk, GroundingMethod
+6  + from kernel.core.grounding import (
+7  +     GroundingVerifierImpl,
+8  +     levenshtein_ratio,
+9  +     normalize_text,
+10 + )
+11 |
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> kernel/tests/test_inference_gateway.py:5:1
+   |
+ 3 |   """
+ 4 |
+ 5 | / import os
+ 6 | | import shutil
+ 7 | | import tempfile
+ 8 | | import pytest
+ 9 | | from pathlib import Path
+10 | |
+11 | | from kernel.core.contracts import InferenceTier, InferenceResult
+12 | | from kernel.sidecar.inference_gateway import (
+13 | |     TieredInferenceGateway,
+14 | |     AirGapViolationError,
+15 | |     InferenceGatewayError,
+16 | | )
+   | |_^
+help: Organize imports
+   |
+7  | import tempfile
+8  + from pathlib import Path
+9  +
+10 | import pytest
+   - from pathlib import Path
+11 |
+   - from kernel.core.contracts import InferenceTier, InferenceResult
+12 + from kernel.core.contracts import InferenceResult, InferenceTier
+13 | from kernel.sidecar.inference_gateway import (
+   -     TieredInferenceGateway,
+14 |     AirGapViolationError,
+15 |     InferenceGatewayError,
+16 +     TieredInferenceGateway,
+17 | )
+   |
+
+F401 [*] `os` imported but unused
+ --> kernel/tests/test_inference_gateway.py:5:8
+  |
+3 | """
+4 |
+5 | import os
+  |        ^^
+6 | import shutil
+7 | import tempfile
+  |
+help: Remove unused import: `os`
+  |
+4 |
+  - import os
+5 | import shutil
+  |
+
+F401 [*] `kernel.sidecar.inference_gateway.InferenceGatewayError` imported but unused
+  --> kernel/tests/test_inference_gateway.py:15:5
+   |
+13 |     TieredInferenceGateway,
+14 |     AirGapViolationError,
+15 |     InferenceGatewayError,
+   |     ^^^^^^^^^^^^^^^^^^^^^
+16 | )
+   |
+help: Remove unused import: `kernel.sidecar.inference_gateway.InferenceGatewayError`
+   |
+14 |     AirGapViolationError,
+   -     InferenceGatewayError,
+15 | )
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> kernel/tests/test_melious_router.py:1:1
+  |
+1 | from kernel.sidecar.melious_router import MeliousModelRouter, RouterError
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2 |
+3 | def test_fallback_and_usage():
+  |
+help: Organize imports
+  |
+2 |
+3 +
+4 | def test_fallback_and_usage():
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> kernel/tests/test_memory_store.py:5:1
+   |
+ 3 |   """
+ 4 |
+ 5 | / import pytest
+ 6 | | from datetime import datetime
+ 7 | |
+ 8 | | from kernel.core.data_model import (
+ 9 | |     Action,
+10 | |     ActionKind,
+11 | |     ActionStatus,
+12 | |     Entity,
+13 | |     ModelVersion,
+14 | |     User,
+15 | |     Document,
+16 | |     Chunk,
+17 | |     Extraction,
+18 | |     BBox
+19 | | )
+20 | | from kernel.sidecar.memory_store import MemoryStoreImpl
+   | |_______________________________________________________^
+help: Organize imports
+   |
+4  |
+   - import pytest
+5  | from datetime import datetime
+6  |
+7  + import pytest
+8  +
+9  | from kernel.core.data_model import (
+10 |     Action,
+11 |     ActionKind,
+12 |     ActionStatus,
+13 +     BBox,
+14 +     Chunk,
+15 +     Document,
+16 |     Entity,
+17 +     Extraction,
+18 |     ModelVersion,
+19 |     User,
+   -     Document,
+   -     Chunk,
+   -     Extraction,
+   -     BBox
+20 | )
+   |
+
+F401 [*] `pytest` imported but unused
+ --> kernel/tests/test_memory_store.py:5:8
+  |
+3 | """
+4 |
+5 | import pytest
+  |        ^^^^^^
+6 | from datetime import datetime
+  |
+help: Remove unused import: `pytest`
+  |
+4 |
+  - import pytest
+5 | from datetime import datetime
+  |
+
+F401 [*] `datetime.datetime` imported but unused
+ --> kernel/tests/test_memory_store.py:6:22
+  |
+5 | import pytest
+6 | from datetime import datetime
+  |                      ^^^^^^^^
+7 |
+8 | from kernel.core.data_model import (
+  |
+help: Remove unused import: `datetime.datetime`
+  |
+5 | import pytest
+  - from datetime import datetime
+6 |
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> kernel/tests/test_orchestrator.py:5:1
+   |
+ 3 |   """
+ 4 |
+ 5 | / import pytest
+ 6 | | from datetime import datetime
+ 7 | | from typing import Any
+ 8 | |
+ 9 | | from kernel.core.contracts import GateVerdict, GateResult, ScanResult
+10 | | from kernel.core.data_model import (
+11 | |     BBox,
+12 | |     Chunk,
+13 | |     Correction,
+14 | |     Document,
+15 | |     Extraction,
+16 | |     ExtractionStatus,
+17 | |     Trace,
+18 | | )
+19 | | from kernel.core.provenance import ProvenanceLogImpl
+20 | | from kernel.sidecar.orchestrator import OrchestratorImpl
+   | |________________________________________________________^
+help: Organize imports
+   |
+4  |
+   - import pytest
+5  | from datetime import datetime
+6  | from typing import Any
+7  |
+   - from kernel.core.contracts import GateVerdict, GateResult, ScanResult
+8  + import pytest
+9  +
+10 + from kernel.core.contracts import GateResult, GateVerdict, ScanResult
+11 | from kernel.core.data_model import (
+   |
+
+F401 [*] `pytest` imported but unused
+ --> kernel/tests/test_orchestrator.py:5:8
+  |
+3 | """
+4 |
+5 | import pytest
+  |        ^^^^^^
+6 | from datetime import datetime
+7 | from typing import Any
+  |
+help: Remove unused import: `pytest`
+  |
+4 |
+  - import pytest
+5 | from datetime import datetime
+  |
+
+F401 [*] `datetime.datetime` imported but unused
+ --> kernel/tests/test_orchestrator.py:6:22
+  |
+5 | import pytest
+6 | from datetime import datetime
+  |                      ^^^^^^^^
+7 | from typing import Any
+  |
+help: Remove unused import: `datetime.datetime`
+  |
+5 | import pytest
+  - from datetime import datetime
+6 | from typing import Any
+  |
+
+F401 [*] `kernel.core.data_model.Correction` imported but unused
+  --> kernel/tests/test_orchestrator.py:13:5
+   |
+11 |     BBox,
+12 |     Chunk,
+13 |     Correction,
+   |     ^^^^^^^^^^
+14 |     Document,
+15 |     Extraction,
+   |
+help: Remove unused import: `kernel.core.data_model.Correction`
+   |
+12 |     Chunk,
+   -     Correction,
+13 |     Document,
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> kernel/tests/test_quality_gate.py:5:1
+   |
+ 3 |   """
+ 4 |
+ 5 | / import pytest
+ 6 | | from typing import Optional
+ 7 | |
+ 8 | | from kernel.core.contracts import GateVerdict
+ 9 | | from kernel.core.data_model import Anchor, Correction, Extraction, GroundingMethod
+10 | | from kernel.sidecar.quality_gate import LocalQualityGate, CorrectionLookup
+   | |__________________________________________________________________________^
+help: Organize imports
+   |
+4  |
+   - import pytest
+5  | from typing import Optional
+6  |
+7  + import pytest
+8  +
+9  | from kernel.core.contracts import GateVerdict
+10 | from kernel.core.data_model import Anchor, Correction, Extraction, GroundingMethod
+   - from kernel.sidecar.quality_gate import LocalQualityGate, CorrectionLookup
+11 + from kernel.sidecar.quality_gate import CorrectionLookup, LocalQualityGate
+12 |
+   |
+
+F401 [*] `typing.Optional` imported but unused
+ --> kernel/tests/test_quality_gate.py:6:20
+  |
+5 | import pytest
+6 | from typing import Optional
+  |                    ^^^^^^^^
+7 |
+8 | from kernel.core.contracts import GateVerdict
+  |
+help: Remove unused import: `typing.Optional`
+  |
+5 | import pytest
+  - from typing import Optional
+6 |
+  |
+
+F401 [*] `kernel.sidecar.quality_gate.CorrectionLookup` imported but unused
+  --> kernel/tests/test_quality_gate.py:10:59
+   |
+ 8 | from kernel.core.contracts import GateVerdict
+ 9 | from kernel.core.data_model import Anchor, Correction, Extraction, GroundingMethod
+10 | from kernel.sidecar.quality_gate import LocalQualityGate, CorrectionLookup
+   |                                                           ^^^^^^^^^^^^^^^^
+help: Remove unused import: `kernel.sidecar.quality_gate.CorrectionLookup`
+   |
+9  | from kernel.core.data_model import Anchor, Correction, Extraction, GroundingMethod
+   - from kernel.sidecar.quality_gate import LocalQualityGate, CorrectionLookup
+10 + from kernel.sidecar.quality_gate import LocalQualityGate
+11 |
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+ --> kernel/tests/test_security_filter.py:5:1
+  |
+3 |   """
+4 |
+5 | / import json
+6 | | import pytest
+7 | | from pathlib import Path
+8 | |
+9 | | from kernel.sidecar.security_filter import LocalSecurityFilter
+  | |______________________________________________________________^
+help: Organize imports
+   |
+5  | import json
+   - import pytest
+6  | from pathlib import Path
+7  |
+8  + import pytest
+9  +
+10 | from kernel.sidecar.security_filter import LocalSecurityFilter
+   |
+
+F401 [*] `pytest` imported but unused
+ --> kernel/tests/test_security_filter.py:6:8
+  |
+5 | import json
+6 | import pytest
+  |        ^^^^^^
+7 | from pathlib import Path
+  |
+help: Remove unused import: `pytest`
+  |
+5 | import json
+  - import pytest
+6 | from pathlib import Path
+  |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> overlay/server.py:8:1
+   |
+ 6 |   """
+ 7 |
+ 8 | / from __future__ import annotations
+ 9 | |
+10 | | import asyncio
+11 | | import concurrent.futures
+12 | | import contextlib
+13 | | import hashlib
+14 | | import hmac
+15 | | import json
+16 | | import logging
+17 | | import logging.handlers
+18 | | import os
+19 | | import pathlib
+20 | | import queue
+21 | | import tempfile
+22 | | import threading
+23 | | import time
+24 | | import uuid
+25 | | from collections import deque
+26 | | from urllib.parse import urlsplit
+27 | |
+28 | | from fastapi import FastAPI, HTTPException
+29 | | from fastapi.middleware.cors import CORSMiddleware
+30 | | from fastapi.responses import HTMLResponse, JSONResponse
+31 | | from fastapi.staticfiles import StaticFiles
+32 | | from kernel.core.data_model import (
+33 | |     Action,
+34 | |     ActionKind,
+35 | |     ActionStatus,
+36 | |     Correction,
+37 | |     Document,
+38 | |     ExtractionStatus,
+39 | | )
+40 | | from kernel.core.provenance import ProvenanceLogImpl
+41 | | from kernel.sidecar.action_executor import ActionExecutorImpl
+42 | | from kernel.sidecar.inference_gateway import TieredInferenceGateway
+43 | | from kernel.sidecar.ingestor import IngestorImpl
+44 | | from kernel.sidecar.memory_store import MemoryStoreImpl
+45 | | from kernel.sidecar.orchestrator import OrchestratorImpl
+46 | | from kernel.sidecar.quality_gate import LocalQualityGate
+47 | | from kernel.sidecar.security_filter import LocalSecurityFilter
+48 | | from packs.contract.pack import ContractPack
+49 | | from packs.generic.pack import GenericPack
+50 | | from packs.invoice.pack import InvoicePack
+51 | | from packs.memo.pack import ClassifiedMemoPack
+52 | | from packs.paper.pack import PaperPack
+53 | | from pydantic import BaseModel, Field, field_validator
+   | |______________________________________________________^
+help: Organize imports
+   |
+31 | from fastapi.staticfiles import StaticFiles
+32 + from pydantic import BaseModel, Field, field_validator
+33 +
+34 | from kernel.core.data_model import (
+--------------------------------------------------------------------------------
+54 | from packs.paper.pack import PaperPack
+   - from pydantic import BaseModel, Field, field_validator
+55 |
+   |
+
+F841 Local variable `idx` is assigned to but never used
+   --> overlay/tests/test_server.py:319:5
+    |
+317 |     results = [client.get("/metrics").status_code for _ in range(10)]
+318 |     assert 429 in results
+319 |     idx = results.index(429)
+    |     ^^^
+320 |     resp = client.get("/metrics")
+321 |     assert resp.status_code == 429
+    |
+help: Remove assignment to unused variable `idx`
+
+I001 [*] Import block is un-sorted or un-formatted
+   --> overlay/tests/test_server.py:335:5
+    |
+334 |   def _enable_auth(monkeypatch, *keys):
+335 | /     import hashlib
+336 | |     import overlay.server as srv
+    | |________________________________^
+337 |
+338 |       digests = {hashlib.sha256(k.encode()).hexdigest(): hashlib.sha256(k.encode()).hexdigest()[:12] for k in keys}
+    |
+help: Organize imports
+    |
+335 |     import hashlib
+336 +
+337 |     import overlay.server as srv
+    |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> overlay/tests/test_server_hardening.py:72:16
+   |
+70 |                 assert client.get("/livez").status_code == 200
+71 |                 assert client.get("/metrics", headers={"x-forwarded-for": f"10.{n}.{i // 250}.{i % 250}"}).status_code < 500
+72 |         except Exception as exc:  # pragma: no cover
+   |                ^^^^^^^^^
+73 |             errors.append(exc)
+   |
+
+RUF100 [*] Unused `noqa` directive (non-enabled: `D401`)
+  --> overlay/tests/test_server_wave9.py:28:21
+   |
+28 | def _rec(msg="x"):  # noqa: D401
+   |                     ^^^^^^^^^^^^
+29 |     return logging.LogRecord("overlay.server", logging.INFO, __file__, 1, msg, None, None)
+   |
+help: Remove unused `noqa` directive
+   |
+27 |
+   - def _rec(msg="x"):  # noqa: D401
+28 + def _rec(msg="x"):
+29 |     return logging.LogRecord("overlay.server", logging.INFO, __file__, 1, msg, None, None)
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> overlay/tests/test_server_wave9.py:77:20
+   |
+75 |                 urllib.request.urlopen(base + "/healthz", timeout=1).close()
+76 |                 break
+77 |             except Exception:
+   |                    ^^^^^^^^^
+78 |                 time.sleep(0.1)
+79 |         else:
+   |
+
+Found 89 errors.
+[*] 77 fixable with the `--fix` option (4 hidden fixes can be enabled with the `--unsafe-fixes` option).

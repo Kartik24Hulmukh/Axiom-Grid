@@ -4,7 +4,7 @@ Tests for Orchestrator state machine.
 
 from typing import Any
 
-from kernel.core.contracts import GateVerdict, GateResult, ScanResult
+from kernel.core.contracts import GateResult, GateVerdict, ScanResult
 from kernel.core.data_model import (
     BBox,
     Chunk,

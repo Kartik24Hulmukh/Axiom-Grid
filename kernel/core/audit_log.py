@@ -26,7 +26,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
 
-from kernel.core.data_model import Answer, Anchor
+from kernel.core.data_model import Anchor, Answer
 
 logger = logging.getLogger(__name__)
 
@@ -271,7 +271,7 @@ class SignedAuditLog:
         return json.dumps({"entries": entries}, indent=2)
 
     @classmethod
-    def from_json(cls, data: str, session_key: bytes) -> "SignedAuditLog":
+    def from_json(cls, data: str, session_key: bytes) -> SignedAuditLog:
         """Reconstruct a SignedAuditLog from JSON. Raises if chain is broken."""
         obj = json.loads(data)
         log = cls(session_key)

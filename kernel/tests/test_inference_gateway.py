@@ -4,13 +4,14 @@ Tests for TieredInferenceGateway.
 
 import shutil
 import tempfile
-import pytest
 from pathlib import Path
 
-from kernel.core.contracts import InferenceTier, InferenceResult
+import pytest
+
+from kernel.core.contracts import InferenceResult, InferenceTier
 from kernel.sidecar.inference_gateway import (
-    TieredInferenceGateway,
     AirGapViolationError,
+    TieredInferenceGateway,
 )
 
 

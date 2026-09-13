@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
-from typing import Sequence
+from collections.abc import Sequence
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +66,7 @@ def cosine_similarity(v1: Sequence[float], v2: Sequence[float]) -> float:
         if norm_a == 0 or norm_b == 0:
             return 0.0
         return float(np.dot(a, b) / (norm_a * norm_b))
-    except Exception:
+    except Exception:  # noqa: BLE001 -- isolate optional engine or worker failure at boundary
         # Non-numpy fallback
         import math
         dot = sum(x*y for x, y in zip(v1, v2))

@@ -26,7 +26,6 @@ import re
 from dataclasses import dataclass
 from enum import Enum
 
-
 # ---------------------------------------------------------------------------
 # Public types — no model dependency, pure data
 # ---------------------------------------------------------------------------
@@ -139,9 +138,7 @@ def bbox_within_page(bbox: BBox, page: PageBounds | None) -> bool:
         return True  # no page bounds provided, skip check
     if bbox.x0 < 0 or bbox.y0 < 0:
         return False
-    if bbox.x1 > page.width or bbox.y1 > page.height:
-        return False
-    return True
+    return not (bbox.x1 > page.width or bbox.y1 > page.height)
 
 
 def bbox_over_whitespace(claimed_bbox: BBox, regions: list[StoredRegion],

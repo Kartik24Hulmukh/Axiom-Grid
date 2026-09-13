@@ -16,15 +16,15 @@ from typing import Any, Protocol, runtime_checkable
 
 from kernel.core.data_model import (
     Action,
+    Anchor,
     Chain,
     Chunk,
     Correction,
     Document,
     Extraction,
+    GroundingMethod,
     Suggestion,
     Trace,
-    GroundingMethod,
-    Anchor,
 )
 
 

@@ -15,7 +15,7 @@ from kernel.core.data_model import (
     Chunk,
     GroundingMethod,
 )
-from kernel.core.embeddings import get_embedding, cosine_similarity
+from kernel.core.embeddings import cosine_similarity, get_embedding
 
 logger = logging.getLogger(__name__)
 

@@ -25,7 +25,7 @@ from overlay.server import LOG_DROPPED_TOTAL, _NonBlockingQueueHandler, app
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
-def _rec(msg="x"):  # noqa: D401
+def _rec(msg="x"):
     return logging.LogRecord("overlay.server", logging.INFO, __file__, 1, msg, None, None)
 
 
@@ -74,7 +74,7 @@ def test_log_io_never_blocks_serving_path_or_sigterm_shutdown():
             try:
                 urllib.request.urlopen(base + "/healthz", timeout=1).close()
                 break
-            except Exception:
+            except OSError:
                 time.sleep(0.1)
         else:
             raise AssertionError("server did not boot")

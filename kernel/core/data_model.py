@@ -218,9 +218,7 @@ class Chain:
             return False
         if self.extraction.chunk_id != self.chunk.chunk_id:
             return False
-        if self.chunk.bbox is None:
-            return False
-        return True
+        return self.chunk.bbox is not None
 
 
 # ---------------------------------------------------------------------------

@@ -29,6 +29,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field, field_validator
+
 from kernel.core.data_model import (
     Action,
     ActionKind,
@@ -50,7 +52,6 @@ from packs.generic.pack import GenericPack
 from packs.invoice.pack import InvoicePack
 from packs.memo.pack import ClassifiedMemoPack
 from packs.paper.pack import PaperPack
-from pydantic import BaseModel, Field, field_validator
 
 
 # Initialize FastAPI

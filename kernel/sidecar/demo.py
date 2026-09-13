@@ -15,14 +15,14 @@ import pathlib
 import sys
 
 from kernel.core.data_model import Document
-from kernel.sidecar.ingestor import IngestorImpl
-from kernel.sidecar.security_filter import LocalSecurityFilter
-from kernel.sidecar.inference_gateway import TieredInferenceGateway
-from kernel.sidecar.quality_gate import LocalQualityGate
 from kernel.core.provenance import ProvenanceLogImpl
+from kernel.sidecar.inference_gateway import TieredInferenceGateway
+from kernel.sidecar.ingestor import IngestorImpl
 from kernel.sidecar.memory_store import MemoryStoreImpl
-from packs.invoice.pack import InvoicePack
 from kernel.sidecar.orchestrator import OrchestratorImpl
+from kernel.sidecar.quality_gate import LocalQualityGate
+from kernel.sidecar.security_filter import LocalSecurityFilter
+from packs.invoice.pack import InvoicePack
 
 
 def parse_args():
@@ -126,7 +126,7 @@ def main():
         accuracies = invoice_pack.oracle("fixtures/invoice")
         for field, acc in sorted(accuracies.items()):
             print(f"  Field: {field:<25} Accuracy: {acc*100.0:>6.1f}%")
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 -- isolate optional engine or worker failure at boundary
         print(f"  Failed to compute accuracy: {e}")
 
     print("\n========================= Launch Overlay =========================")
