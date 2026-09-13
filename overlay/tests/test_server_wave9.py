@@ -10,8 +10,8 @@ Fix: bounded queue.Queue + daemon QueueListener; saturation sheds (counted),
 never blocks.
 """
 import logging
-import queue
 import os
+import queue
 import socket
 import subprocess
 import sys
@@ -58,7 +58,10 @@ def test_metrics_expose_log_dropped_total():
 
 def test_log_io_never_blocks_serving_path_or_sigterm_shutdown():
     """Regression for the focused-runtime CI hang: undrained stderr pipe."""
-    sock = socket.socket(); sock.bind(("127.0.0.1", 0)); port = sock.getsockname()[1]; sock.close()
+    sock = socket.socket()
+    sock.bind(("127.0.0.1", 0))
+    port = sock.getsockname()[1]
+    sock.close()
     env = dict(os.environ, PYTHONPATH=ROOT)
     proc = subprocess.Popen(
         [sys.executable, "-m", "uvicorn", "overlay.server:app", "--host", "127.0.0.1",
@@ -69,7 +72,8 @@ def test_log_io_never_blocks_serving_path_or_sigterm_shutdown():
         base = f"http://127.0.0.1:{port}"
         for _ in range(100):
             try:
-                urllib.request.urlopen(base + "/healthz", timeout=1); break
+                urllib.request.urlopen(base + "/healthz", timeout=1).close()
+                break
             except Exception:
                 time.sleep(0.1)
         else:
@@ -83,4 +87,7 @@ def test_log_io_never_blocks_serving_path_or_sigterm_shutdown():
         proc.wait(5)  # precondition of the gauntlet harness; used to TimeoutExpired
     finally:
         if proc.poll() is None:
-            proc.kill(); proc.wait()
+            proc.kill()
+            proc.wait()
+        if proc.stderr is not None:
+            proc.stderr.close()
