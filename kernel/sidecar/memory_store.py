@@ -15,8 +15,10 @@ import json
 import logging
 import pathlib
 import sqlite3
+import threading
+import weakref
 from datetime import datetime
-from typing import Sequence
+from typing import Self
 
 from kernel.core.data_model import (
     Action,
@@ -30,8 +32,8 @@ from kernel.core.data_model import (
     Extraction,
     ExtractionStatus,
     ModelVersion,
-    User,
     Page,
+    User,
 )
 
 logger = logging.getLogger(__name__)
@@ -128,6 +130,14 @@ CREATE INDEX IF NOT EXISTS idx_actions_ext ON actions(ext_id);
 """
 
 
+def _close_connection(conn: sqlite3.Connection) -> None:
+    """Module-level closer so weakref.finalize never captures the store."""
+    try:
+        conn.close()
+    except sqlite3.Error:  # pragma: no cover - already closed / interpreter teardown
+        pass
+
+
 class MemoryStoreImpl:
     """SQLite-backed MemoryStore implementing the MemoryStore Protocol.
 
@@ -142,11 +152,27 @@ class MemoryStoreImpl:
         self._conn.row_factory = sqlite3.Row
         self._conn.execute("PRAGMA journal_mode=WAL")
         self._conn.executescript(_SCHEMA)
+        self._lock = threading.RLock()
+        # Safety net: if a caller forgets close(), release the SQLite handle
+        # deterministically at GC instead of leaking an fd / ResourceWarning.
+        self._finalizer = weakref.finalize(self, _close_connection, self._conn)
         logger.info("MemoryStore initialized: %s", self._db_path)
 
+    @property
+    def closed(self) -> bool:
+        """True once the underlying SQLite connection has been released."""
+        return not self._finalizer.alive
+
     def close(self) -> None:
-        """Close the database connection."""
-        self._conn.close()
+        """Close the database connection (idempotent, thread-safe)."""
+        with self._lock:
+            self._finalizer()
+
+    def __enter__(self) -> Self:
+        return self
+
+    def __exit__(self, *exc_info: object) -> None:
+        self.close()
 
     # ---- Document operations ----
 
