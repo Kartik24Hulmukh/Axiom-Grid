@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import concurrent.futures
+import contextlib
 import hashlib
 import hmac
 import json
@@ -28,8 +29,6 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field, field_validator
-
 from kernel.core.data_model import (
     Action,
     ActionKind,
@@ -51,9 +50,20 @@ from packs.generic.pack import GenericPack
 from packs.invoice.pack import InvoicePack
 from packs.memo.pack import ClassifiedMemoPack
 from packs.paper.pack import PaperPack
+from pydantic import BaseModel, Field, field_validator
+
 
 # Initialize FastAPI
-app = FastAPI(title="Axiom-Grid Overlay API")
+@contextlib.asynccontextmanager
+async def _lifespan(_app: FastAPI):
+    """OPS-007: drain the durable SQLite handle on graceful shutdown."""
+    try:
+        yield
+    finally:
+        memory_store.close()  # idempotent; defined at module import below
+
+
+app = FastAPI(title="Axiom-Grid Overlay API", lifespan=_lifespan)
 logger = logging.getLogger("overlay.server")
 
 
@@ -854,27 +864,28 @@ async def extract_document(req: ExtractDocumentRequest):
     from kernel.sidecar.quality_gate import LocalQualityGate
     from kernel.sidecar.security_filter import LocalSecurityFilter
 
-    memory_store = MemoryStoreImpl(":memory:")
-    provenance = ProvenanceLogImpl()
-    ingestor = IngestorImpl()
-    security = LocalSecurityFilter(enable_pii_scan=False)
-    gateway = TieredInferenceGateway(tier3_enabled=False)
-    quality_gate = LocalQualityGate(memory_store)
-    orchestrator = OrchestratorImpl(
-        ingestor=ingestor, security_filter=security, inference_gateway=gateway,
-        quality_gate=quality_gate, provenance_log=provenance,
-        pack=pack_class(), memory_store=memory_store,
-    )
-
     doc = Document(source_path=filepath)
     try:
         # SEC-004: run the CPU-bound regex pipeline on the bounded thread pool
         # (never directly on the event loop thread).
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
 
         def _run_locked():
-            with orchestrator_lock:
-                return orchestrator.run(doc)
+            # OPS-007: the request-scoped SQLite store lives and dies inside the
+            # worker that uses it, so the handle is closed deterministically
+            # even when the awaiting coroutine is cancelled mid-flight.
+            with MemoryStoreImpl(":memory:") as request_store:
+                orchestrator = OrchestratorImpl(
+                    ingestor=IngestorImpl(),
+                    security_filter=LocalSecurityFilter(enable_pii_scan=False),
+                    inference_gateway=TieredInferenceGateway(tier3_enabled=False),
+                    quality_gate=LocalQualityGate(request_store),
+                    provenance_log=ProvenanceLogImpl(),
+                    pack=pack_class(),
+                    memory_store=request_store,
+                )
+                with orchestrator_lock:
+                    return orchestrator.run(doc)
 
         slots = _extraction_slots
         if not slots.acquire(blocking=False):
