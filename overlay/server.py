@@ -11,22 +11,25 @@ import asyncio
 import concurrent.futures
 import hashlib
 import hmac
+import json
 import logging
 import logging.handlers
-import queue
-import json
-from collections import deque
 import os
 import pathlib
+import queue
 import tempfile
 import threading
 import time
 import uuid
+from collections import deque
+from urllib.parse import urlsplit
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field, field_validator
+
 from kernel.core.data_model import (
     Action,
     ActionKind,
@@ -46,9 +49,8 @@ from kernel.sidecar.security_filter import LocalSecurityFilter
 from packs.contract.pack import ContractPack
 from packs.generic.pack import GenericPack
 from packs.invoice.pack import InvoicePack
-from packs.paper.pack import PaperPack
 from packs.memo.pack import ClassifiedMemoPack
-from pydantic import BaseModel, Field, field_validator
+from packs.paper.pack import PaperPack
 
 # Initialize FastAPI
 app = FastAPI(title="Axiom-Grid Overlay API")
@@ -62,7 +64,7 @@ logger = logging.getLogger("overlay.server")
 class JsonLogFormatter(logging.Formatter):
     """Render log records as single-line JSON with stable field names."""
 
-    def format(self, record: logging.LogRecord) -> str:  # noqa: D401
+    def format(self, record: logging.LogRecord) -> str:
         payload = {
             "ts": time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(record.created)) + f".{int(record.msecs):03d}Z",
             "level": record.levelname,
@@ -93,7 +95,7 @@ class _NonBlockingQueueHandler(logging.handlers.QueueHandler):
     shed and counted in /metrics - never blocked on.
     """
 
-    def enqueue(self, record: logging.LogRecord) -> None:  # noqa: D401
+    def enqueue(self, record: logging.LogRecord) -> None:
         try:
             self.queue.put_nowait(record)
         except queue.Full:
@@ -117,6 +119,14 @@ def configure_structured_logging(level: str | None = None) -> None:
         handler = _NonBlockingQueueHandler(log_queue)
         handler.setFormatter(JsonLogFormatter())
         root.addHandler(handler)
+    # Uvicorn installs its own synchronous stderr handlers before importing
+    # the app. Route lifecycle/error logs through the same bounded queue too:
+    # otherwise shutdown INFO messages can block behind a saturated sink.
+    queue_handler = next(h for h in root.handlers if isinstance(h, _NonBlockingQueueHandler))
+    for name in ("uvicorn", "uvicorn.error", "uvicorn.access"):
+        uvicorn_logger = logging.getLogger(name)
+        uvicorn_logger.handlers = [queue_handler]
+        uvicorn_logger.propagate = False
     root.setLevel((level or os.environ.get("AXIOM_LOG_LEVEL", "INFO")).upper())
     # Third-party per-request chatter is not observability; keep it at WARNING
     # so the hot path does not pay a JSON serialisation per upstream call.
@@ -166,21 +176,34 @@ ALLOWED_ORIGINS = {
 }
 
 
+def _origin_allowed(origin: str) -> bool:
+    """Only serialized origins, never prefix-matched URLs or userinfo."""
+    if any(ch.isspace() or ord(ch) < 32 for ch in origin):
+        return False
+    try:
+        parsed = urlsplit(origin)
+        if (parsed.username is not None or parsed.password is not None
+                or parsed.path or parsed.query or parsed.fragment
+                or "?" in origin or "#" in origin or "\\" in origin):
+            return False
+        port = parsed.port  # Raises on malformed or out-of-range ports.
+        if parsed.netloc.endswith(":"):
+            return False
+    except ValueError:
+        return False
+    if origin in ALLOWED_ORIGINS or origin in _CORS_ORIGINS:
+        return True
+    return port is not None and (
+        (parsed.scheme == "http" and parsed.hostname in {"localhost", "127.0.0.1", "testserver"})
+        or (parsed.scheme == "https" and parsed.hostname == "testserver")
+    )
+
+
 @app.middleware("http")
 async def enforce_origin_gate(request, call_next):
     origin = request.headers.get("origin")
-    if origin is not None:
-        parsed = origin.rstrip("/")
-        is_allowed = False
-        if parsed in ALLOWED_ORIGINS:
-            is_allowed = True
-        elif parsed.startswith("http://127.0.0.1:") or parsed.startswith("http://localhost:"):
-            is_allowed = True
-        elif parsed.startswith("http://testserver:") or parsed.startswith("https://testserver:"):
-            is_allowed = True
-
-        if not is_allowed:
-            return JSONResponse(status_code=403, content={"detail": "Forbidden: invalid origin"})
+    if origin is not None and not _origin_allowed(origin):
+        return JSONResponse(status_code=403, content={"detail": "Forbidden: invalid origin"})
     return await call_next(request)
 
 
@@ -231,7 +254,7 @@ async def request_id_middleware(request, call_next):
         rid = uuid.uuid4().hex
     # Sanitize: correlation ids must never carry CR/LF into log streams
     # (log-injection / response-splitting guard).
-    rid = "".join(ch for ch in rid if ch.isalnum() or ch in "-_.") or uuid.uuid4().hex
+    rid = "".join(ch for ch in rid if ch.isascii() and (ch.isalnum() or ch in "-_.")) or uuid.uuid4().hex
     request.state.request_id = rid
     response = await call_next(request)
     response.headers["X-Request-Id"] = rid
@@ -489,9 +512,8 @@ def resolve_sandbox_path(file_path_str: str) -> pathlib.Path:
     for cand in candidates:
         try:
             resolved = cand.resolve()
-            if resolved.is_file():
-                if any(resolved.is_relative_to(root) for root in ALLOWED_ROOTS):
-                    return resolved
+            if resolved.is_file() and any(resolved.is_relative_to(root) for root in ALLOWED_ROOTS):
+                return resolved
         except (OSError, ValueError):
             continue
 
@@ -854,7 +876,8 @@ async def extract_document(req: ExtractDocumentRequest):
             with orchestrator_lock:
                 return orchestrator.run(doc)
 
-        if not _extraction_slots.acquire(blocking=False):
+        slots = _extraction_slots
+        if not slots.acquire(blocking=False):
             # Fail fast under overload rather than queueing unboundedly.
             OPS_METRICS["extraction_shed_total"] = OPS_METRICS.get("extraction_shed_total", 0) + 1
             raise HTTPException(
@@ -863,9 +886,15 @@ async def extract_document(req: ExtractDocumentRequest):
                 headers={"Retry-After": "1"},
             )
         try:
-            trace = await loop.run_in_executor(_extraction_pool, _run_locked)
-        finally:
-            _extraction_slots.release()
+            work = _extraction_pool.submit(_run_locked)
+        except BaseException:
+            slots.release()
+            raise
+        # Capacity belongs to the actual worker, not the requesting coroutine.
+        # Cancellation of a running thread is impossible; release only when the
+        # concurrent future completes (or queued work is successfully cancelled).
+        work.add_done_callback(lambda _future: slots.release())
+        trace = await asyncio.wrap_future(work, loop=loop)
     except HTTPException:
         raise
     except Exception as exc:

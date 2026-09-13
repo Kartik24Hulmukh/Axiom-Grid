@@ -1,0 +1,56 @@
+[
+  {
+    "model": "glm-5.3",
+    "success": true,
+    "usage": {
+      "prompt_tokens": 16,
+      "completion_tokens": 3,
+      "total_tokens": 19,
+      "cached_tokens": 0,
+      "reasoning_tokens": 1,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1
+      }
+    },
+    "latency_ms": 506.09
+  },
+  {
+    "model": "kimi-k3",
+    "success": true,
+    "usage": {
+      "prompt_tokens": 128,
+      "completion_tokens": 16,
+      "total_tokens": 144,
+      "cached_tokens": 0,
+      "reasoning_tokens": 16,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 16
+      }
+    },
+    "latency_ms": 1127.8
+  },
+  {
+    "model": "qwen3.8-27b",
+    "success": true,
+    "usage": {
+      "prompt_tokens": 14,
+      "completion_tokens": 16,
+      "total_tokens": 30,
+      "cached_tokens": 0,
+      "reasoning_tokens": 16,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 16
+      }
+    },
+    "latency_ms": 624.32
+  }
+]

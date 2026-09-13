@@ -1,9 +1,15 @@
 """Resilient Melious multi-model router. Credentials are read at call time only."""
 from __future__ import annotations
+
+import json
+import os
+import random
+import threading
+import time
+from collections.abc import Callable
 from dataclasses import dataclass
-import json, os, random, threading, time
-from typing import Callable
 from urllib import error, request
+
 
 @dataclass
 class CircuitBreaker:
@@ -64,11 +70,28 @@ class MeliousModelRouter:
         except error.HTTPError as exc:
             retry=exc.headers.get("Retry-After") if exc.headers else None
             e=RouterError(f"upstream HTTP {exc.code}"); e.retry_after=float(retry or 0); e.status=exc.code; raise e
+    @staticmethod
+    def _usage_counts(data):
+        """Validate all upstream counts before changing any local state."""
+        usage = data.get("usage", {})
+        if not isinstance(usage, dict):
+            raise RouterError("malformed upstream usage")
+        details = usage.get("completion_tokens_details", {})
+        if details is None:
+            details = {}
+        if not isinstance(details, dict):
+            raise RouterError("malformed upstream token details")
+        counts = {k: usage.get(k, 0) for k in ("prompt_tokens", "completion_tokens", "total_tokens")}
+        counts["reasoning_tokens"] = details.get("reasoning_tokens", usage.get("reasoning_tokens", 0))
+        if any(type(value) is not int or value < 0 for value in counts.values()):
+            raise RouterError("upstream token counts must be non-negative integers")
+        return counts
+
     MAX_MESSAGES = 256
     def complete(self, messages, **options):
         # Sanitize the I/O boundary before any network cost is incurred.
         if not isinstance(messages, list) or not messages or len(messages) > self.MAX_MESSAGES:
-            raise RouterError("messages must be a non-empty list of at most %d items" % self.MAX_MESSAGES)
+            raise RouterError(f"messages must be a non-empty list of at most {self.MAX_MESSAGES} items")
         for m in messages:
             if not isinstance(m, dict) or not isinstance(m.get("role"), str) or not isinstance(m.get("content"), str):
                 raise RouterError("each message needs string 'role' and 'content'")
@@ -87,28 +110,27 @@ class MeliousModelRouter:
                 is_probe = allowed and self.breakers[model].probing
             finally: self._lock.release()
             if not allowed: trace.append({"model":model,"result":"circuit_open"}); continue
-            if index:
-                if self._lock.acquire(timeout=self.acquire_timeout):
-                    try: self.metrics["fallbacks"]+=1
-                    finally: self._lock.release()
+            if index and self._lock.acquire(timeout=self.acquire_timeout):
+                try: self.metrics["fallbacks"]+=1
+                finally: self._lock.release()
             for attempt in range(self.max_retries+1):
                 try:
                     # Half-open probe gets the shorter probe_timeout deadline.
                     data=self._transport(model,payload,self.probe_timeout if is_probe else self.timeout)
                     if not isinstance(data, dict) or not isinstance(data.get("choices"), list) or not data["choices"]:
                         raise RouterError("malformed upstream response")
+                    counts = self._usage_counts(data)
                     if not self._lock.acquire(timeout=self.acquire_timeout):
                         raise RouterError(f"router saturated: lock not acquired within {self.acquire_timeout}s")
                     try:
                         self.breakers[model].success(); self.metrics["successes"]+=1
-                        usage=data.get("usage",{}); details=usage.get("completion_tokens_details",{}) or {}
-                        for k in ("prompt_tokens","completion_tokens","total_tokens"): self.metrics[k]+=int(usage.get(k,0) or 0)
-                        self.metrics["reasoning_tokens"]+=int(details.get("reasoning_tokens",usage.get("reasoning_tokens",0)) or 0)
+                        for key, value in counts.items():
+                            self.metrics[key] += value
                     finally: self._lock.release()
                     data["router"]={"selected_model":model,"fallback_chain":trace+[ {"model":model,"result":"success"} ]}
                     return data
-                except Exception as exc:
-                    last=exc; trace.append({"model":model,"result":"failure","error":type(exc).__name__,"detail":str(exc)[:120],"status":getattr(exc,"status",None)})
+                except Exception as exc:  # noqa: BLE001 -- isolate arbitrary injected transport failures
+                    last=exc; trace.append({"model":model,"result":"failure","error":type(exc).__name__,"detail":f"upstream HTTP {exc.status}" if type(getattr(exc,"status",None)) is int else "upstream request failed","status":getattr(exc,"status",None)})
                     if self._lock.acquire(timeout=self.acquire_timeout):
                         try: self.breakers[model].failure(time.monotonic())
                         finally: self._lock.release()

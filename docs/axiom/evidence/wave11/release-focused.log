@@ -1,0 +1,61 @@
+........................................................................ [ 56%]
+........................................................                 [100%]
+=============================== warnings summary ===============================
+overlay/tests/test_server.py::test_sandbox_escape_rejected
+  <frozen abc>:117: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f97482a46d0>
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+overlay/tests/test_server_wave8.py::test_response_echoes_supplied_request_id
+  /usr/local/lib/python3.14/site-packages/starlette/_exception_handler.py:31: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f97482508b0>
+    async def wrapped_app(scope: Scope, receive: Receive, send: Send) -> None:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+kernel/tests/test_melious_router.py::test_concurrent_completion_metrics_are_consistent
+  /usr/local/lib/python3.14/threading.py:307: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f97481f5f30>
+    self._waiters = _deque()
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+kernel/tests/test_melious_router.py::test_concurrent_completion_metrics_are_consistent
+  /usr/local/lib/python3.14/threading.py:307: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f9748253b50>
+    self._waiters = _deque()
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+kernel/tests/test_melious_router.py::test_concurrent_completion_metrics_are_consistent
+  /usr/local/lib/python3.14/threading.py:307: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f97482a62f0>
+    self._waiters = _deque()
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================================ tests coverage ================================
+_______________ coverage: platform linux, python 3.14.6-final-0 ________________
+
+Name                               Stmts   Miss  Cover   Missing
+----------------------------------------------------------------
+kernel/sidecar/melious_router.py     128     11    91%   66-72, 81, 107, 124, 146
+overlay/server.py                    625    131    79%   108, 154, 182, 191, 292-293, 350-351, 475, 484, 500, 517-518, 582, 598-599, 616-623, 629, 633, 726-728, 739-743, 749-753, 759-763, 769-773, 802, 890-892, 941-969, 986, 1006-1014, 1020-1027, 1042-1061, 1074-1076, 1085-1122, 1171-1172, 1180, 1192
+----------------------------------------------------------------
+TOTAL                                753    142    81%
+128 passed, 5 warnings in 13.65s
+/usr/local/lib/python3.14/ast.py:46: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f9748187e20>
+  return compile(source, filename, mode, flags,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/usr/local/lib/python3.14/ast.py:46: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f9748186200>
+  return compile(source, filename, mode, flags,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/usr/local/lib/python3.14/ast.py:46: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f97481844f0>
+  return compile(source, filename, mode, flags,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/usr/local/lib/python3.14/ast.py:46: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f97481857b0>
+  return compile(source, filename, mode, flags,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/usr/local/lib/python3.14/ast.py:46: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f9748187c40>
+  return compile(source, filename, mode, flags,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/home/daytona/.local/lib/python3.14/site-packages/_pytest/unraisableexception.py:33: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f97483dcd60>
+  gc.collect()
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
