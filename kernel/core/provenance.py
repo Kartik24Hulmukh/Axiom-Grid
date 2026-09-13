@@ -14,7 +14,6 @@ The kernel imports NOTHING from /domains or /legacy.
 from __future__ import annotations
 
 import logging
-from typing import Any
 
 from kernel.core.data_model import (
     Action,

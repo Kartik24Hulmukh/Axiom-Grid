@@ -13,7 +13,6 @@ import argparse
 import os
 import pathlib
 import sys
-from datetime import datetime
 
 from kernel.core.data_model import Document
 from kernel.sidecar.ingestor import IngestorImpl

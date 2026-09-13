@@ -3,7 +3,6 @@ Tests for LocalSecurityFilter.
 """
 
 import json
-import pytest
 from pathlib import Path
 
 from kernel.sidecar.security_filter import LocalSecurityFilter

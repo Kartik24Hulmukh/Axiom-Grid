@@ -22,11 +22,9 @@ inference gateways.
 """
 from __future__ import annotations
 
-import math
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
-from typing import Sequence
 
 
 # ---------------------------------------------------------------------------

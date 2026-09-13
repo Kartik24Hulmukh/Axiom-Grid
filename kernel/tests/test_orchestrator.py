@@ -2,15 +2,12 @@
 Tests for Orchestrator state machine.
 """
 
-import pytest
-from datetime import datetime
 from typing import Any
 
 from kernel.core.contracts import GateVerdict, GateResult, ScanResult
 from kernel.core.data_model import (
     BBox,
     Chunk,
-    Correction,
     Document,
     Extraction,
     ExtractionStatus,
