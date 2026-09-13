@@ -40,14 +40,14 @@ auth2 = {"X-API-Key": KEY2}
 scenarios = [
     ("probe_healthz", lambda i: hit("GET", "/healthz")),
     ("probe_readyz", lambda i: hit("GET", "/readyz")),
-    ("anon_metrics", lambda i: hit("GET", "/metrics")),
-    ("bruteforce", lambda i: hit("GET", "/metrics", {"Authorization": f"Bearer guess_{i}_0123456789abcdef"})),
-    ("tenant1_metrics", lambda i: hit("GET", "/metrics", auth)),
-    ("tenant2_metrics", lambda i: hit("GET", "/metrics", auth2)),
+    ("anon_metrics", lambda i: hit("GET", "/api/traces")),
+    ("bruteforce", lambda i: hit("GET", "/api/traces", {"Authorization": f"Bearer guess_{i}_0123456789abcdef"})),
+    ("tenant1_metrics", lambda i: hit("GET", "/api/traces", auth)),
+    ("tenant2_metrics", lambda i: hit("GET", "/api/traces", auth2)),
     ("tenant1_traversal", lambda i: hit("POST", "/demo", auth, {"file": UP * 3 + "etc/passwd", "question": "x"})),
     ("anon_demo", lambda i: hit("POST", "/demo", None, {"file": "x.txt", "question": "x"})),
     ("tenant1_bad_schema", lambda i: hit("POST", "/api/extract-document", auth, {"nope": 1})),
-    ("bad_origin", lambda i: hit("GET", "/metrics", {**auth, "Origin": "https://evil.example"})),
+    ("bad_origin", lambda i: hit("GET", "/api/traces", {**auth, "Origin": "https://evil.example"})),
 ]
 results = collections.defaultdict(collections.Counter)
 lat = []
