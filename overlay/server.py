@@ -12,6 +12,8 @@ import concurrent.futures
 import hashlib
 import hmac
 import logging
+import logging.handlers
+import queue
 import json
 from collections import deque
 import os
@@ -76,13 +78,43 @@ class JsonLogFormatter(logging.Formatter):
         return json.dumps(payload, separators=(",", ":"), default=str)
 
 
+LOG_DROPPED_TOTAL = {"count": 0}
+
+
+class _NonBlockingQueueHandler(logging.handlers.QueueHandler):
+    """OPS-006: enqueue log records without ever blocking the request path.
+
+    A plain StreamHandler writes synchronously: when stderr is a pipe nobody
+    drains (CI harnesses, `cmd | head`, misconfigured supervisors) the 64 KiB
+    pipe buffer fills and every request thread blocks inside write() - the
+    serving path stalls on log I/O and SIGTERM graceful shutdown can no longer
+    run (focused-runtime CI hang, 2026-09-13). Records go to a bounded queue;
+    a daemon QueueListener owns the blocking write. On saturation records are
+    shed and counted in /metrics - never blocked on.
+    """
+
+    def enqueue(self, record: logging.LogRecord) -> None:  # noqa: D401
+        try:
+            self.queue.put_nowait(record)
+        except queue.Full:
+            LOG_DROPPED_TOTAL["count"] += 1
+
+
 def configure_structured_logging(level: str | None = None) -> None:
-    """Idempotently install the JSON formatter on the root logger."""
+    """Idempotently install non-blocking JSON logging on the root logger."""
     if os.environ.get("AXIOM_LOG_FORMAT", "json").lower() == "text":
         return
     root = logging.getLogger()
-    if not any(isinstance(h.formatter, JsonLogFormatter) for h in root.handlers):
-        handler = logging.StreamHandler()
+    if not any(isinstance(h, _NonBlockingQueueHandler) for h in root.handlers):
+        sink = logging.StreamHandler()
+        sink.setFormatter(logging.Formatter("%(message)s"))
+        log_queue: queue.Queue = queue.Queue(
+            maxsize=int(os.environ.get("AXIOM_LOG_QUEUE_MAX", "4096"))
+        )
+        logging.handlers.QueueListener(
+            log_queue, sink, respect_handler_level=True
+        ).start()
+        handler = _NonBlockingQueueHandler(log_queue)
         handler.setFormatter(JsonLogFormatter())
         root.addHandler(handler)
     root.setLevel((level or os.environ.get("AXIOM_LOG_LEVEL", "INFO")).upper())
@@ -1147,13 +1179,14 @@ async def metrics(format: str = "json"):
     data = {"uptime_seconds": round(time.time()-OPS_METRICS["started_at"],2), "requests_total": total,
             "errors_total": OPS_METRICS["errors_total"], "auth_rejections_total": OPS_METRICS.get("auth_rejections_total",0),
             "extraction_shed_total": OPS_METRICS.get("extraction_shed_total",0),
+            "log_dropped_total": LOG_DROPPED_TOTAL["count"],
             "status_counts": OPS_METRICS["status_counts"], "active_rate_limit_buckets": len(_rate_limit_buckets),
             "latency_ms_mean": round(OPS_METRICS["latency_ms_total"]/total,2) if total else 0.0,
             "latency_ms_max": OPS_METRICS["latency_ms_max"],
             "latency_percentiles": {"p50":percentile(.5),"p90":percentile(.9),"p95":percentile(.95),"p99":percentile(.99)}}
     if format.lower() in {"prometheus","otel"}:
         lines=[f"axiom_requests_total {total}",f"axiom_errors_total {data['errors_total']}",
-               f"axiom_auth_rejections_total {data['auth_rejections_total']}",f"axiom_extraction_shed_total {data['extraction_shed_total']}",f"axiom_rate_limit_buckets {data['active_rate_limit_buckets']}"]
+               f"axiom_auth_rejections_total {data['auth_rejections_total']}",f"axiom_extraction_shed_total {data['extraction_shed_total']}",f"axiom_log_dropped_total {data['log_dropped_total']}",f"axiom_rate_limit_buckets {data['active_rate_limit_buckets']}"]
         lines += [f'axiom_http_status_total{{code="{code}"}} {count}' for code,count in data["status_counts"].items()]
         return HTMLResponse("\n".join(lines)+"\n", media_type="text/plain; version=0.0.4")
     return data
