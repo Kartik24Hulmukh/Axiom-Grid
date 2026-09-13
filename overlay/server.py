@@ -358,7 +358,7 @@ async def request_governor_middleware(request, call_next):
 # length-independent). The digest prefix doubles as a stable per-tenant id so
 # the rate limiter (SEC-005) can apply a per-key quota tier instead of per-IP.
 
-_AUTH_EXEMPT_PATHS = {"/", "/healthz", "/livez", "/readyz", "/dashboard", "/docs", "/openapi.json", "/redoc"}
+_AUTH_EXEMPT_PATHS = {"/", "/healthz", "/api/health", "/livez", "/readyz", "/metrics", "/dashboard", "/docs", "/openapi.json", "/redoc"}
 _AUTH_EXEMPT_PREFIXES = ("/static/",)
 
 
@@ -440,7 +440,7 @@ async def api_key_auth_middleware(request, call_next):
 
 _RATE_LIMIT_PER_MIN = int(os.environ.get("AXIOM_RATE_LIMIT_PER_MIN", "300"))
 _RATE_LIMIT_WINDOW_S = 60.0
-_RATE_LIMIT_EXEMPT_PATHS = {"/healthz", "/livez", "/readyz"}
+_RATE_LIMIT_EXEMPT_PATHS = {"/healthz", "/api/health", "/livez", "/readyz", "/metrics"}
 _rate_limit_buckets: dict[str, deque[float]] = {}
 _RATE_LIMIT_BUCKET_HIGH_WATER = int(os.environ.get("AXIOM_RATE_LIMIT_BUCKET_HIGH_WATER", "500"))
 # Hard ceiling on distinct buckets regardless of freshness: beyond this the
@@ -1156,6 +1156,12 @@ async def get_source_provenance(extraction_id: str):
 async def healthz():
     """Shallow service health probe."""
     return {"status": "ok", "service": "axiom-grid-overlay", "auth_enabled": _auth_enabled()}
+
+
+@app.get("/api/health")
+async def api_health():
+    """Load-balancer health alias; intentionally equivalent to /healthz."""
+    return await healthz()
 
 
 @app.get("/livez")
