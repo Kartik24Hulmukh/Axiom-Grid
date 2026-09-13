@@ -12,10 +12,10 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, timezone
-from typing import Any, Final
+from typing import Final
 
 from kernel.core.contracts import ApplyResult
-from kernel.core.data_model import Action, ActionStatus, ActionKind, Suggestion
+from kernel.core.data_model import Action, Suggestion
 from kernel.core.provenance import ProvenanceLogImpl
 
 logger = logging.getLogger(__name__)

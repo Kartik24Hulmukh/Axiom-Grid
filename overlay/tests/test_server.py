@@ -316,7 +316,6 @@ def test_rate_limit_enforced_and_healthz_exempt(client, monkeypatch):
     srv._rate_limit_buckets.clear()
     results = [client.get("/metrics").status_code for _ in range(10)]
     assert 429 in results
-    idx = results.index(429)
     resp = client.get("/metrics")
     assert resp.status_code == 429
     assert "Retry-After" in resp.headers

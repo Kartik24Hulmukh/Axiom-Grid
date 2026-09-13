@@ -13,9 +13,8 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timezone
-from typing import Any
 
-from kernel.core.audit_log import SignedAuditLog, AuditEntry
+from kernel.core.audit_log import SignedAuditLog
 
 
 def export_json(audit_log: SignedAuditLog) -> str:
@@ -100,7 +99,7 @@ def export_markdown(audit_log: SignedAuditLog) -> str:
             lines.append(f"- **Grounding method:** {e.cascade_stage}")
             if e.source_region:
                 region = e.source_region
-                lines.append(f"- **Source region:**")
+                lines.append("- **Source region:**")
                 lines.append(f"  - Page: {region.get('page', 'N/A')}")
                 lines.append(f"  - Chunk ID: {region.get('chunk_id', 'N/A')}")
                 lines.append(f"  - Character span: {region.get('char_span', 'N/A')}")
@@ -126,7 +125,7 @@ def export_markdown(audit_log: SignedAuditLog) -> str:
             lines.append(f"- **Timestamp:** {e.timestamp}")
             lines.append(f"- **Model:** {e.model_id}")
             lines.append(f"- **Document hash:** `{e.document_hash}`")
-            lines.append(f"- **Refusal reason:** Could not ground the answer to source text")
+            lines.append("- **Refusal reason:** Could not ground the answer to source text")
             lines.append(f"- **Cascade stage that blocked:** {e.cascade_stage}")
             lines.append(f"- **Signature:** `{e.signature[:16]}...`")
             lines.append("")
@@ -135,9 +134,9 @@ def export_markdown(audit_log: SignedAuditLog) -> str:
     lines.append("")
     lines.append("## Chain Verification")
     lines.append("")
-    lines.append(f"The audit log uses HMAC-SHA256 hash chaining. Each entry's signature "
-                 f"covers its content plus the previous entry's signature.")
-    lines.append(f"")
+    lines.append("The audit log uses HMAC-SHA256 hash chaining. Each entry's signature "
+                 "covers its content plus the previous entry's signature.")
+    lines.append("")
     lines.append(f"**Chain status:** {'VALID — no tampering detected' if chain_valid else 'BROKEN — tampering detected'}")
     lines.append("")
     lines.append("## Cryptographic Details")

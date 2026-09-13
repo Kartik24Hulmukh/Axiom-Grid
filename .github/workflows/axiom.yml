@@ -30,6 +30,10 @@ jobs:
       - run: node --test phantom-overlay/tests/app.test.cjs
       - name: Validate real-model runner syntax
         run: python3 -m py_compile scripts/axiom-live-e2e.py
+      - name: Python lint gate (ruff E9/F - syntax errors, undefined names, unused imports)
+        run: |
+          python3 -m pip install --quiet ruff
+          python3 -m ruff check --select E9,F overlay kernel scripts/stress_sec006_gauntlet.py stress_test.py
       - name: Overlay server gate (real provenance digest, strict input schema)
         run: |
           python3 -m pip install --quiet pytest pytest-asyncio fastapi httpx uvicorn ruff psutil

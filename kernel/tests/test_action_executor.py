@@ -2,14 +2,10 @@
 Tests for ActionExecutor.
 """
 
-import pytest
-from datetime import datetime
 
-from kernel.core.contracts import ApplyResult
 from kernel.core.data_model import (
     Action,
     ActionKind,
-    ActionStatus,
     BBox,
     Chunk,
     Document,

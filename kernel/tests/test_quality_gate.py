@@ -3,11 +3,10 @@ Tests for LocalQualityGate.
 """
 
 import pytest
-from typing import Optional
 
 from kernel.core.contracts import GateVerdict
 from kernel.core.data_model import Anchor, Correction, Extraction, GroundingMethod
-from kernel.sidecar.quality_gate import LocalQualityGate, CorrectionLookup
+from kernel.sidecar.quality_gate import LocalQualityGate
 
 
 class MockCorrectionStore:
