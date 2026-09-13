@@ -19,6 +19,7 @@ import pathlib
 import tempfile
 import threading
 import time
+import uuid
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -162,6 +163,14 @@ _extraction_pool = concurrent.futures.ThreadPoolExecutor(
     max_workers=4, thread_name_prefix="axiom-extract"
 )
 
+# OPS-004: backpressure on the extraction pool. A ThreadPoolExecutor queue is
+# unbounded, so under a spike far beyond 4 workers requests pile up, latency
+# balloons past any SLO, and clients time out while the server still burns
+# CPU on dead work. A semaphore of workers + small queue turns overload into
+# a fast, honest 503 (fail-fast, load-shedding) instead of a slow collapse.
+_EXTRACTION_QUEUE_DEPTH = int(os.environ.get("AXIOM_EXTRACTION_QUEUE_DEPTH", "16"))
+_extraction_slots = threading.BoundedSemaphore(4 + _EXTRACTION_QUEUE_DEPTH)
+
 OPS_METRICS = {
     "started_at": time.time(),
     "requests_total": 0,
@@ -173,6 +182,28 @@ OPS_METRICS = {
 }
 
 MAX_UPLOAD_BYTES = int(os.environ.get("AXIOM_MAX_UPLOAD_BYTES", str(2 * 1024 * 1024)))
+
+
+# ------------------------------------------------------------------
+# OPS-003: request-id correlation. Honour a client-supplied X-Request-Id
+# (bounded, sanitized) or mint one; echo it on every response so client
+# support tickets can be joined to the structured JSON log stream.
+# ------------------------------------------------------------------
+_REQUEST_ID_MAX_LEN = 64
+
+
+@app.middleware("http")
+async def request_id_middleware(request, call_next):
+    rid = request.headers.get("x-request-id", "").strip()
+    if not rid or len(rid) > _REQUEST_ID_MAX_LEN:
+        rid = uuid.uuid4().hex
+    # Sanitize: correlation ids must never carry CR/LF into log streams
+    # (log-injection / response-splitting guard).
+    rid = "".join(ch for ch in rid if ch.isalnum() or ch in "-_.") or uuid.uuid4().hex
+    request.state.request_id = rid
+    response = await call_next(request)
+    response.headers["X-Request-Id"] = rid
+    return response
 
 
 @app.middleware("http")
@@ -209,6 +240,16 @@ async def request_governor_middleware(request, call_next):
     response = await call_next(request)
 
     dt_ms = (time.perf_counter() - t0) * 1000
+    logger.info(
+        "request completed",
+        extra={
+            "request_id": getattr(request.state, "request_id", ""),
+            "path": request.url.path,
+            "status": response.status_code,
+            "latency_ms": round(dt_ms, 2),
+            "client": request.client.host if request.client else "unknown",
+        },
+    )
     OPS_METRICS["requests_total"] += 1
     OPS_METRICS["latency_ms_total"] += dt_ms
     OPS_METRICS["latency_samples"].append(dt_ms)
@@ -733,7 +774,9 @@ async def extract_document(req: ExtractDocumentRequest):
         text = await asyncio.to_thread(_read, filepath)
     except OSError as exc:
         logger.exception("unable to read document for extraction")
-        raise HTTPException(status_code=422, detail=f"Unable to read {filepath}: {exc}") from exc
+        # SEC-009: log the cause, but do not echo the resolved server path or
+        # raw exception text to the client (information disclosure).
+        raise HTTPException(status_code=422, detail="Unable to read document") from exc
 
     from kairo.core.classifier import build_source_link, classify_document
     doc_type = classify_document(text)
@@ -779,10 +822,23 @@ async def extract_document(req: ExtractDocumentRequest):
             with orchestrator_lock:
                 return orchestrator.run(doc)
 
-        trace = await loop.run_in_executor(_extraction_pool, _run_locked)
+        if not _extraction_slots.acquire(blocking=False):
+            # Fail fast under overload rather than queueing unboundedly.
+            OPS_METRICS["extraction_shed_total"] = OPS_METRICS.get("extraction_shed_total", 0) + 1
+            raise HTTPException(
+                status_code=503,
+                detail="Extraction capacity saturated; retry shortly",
+                headers={"Retry-After": "1"},
+            )
+        try:
+            trace = await loop.run_in_executor(_extraction_pool, _run_locked)
+        finally:
+            _extraction_slots.release()
+    except HTTPException:
+        raise
     except Exception as exc:
         logger.exception("unhandled error in /api/extract-document pipeline")
-        raise HTTPException(status_code=500, detail=f"Extraction pipeline failed: {exc}") from exc
+        raise HTTPException(status_code=500, detail="Extraction pipeline failed") from exc
 
     # Build response with grounding metadata
     fields = {}
@@ -833,7 +889,7 @@ async def ask_document(req: AskDocumentRequest):
         raise
     except Exception as exc:
         logger.exception("unhandled error in /api/ask-document")
-        raise HTTPException(status_code=500, detail=f"ask-document failed: {exc}") from exc
+        raise HTTPException(status_code=500, detail="ask-document failed") from exc
 
     # Simple keyword matching: find field whose name or value matches question keywords
     question_lower = question.lower()
@@ -939,7 +995,7 @@ async def get_figures(doc_id: str, file: str = ""):
         raise
     except Exception as exc:
         logger.exception("unhandled error in /api/figures")
-        raise HTTPException(status_code=500, detail=f"figure extraction failed: {exc}") from exc
+        raise HTTPException(status_code=500, detail="figure extraction failed") from exc
 
     return {
         "doc_id": doc_id,
@@ -1090,13 +1146,14 @@ async def metrics(format: str = "json"):
         return round(samples[min(len(samples)-1, int((len(samples)-1)*q))], 2) if samples else 0.0
     data = {"uptime_seconds": round(time.time()-OPS_METRICS["started_at"],2), "requests_total": total,
             "errors_total": OPS_METRICS["errors_total"], "auth_rejections_total": OPS_METRICS.get("auth_rejections_total",0),
+            "extraction_shed_total": OPS_METRICS.get("extraction_shed_total",0),
             "status_counts": OPS_METRICS["status_counts"], "active_rate_limit_buckets": len(_rate_limit_buckets),
             "latency_ms_mean": round(OPS_METRICS["latency_ms_total"]/total,2) if total else 0.0,
             "latency_ms_max": OPS_METRICS["latency_ms_max"],
             "latency_percentiles": {"p50":percentile(.5),"p90":percentile(.9),"p95":percentile(.95),"p99":percentile(.99)}}
     if format.lower() in {"prometheus","otel"}:
         lines=[f"axiom_requests_total {total}",f"axiom_errors_total {data['errors_total']}",
-               f"axiom_auth_rejections_total {data['auth_rejections_total']}",f"axiom_rate_limit_buckets {data['active_rate_limit_buckets']}"]
+               f"axiom_auth_rejections_total {data['auth_rejections_total']}",f"axiom_extraction_shed_total {data['extraction_shed_total']}",f"axiom_rate_limit_buckets {data['active_rate_limit_buckets']}"]
         lines += [f'axiom_http_status_total{{code="{code}"}} {count}' for code,count in data["status_counts"].items()]
         return HTMLResponse("\n".join(lines)+"\n", media_type="text/plain; version=0.0.4")
     return data

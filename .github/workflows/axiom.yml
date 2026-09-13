@@ -33,7 +33,7 @@ jobs:
       - name: Overlay server gate (real provenance digest, strict input schema)
         run: |
           python3 -m pip install --quiet pytest fastapi httpx uvicorn
-          python3 -m pytest -q -p no:cacheprovider overlay/tests/test_server.py overlay/tests/test_server_hardening.py kernel/tests/test_melious_router.py
+          python3 -m pytest -q -p no:cacheprovider overlay/tests/test_server.py overlay/tests/test_server_hardening.py overlay/tests/test_server_wave8.py kernel/tests/test_melious_router.py
       - name: Ops endpoints smoke gate (healthz/readyz/metrics, security headers)
         run: |
           python3 - <<'PY'

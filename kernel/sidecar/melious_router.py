@@ -38,12 +38,19 @@ class MeliousModelRouter:
     # Every id in DEFAULT_MODELS was verified against the live gateway catalog
     # (GET /v1/models) — a dead id silently shortens the fallback chain (404).
     def __init__(self, models=None, base_url=None, timeout=10.0, max_retries=1,
+                 acquire_timeout=5.0, probe_timeout=None,
                  transport: Callable | None=None, sleep: Callable=time.sleep):
         env_models=tuple(m.strip() for m in os.getenv("MELIOUS_MODELS","").split(",") if m.strip())
         self.models=tuple(models or env_models or self.DEFAULT_MODELS)
         if not self.models: raise RouterError("no models configured")
         self.base_url=(base_url or os.getenv("MELIOUS_BASE_URL","https://api.melious.ai/v1")).rstrip("/")
         self.timeout=float(timeout); self.max_retries=max(0,int(max_retries))
+        # Latency-budget guards (100x-load premortem): cap total time spent
+        # queueing for the router lock, and give the single half-open probe a
+        # shorter deadline so a hung-recovering upstream cannot stretch tail
+        # latency for the whole recovery window.
+        self.acquire_timeout=float(acquire_timeout)
+        self.probe_timeout=float(probe_timeout) if probe_timeout is not None else max(1.0, self.timeout/2)
         self._transport=transport or self._http_transport; self._sleep=sleep
         self._lock=threading.RLock(); self.breakers={m:CircuitBreaker() for m in self.models}
         self.metrics={"requests":0,"successes":0,"failures":0,"fallbacks":0,"prompt_tokens":0,"completion_tokens":0,"reasoning_tokens":0,"total_tokens":0}
@@ -67,32 +74,55 @@ class MeliousModelRouter:
                 raise RouterError("each message needs string 'role' and 'content'")
         if "model" in options: raise RouterError("model is chosen by the router; do not pass it")
         payload={"messages":messages,**options}; trace=[]; last=None
-        with self._lock: self.metrics["requests"]+=1
+        if not self._lock.acquire(timeout=self.acquire_timeout):
+            raise RouterError(f"router saturated: lock not acquired within {self.acquire_timeout}s")
+        try: self.metrics["requests"]+=1
+        finally: self._lock.release()
         for index,model in enumerate(self.models):
             now=time.monotonic()
-            with self._lock: allowed=self.breakers[model].allow(now)
+            if not self._lock.acquire(timeout=self.acquire_timeout):
+                raise RouterError(f"router saturated: lock not acquired within {self.acquire_timeout}s")
+            try:
+                allowed=self.breakers[model].allow(now)
+                is_probe = allowed and self.breakers[model].probing
+            finally: self._lock.release()
             if not allowed: trace.append({"model":model,"result":"circuit_open"}); continue
-            if index: 
-                with self._lock: self.metrics["fallbacks"]+=1
+            if index:
+                if self._lock.acquire(timeout=self.acquire_timeout):
+                    try: self.metrics["fallbacks"]+=1
+                    finally: self._lock.release()
             for attempt in range(self.max_retries+1):
                 try:
-                    data=self._transport(model,payload,self.timeout)
+                    # Half-open probe gets the shorter probe_timeout deadline.
+                    data=self._transport(model,payload,self.probe_timeout if is_probe else self.timeout)
                     if not isinstance(data, dict) or not isinstance(data.get("choices"), list) or not data["choices"]:
                         raise RouterError("malformed upstream response")
-                    with self._lock:
+                    if not self._lock.acquire(timeout=self.acquire_timeout):
+                        raise RouterError(f"router saturated: lock not acquired within {self.acquire_timeout}s")
+                    try:
                         self.breakers[model].success(); self.metrics["successes"]+=1
                         usage=data.get("usage",{}); details=usage.get("completion_tokens_details",{}) or {}
                         for k in ("prompt_tokens","completion_tokens","total_tokens"): self.metrics[k]+=int(usage.get(k,0) or 0)
                         self.metrics["reasoning_tokens"]+=int(details.get("reasoning_tokens",usage.get("reasoning_tokens",0)) or 0)
+                    finally: self._lock.release()
                     data["router"]={"selected_model":model,"fallback_chain":trace+[ {"model":model,"result":"success"} ]}
                     return data
                 except Exception as exc:
                     last=exc; trace.append({"model":model,"result":"failure","error":type(exc).__name__,"detail":str(exc)[:120],"status":getattr(exc,"status",None)})
-                    with self._lock: self.breakers[model].failure(time.monotonic())
+                    if self._lock.acquire(timeout=self.acquire_timeout):
+                        try: self.breakers[model].failure(time.monotonic())
+                        finally: self._lock.release()
                     if attempt < self.max_retries:
                         delay=min(float(getattr(exc,"retry_after",0) or 0) or .1*(2**attempt)+random.random()*.05,2.0); self._sleep(delay)
-        with self._lock: self.metrics["failures"]+=1
-        raise RouterError(f"all model routes failed: {trace}") from last
+        if self._lock.acquire(timeout=self.acquire_timeout):
+            try: self.metrics["failures"]+=1
+            finally: self._lock.release()
+        err = RouterError(f"all model routes failed: {trace}")
+        # Preserve the last upstream HTTP status so callers can map 429/5xx
+        # without parsing the trace text.
+        if last is not None and getattr(last, "status", None) is not None:
+            err.status = last.status
+        raise err from last
     def get_metrics(self):
         with self._lock: return {**self.metrics,"circuits":{m:b.state for m,b in self.breakers.items()}}
     def get_prometheus_metrics(self):
