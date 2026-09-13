@@ -1,0 +1,51 @@
+........................................................................ [ 56%]
+........................................................                 [100%]
+================================ tests coverage ================================
+_______________ coverage: platform linux, python 3.14.6-final-0 ________________
+
+Name                                         Stmts   Miss  Cover
+----------------------------------------------------------------
+kernel/__init__.py                               0      0   100%
+kernel/core/__init__.py                          0      0   100%
+kernel/core/audit_export.py                     95     95     0%
+kernel/core/audit_log.py                       110    110     0%
+kernel/core/contracts.py                        56      0   100%
+kernel/core/data_model.py                      174      8    95%
+kernel/core/embeddings.py                       59     27    54%
+kernel/core/grounding.py                       170     43    75%
+kernel/core/provenance.py                       56     18    68%
+kernel/core/refusal.py                          24     24     0%
+kernel/core/reproducibility.py                  79     79     0%
+kernel/core/verifier_standalone.py             221    221     0%
+kernel/sidecar/__init__.py                       0      0   100%
+kernel/sidecar/action_executor.py               37      3    92%
+kernel/sidecar/demo.py                          86     86     0%
+kernel/sidecar/inference_gateway.py             72     21    71%
+kernel/sidecar/ingestor.py                     191    131    31%
+kernel/sidecar/melious_router.py               128     11    91%
+kernel/sidecar/memory_store.py                 138     22    84%
+kernel/sidecar/orchestrator.py                 116      9    92%
+kernel/sidecar/quality_gate.py                  48      0   100%
+kernel/sidecar/security_filter.py               54      1    98%
+kernel/tests/__init__.py                         0      0   100%
+kernel/tests/test_action_executor.py            67      0   100%
+kernel/tests/test_flywheel_integration.py       30      0   100%
+kernel/tests/test_grounding.py                  36      0   100%
+kernel/tests/test_inference_gateway.py          61      0   100%
+kernel/tests/test_melious_router.py             89      0   100%
+kernel/tests/test_melious_router_wave11.py      71      0   100%
+kernel/tests/test_memory_store.py               78      0   100%
+kernel/tests/test_orchestrator.py              112      2    98%
+kernel/tests/test_quality_gate.py               58      0   100%
+kernel/tests/test_security_filter.py            45      0   100%
+overlay/__init__.py                              0      0   100%
+overlay/server.py                              626    131    79%
+overlay/tests/__init__.py                        0      0   100%
+overlay/tests/test_server.py                   254      2    99%
+overlay/tests/test_server_hardening.py          87      0   100%
+overlay/tests/test_server_wave8.py              95      2    98%
+overlay/tests/test_server_wave9.py              62      3    95%
+overlay/tests/test_server_wave11.py             49      1    98%
+----------------------------------------------------------------
+TOTAL                                         3734   1050    72%
+128 passed in 14.01s

@@ -8,17 +8,14 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import Any
 
 from kernel.core.data_model import (
     Anchor,
     BBox,
     Chunk,
-    Extraction,
-    ExtractionStatus,
     GroundingMethod,
 )
-from kernel.core.embeddings import get_embedding, cosine_similarity
+from kernel.core.embeddings import cosine_similarity, get_embedding
 
 logger = logging.getLogger(__name__)
 

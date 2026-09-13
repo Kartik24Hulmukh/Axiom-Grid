@@ -309,9 +309,9 @@ class LocalSecurityFilter:
 
         if total_score >= self._injection_threshold:
             return [
-                f"INJECTION_BLOCKED: score={total_score:.2f} "
+                (f"INJECTION_BLOCKED: score={total_score:.2f} "
                 f"(threshold={self._injection_threshold:.2f}), "
-                f"signals=[{', '.join(triggered)}]"
+                f"signals=[{', '.join(triggered)}]")
             ]
         return []
 

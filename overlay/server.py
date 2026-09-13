@@ -9,20 +9,28 @@ from __future__ import annotations
 
 import asyncio
 import concurrent.futures
+import contextlib
 import hashlib
 import hmac
-import logging
 import json
-from collections import deque
+import logging
+import logging.handlers
 import os
 import pathlib
+import queue
 import tempfile
 import threading
 import time
+import uuid
+from collections import deque
+from urllib.parse import urlsplit
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field, field_validator
+
 from kernel.core.data_model import (
     Action,
     ActionKind,
@@ -42,13 +50,136 @@ from kernel.sidecar.security_filter import LocalSecurityFilter
 from packs.contract.pack import ContractPack
 from packs.generic.pack import GenericPack
 from packs.invoice.pack import InvoicePack
-from packs.paper.pack import PaperPack
 from packs.memo.pack import ClassifiedMemoPack
-from pydantic import BaseModel, Field, field_validator
+from packs.paper.pack import PaperPack
+
 
 # Initialize FastAPI
-app = FastAPI(title="Axiom-Grid Overlay API")
+@contextlib.asynccontextmanager
+async def _lifespan(_app: FastAPI):
+    """Reopen durable state and join extraction workers before closing SQLite."""
+    global _extraction_pool
+    memory_store.reopen()
+    if _extraction_pool._shutdown:
+        _extraction_pool = concurrent.futures.ThreadPoolExecutor(
+            max_workers=4, thread_name_prefix="axiom-extract"
+        )
+    try:
+        yield
+    finally:
+        # ASGI server has drained ingress; do not close state while work runs.
+        # Running Python threads cannot be forcibly stopped: supervisors still
+        # need a termination grace period for a genuinely hung native parser.
+        await asyncio.to_thread(_extraction_pool.shutdown, wait=True, cancel_futures=True)
+        memory_store.close()
+
+
+app = FastAPI(title="Axiom-Grid Overlay API", lifespan=_lifespan)
 logger = logging.getLogger("overlay.server")
+
+
+# ------------------------------------------------------------------
+# OPS-002: structured JSON logging (one JSON object per line; safe for
+# Loki/Datadog/CloudWatch ingestion). Opt out with AXIOM_LOG_FORMAT=text.
+# ------------------------------------------------------------------
+class JsonLogFormatter(logging.Formatter):
+    """Render log records as single-line JSON with stable field names."""
+
+    def format(self, record: logging.LogRecord) -> str:
+        payload = {
+            "ts": time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(record.created)) + f".{int(record.msecs):03d}Z",
+            "level": record.levelname,
+            "logger": record.name,
+            "msg": record.getMessage(),
+            "service": "axiom-grid-overlay",
+        }
+        if record.exc_info:
+            payload["exc_type"] = getattr(record.exc_info[0], "__name__", "Exception")
+        for key in ("request_id", "path", "status", "latency_ms", "client"):
+            if hasattr(record, key):
+                payload[key] = getattr(record, key)
+        return json.dumps(payload, separators=(",", ":"), default=str)
+
+
+LOG_DROPPED_TOTAL = {"count": 0}
+
+
+class _NonBlockingQueueHandler(logging.handlers.QueueHandler):
+    """OPS-006: enqueue log records without ever blocking the request path.
+
+    A plain StreamHandler writes synchronously: when stderr is a pipe nobody
+    drains (CI harnesses, `cmd | head`, misconfigured supervisors) the 64 KiB
+    pipe buffer fills and every request thread blocks inside write() - the
+    serving path stalls on log I/O and SIGTERM graceful shutdown can no longer
+    run (focused-runtime CI hang, 2026-09-13). Records go to a bounded queue;
+    a daemon QueueListener owns the blocking write. On saturation records are
+    shed and counted in /metrics - never blocked on.
+    """
+
+    def enqueue(self, record: logging.LogRecord) -> None:
+        try:
+            self.queue.put_nowait(record)
+        except queue.Full:
+            LOG_DROPPED_TOTAL["count"] += 1
+
+
+def configure_structured_logging(level: str | None = None) -> None:
+    """Idempotently install non-blocking JSON logging on the root logger."""
+    if os.environ.get("AXIOM_LOG_FORMAT", "json").lower() == "text":
+        return
+    root = logging.getLogger()
+    if not any(isinstance(h, _NonBlockingQueueHandler) for h in root.handlers):
+        sink = logging.StreamHandler()
+        sink.setFormatter(logging.Formatter("%(message)s"))
+        log_queue: queue.Queue = queue.Queue(
+            maxsize=int(os.environ.get("AXIOM_LOG_QUEUE_MAX", "4096"))
+        )
+        logging.handlers.QueueListener(
+            log_queue, sink, respect_handler_level=True
+        ).start()
+        handler = _NonBlockingQueueHandler(log_queue)
+        handler.setFormatter(JsonLogFormatter())
+        root.addHandler(handler)
+    # Uvicorn installs its own synchronous stderr handlers before importing
+    # the app. Route lifecycle/error logs through the same bounded queue too:
+    # otherwise shutdown INFO messages can block behind a saturated sink.
+    queue_handler = next(h for h in root.handlers if isinstance(h, _NonBlockingQueueHandler))
+    for name in ("uvicorn", "uvicorn.error", "uvicorn.access"):
+        uvicorn_logger = logging.getLogger(name)
+        uvicorn_logger.handlers = [queue_handler]
+        uvicorn_logger.propagate = False
+    root.setLevel((level or os.environ.get("AXIOM_LOG_LEVEL", "INFO")).upper())
+    # Third-party per-request chatter is not observability; keep it at WARNING
+    # so the hot path does not pay a JSON serialisation per upstream call.
+    for noisy in ("httpx", "httpcore", "uvicorn.access"):
+        logging.getLogger(noisy).setLevel(logging.WARNING)
+
+
+configure_structured_logging()
+
+
+# ------------------------------------------------------------------
+# SEC-007: strict, explicit CORS. Default is deny-all cross-origin: the
+# overlay is same-origin by design. Operators opt in per-origin via
+# AXIOM_CORS_ORIGINS (comma-separated, exact scheme://host[:port]). The
+# wildcard "*" is rejected when credentials would be allowed.
+# ------------------------------------------------------------------
+def _cors_origins() -> list[str]:
+    raw = os.environ.get("AXIOM_CORS_ORIGINS", "")
+    origins = [o.strip() for o in raw.split(",") if o.strip()]
+    return [o for o in origins if o != "*"]
+
+
+_CORS_ORIGINS = _cors_origins()
+if _CORS_ORIGINS:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=_CORS_ORIGINS,
+        allow_credentials=False,
+        allow_methods=["GET", "POST"],
+        allow_headers=["Authorization", "Content-Type", "X-API-Key"],
+        max_age=600,
+    )
 
 # Paths
 BASE_DIR = pathlib.Path(__file__).parents[1]
@@ -66,21 +197,34 @@ ALLOWED_ORIGINS = {
 }
 
 
+def _origin_allowed(origin: str) -> bool:
+    """Only serialized origins, never prefix-matched URLs or userinfo."""
+    if any(ch.isspace() or ord(ch) < 32 for ch in origin):
+        return False
+    try:
+        parsed = urlsplit(origin)
+        if (parsed.username is not None or parsed.password is not None
+                or parsed.path or parsed.query or parsed.fragment
+                or "?" in origin or "#" in origin or "\\" in origin):
+            return False
+        port = parsed.port  # Raises on malformed or out-of-range ports.
+        if parsed.netloc.endswith(":"):
+            return False
+    except ValueError:
+        return False
+    if origin in ALLOWED_ORIGINS or origin in _CORS_ORIGINS:
+        return True
+    return port is not None and (
+        (parsed.scheme == "http" and parsed.hostname in {"localhost", "127.0.0.1", "testserver"})
+        or (parsed.scheme == "https" and parsed.hostname == "testserver")
+    )
+
+
 @app.middleware("http")
 async def enforce_origin_gate(request, call_next):
     origin = request.headers.get("origin")
-    if origin is not None:
-        parsed = origin.rstrip("/")
-        is_allowed = False
-        if parsed in ALLOWED_ORIGINS:
-            is_allowed = True
-        elif parsed.startswith("http://127.0.0.1:") or parsed.startswith("http://localhost:"):
-            is_allowed = True
-        elif parsed.startswith("http://testserver:") or parsed.startswith("https://testserver:"):
-            is_allowed = True
-
-        if not is_allowed:
-            return JSONResponse(status_code=403, content={"detail": "Forbidden: invalid origin"})
+    if origin is not None and not _origin_allowed(origin):
+        return JSONResponse(status_code=403, content={"detail": "Forbidden: invalid origin"})
     return await call_next(request)
 
 
@@ -95,6 +239,14 @@ _extraction_pool = concurrent.futures.ThreadPoolExecutor(
     max_workers=4, thread_name_prefix="axiom-extract"
 )
 
+# OPS-004: backpressure on the extraction pool. A ThreadPoolExecutor queue is
+# unbounded, so under a spike far beyond 4 workers requests pile up, latency
+# balloons past any SLO, and clients time out while the server still burns
+# CPU on dead work. A semaphore of workers + small queue turns overload into
+# a fast, honest 503 (fail-fast, load-shedding) instead of a slow collapse.
+_EXTRACTION_QUEUE_DEPTH = int(os.environ.get("AXIOM_EXTRACTION_QUEUE_DEPTH", "16"))
+_extraction_slots = threading.BoundedSemaphore(4 + _EXTRACTION_QUEUE_DEPTH)
+
 OPS_METRICS = {
     "started_at": time.time(),
     "requests_total": 0,
@@ -106,6 +258,28 @@ OPS_METRICS = {
 }
 
 MAX_UPLOAD_BYTES = int(os.environ.get("AXIOM_MAX_UPLOAD_BYTES", str(2 * 1024 * 1024)))
+
+
+# ------------------------------------------------------------------
+# OPS-003: request-id correlation. Honour a client-supplied X-Request-Id
+# (bounded, sanitized) or mint one; echo it on every response so client
+# support tickets can be joined to the structured JSON log stream.
+# ------------------------------------------------------------------
+_REQUEST_ID_MAX_LEN = 64
+
+
+@app.middleware("http")
+async def request_id_middleware(request, call_next):
+    rid = request.headers.get("x-request-id", "").strip()
+    if not rid or len(rid) > _REQUEST_ID_MAX_LEN:
+        rid = uuid.uuid4().hex
+    # Sanitize: correlation ids must never carry CR/LF into log streams
+    # (log-injection / response-splitting guard).
+    rid = "".join(ch for ch in rid if ch.isascii() and (ch.isalnum() or ch in "-_.")) or uuid.uuid4().hex
+    request.state.request_id = rid
+    response = await call_next(request)
+    response.headers["X-Request-Id"] = rid
+    return response
 
 
 @app.middleware("http")
@@ -142,6 +316,16 @@ async def request_governor_middleware(request, call_next):
     response = await call_next(request)
 
     dt_ms = (time.perf_counter() - t0) * 1000
+    logger.info(
+        "request completed",
+        extra={
+            "request_id": getattr(request.state, "request_id", ""),
+            "path": request.url.path,
+            "status": response.status_code,
+            "latency_ms": round(dt_ms, 2),
+            "client": request.client.host if request.client else "unknown",
+        },
+    )
     OPS_METRICS["requests_total"] += 1
     OPS_METRICS["latency_ms_total"] += dt_ms
     OPS_METRICS["latency_samples"].append(dt_ms)
@@ -174,7 +358,7 @@ async def request_governor_middleware(request, call_next):
 # length-independent). The digest prefix doubles as a stable per-tenant id so
 # the rate limiter (SEC-005) can apply a per-key quota tier instead of per-IP.
 
-_AUTH_EXEMPT_PATHS = {"/", "/healthz", "/livez", "/readyz", "/dashboard", "/docs", "/openapi.json", "/redoc"}
+_AUTH_EXEMPT_PATHS = {"/", "/healthz", "/api/health", "/livez", "/readyz", "/metrics", "/dashboard", "/docs", "/openapi.json", "/redoc"}
 _AUTH_EXEMPT_PREFIXES = ("/static/",)
 
 
@@ -256,9 +440,14 @@ async def api_key_auth_middleware(request, call_next):
 
 _RATE_LIMIT_PER_MIN = int(os.environ.get("AXIOM_RATE_LIMIT_PER_MIN", "300"))
 _RATE_LIMIT_WINDOW_S = 60.0
-_RATE_LIMIT_EXEMPT_PATHS = {"/healthz", "/livez", "/readyz"}
+_RATE_LIMIT_EXEMPT_PATHS = {"/healthz", "/api/health", "/livez", "/readyz", "/metrics"}
 _rate_limit_buckets: dict[str, deque[float]] = {}
 _RATE_LIMIT_BUCKET_HIGH_WATER = int(os.environ.get("AXIOM_RATE_LIMIT_BUCKET_HIGH_WATER", "500"))
+# Hard ceiling on distinct buckets regardless of freshness: beyond this the
+# least-recently-seen buckets are evicted so memory is O(hard_cap) even under
+# a rotating-source flood (100x load premortem #1).
+_RATE_LIMIT_BUCKET_HARD_CAP = max(_RATE_LIMIT_BUCKET_HIGH_WATER, int(os.environ.get("AXIOM_RATE_LIMIT_BUCKET_HARD_CAP", "5000")))
+_TRUST_PROXY = os.environ.get("AXIOM_TRUST_PROXY", "").lower() in {"1", "true", "yes"}
 _rate_limit_lock = threading.Lock()
 
 
@@ -272,9 +461,17 @@ def _client_key(request) -> str:
     tenant = _authenticate(request) if _API_KEY_DIGESTS else None
     if tenant:
         return f"tenant:{tenant}"
-    fwd = request.headers.get("x-forwarded-for")
-    if fwd:
-        return fwd.split(",")[0].strip()
+    # SEC-008: X-Forwarded-For is attacker-controlled unless a trusted reverse
+    # proxy is guaranteed to overwrite it. Only honour it when the operator
+    # explicitly declares that topology (AXIOM_TRUST_PROXY=1); otherwise a
+    # client could rotate the header to mint a fresh bucket per request and
+    # bypass the limit entirely while growing the bucket table.
+    if _TRUST_PROXY:
+        fwd = request.headers.get("x-forwarded-for")
+        if fwd:
+            first = fwd.split(",")[0].strip()
+            if first and len(first) <= 64:
+                return first
     client = request.client
     return client.host if client else "unknown"
 
@@ -297,6 +494,12 @@ async def rate_limit_middleware(request, call_next):
             stale = [k for k, values in _rate_limit_buckets.items() if not values or values[-1] < cutoff]
             for stale_key in stale:
                 _rate_limit_buckets.pop(stale_key, None)
+        if len(_rate_limit_buckets) >= _RATE_LIMIT_BUCKET_HARD_CAP and key not in _rate_limit_buckets:
+            # Evict least-recently-seen buckets down to 90% of the cap so we do
+            # not pay the sort on every request during a flood.
+            victims = sorted(_rate_limit_buckets, key=lambda k: _rate_limit_buckets[k][-1] if _rate_limit_buckets[k] else 0.0)
+            for victim in victims[: len(_rate_limit_buckets) - int(_RATE_LIMIT_BUCKET_HARD_CAP * 0.9)]:
+                _rate_limit_buckets.pop(victim, None)
         bucket = _rate_limit_buckets.setdefault(key, deque())
         while bucket and bucket[0] < cutoff:
             bucket.popleft()
@@ -330,9 +533,8 @@ def resolve_sandbox_path(file_path_str: str) -> pathlib.Path:
     for cand in candidates:
         try:
             resolved = cand.resolve()
-            if resolved.is_file():
-                if any(resolved.is_relative_to(root) for root in ALLOWED_ROOTS):
-                    return resolved
+            if resolved.is_file() and any(resolved.is_relative_to(root) for root in ALLOWED_ROOTS):
+                return resolved
         except (OSError, ValueError):
             continue
 
@@ -647,7 +849,9 @@ async def extract_document(req: ExtractDocumentRequest):
         text = await asyncio.to_thread(_read, filepath)
     except OSError as exc:
         logger.exception("unable to read document for extraction")
-        raise HTTPException(status_code=422, detail=f"Unable to read {filepath}: {exc}") from exc
+        # SEC-009: log the cause, but do not echo the resolved server path or
+        # raw exception text to the client (information disclosure).
+        raise HTTPException(status_code=422, detail="Unable to read document") from exc
 
     from kairo.core.classifier import build_source_link, classify_document
     doc_type = classify_document(text)
@@ -671,32 +875,53 @@ async def extract_document(req: ExtractDocumentRequest):
     from kernel.sidecar.quality_gate import LocalQualityGate
     from kernel.sidecar.security_filter import LocalSecurityFilter
 
-    memory_store = MemoryStoreImpl(":memory:")
-    provenance = ProvenanceLogImpl()
-    ingestor = IngestorImpl()
-    security = LocalSecurityFilter(enable_pii_scan=False)
-    gateway = TieredInferenceGateway(tier3_enabled=False)
-    quality_gate = LocalQualityGate(memory_store)
-    orchestrator = OrchestratorImpl(
-        ingestor=ingestor, security_filter=security, inference_gateway=gateway,
-        quality_gate=quality_gate, provenance_log=provenance,
-        pack=pack_class(), memory_store=memory_store,
-    )
-
     doc = Document(source_path=filepath)
     try:
         # SEC-004: run the CPU-bound regex pipeline on the bounded thread pool
         # (never directly on the event loop thread).
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
 
         def _run_locked():
-            with orchestrator_lock:
-                return orchestrator.run(doc)
+            # OPS-007: the request-scoped SQLite store lives and dies inside the
+            # worker that uses it, so the handle is closed deterministically
+            # even when the awaiting coroutine is cancelled mid-flight.
+            with MemoryStoreImpl(":memory:") as request_store:
+                orchestrator = OrchestratorImpl(
+                    ingestor=IngestorImpl(),
+                    security_filter=LocalSecurityFilter(enable_pii_scan=False),
+                    inference_gateway=TieredInferenceGateway(tier3_enabled=False),
+                    quality_gate=LocalQualityGate(request_store),
+                    provenance_log=ProvenanceLogImpl(),
+                    pack=pack_class(),
+                    memory_store=request_store,
+                )
+                with orchestrator_lock:
+                    return orchestrator.run(doc)
 
-        trace = await loop.run_in_executor(_extraction_pool, _run_locked)
+        slots = _extraction_slots
+        if not slots.acquire(blocking=False):
+            # Fail fast under overload rather than queueing unboundedly.
+            OPS_METRICS["extraction_shed_total"] = OPS_METRICS.get("extraction_shed_total", 0) + 1
+            raise HTTPException(
+                status_code=503,
+                detail="Extraction capacity saturated; retry shortly",
+                headers={"Retry-After": "1"},
+            )
+        try:
+            work = _extraction_pool.submit(_run_locked)
+        except BaseException:
+            slots.release()
+            raise
+        # Capacity belongs to the actual worker, not the requesting coroutine.
+        # Cancellation of a running thread is impossible; release only when the
+        # concurrent future completes (or queued work is successfully cancelled).
+        work.add_done_callback(lambda _future: slots.release())
+        trace = await asyncio.wrap_future(work, loop=loop)
+    except HTTPException:
+        raise
     except Exception as exc:
         logger.exception("unhandled error in /api/extract-document pipeline")
-        raise HTTPException(status_code=500, detail=f"Extraction pipeline failed: {exc}") from exc
+        raise HTTPException(status_code=500, detail="Extraction pipeline failed") from exc
 
     # Build response with grounding metadata
     fields = {}
@@ -747,7 +972,7 @@ async def ask_document(req: AskDocumentRequest):
         raise
     except Exception as exc:
         logger.exception("unhandled error in /api/ask-document")
-        raise HTTPException(status_code=500, detail=f"ask-document failed: {exc}") from exc
+        raise HTTPException(status_code=500, detail="ask-document failed") from exc
 
     # Simple keyword matching: find field whose name or value matches question keywords
     question_lower = question.lower()
@@ -853,7 +1078,7 @@ async def get_figures(doc_id: str, file: str = ""):
         raise
     except Exception as exc:
         logger.exception("unhandled error in /api/figures")
-        raise HTTPException(status_code=500, detail=f"figure extraction failed: {exc}") from exc
+        raise HTTPException(status_code=500, detail="figure extraction failed") from exc
 
     return {
         "doc_id": doc_id,
@@ -933,6 +1158,12 @@ async def healthz():
     return {"status": "ok", "service": "axiom-grid-overlay", "auth_enabled": _auth_enabled()}
 
 
+@app.get("/api/health")
+async def api_health():
+    """Load-balancer health alias; intentionally equivalent to /healthz."""
+    return await healthz()
+
+
 @app.get("/livez")
 async def livez():
     """Constant-time process liveness; never performs dependency checks."""
@@ -960,7 +1191,8 @@ async def readyz():
         return result
     except Exception as exc:
         logger.exception("readiness probe failed")
-        return JSONResponse(status_code=503, content={"status": "not_ready", "error": str(exc)})
+        # Do not leak internal exception text to unauthenticated probers.
+        return JSONResponse(status_code=503, content={"status": "not_ready", "error": type(exc).__name__})
     finally:
         try:
             probe_path.unlink(missing_ok=True)
@@ -1003,13 +1235,15 @@ async def metrics(format: str = "json"):
         return round(samples[min(len(samples)-1, int((len(samples)-1)*q))], 2) if samples else 0.0
     data = {"uptime_seconds": round(time.time()-OPS_METRICS["started_at"],2), "requests_total": total,
             "errors_total": OPS_METRICS["errors_total"], "auth_rejections_total": OPS_METRICS.get("auth_rejections_total",0),
+            "extraction_shed_total": OPS_METRICS.get("extraction_shed_total",0),
+            "log_dropped_total": LOG_DROPPED_TOTAL["count"],
             "status_counts": OPS_METRICS["status_counts"], "active_rate_limit_buckets": len(_rate_limit_buckets),
             "latency_ms_mean": round(OPS_METRICS["latency_ms_total"]/total,2) if total else 0.0,
             "latency_ms_max": OPS_METRICS["latency_ms_max"],
             "latency_percentiles": {"p50":percentile(.5),"p90":percentile(.9),"p95":percentile(.95),"p99":percentile(.99)}}
     if format.lower() in {"prometheus","otel"}:
         lines=[f"axiom_requests_total {total}",f"axiom_errors_total {data['errors_total']}",
-               f"axiom_auth_rejections_total {data['auth_rejections_total']}",f"axiom_rate_limit_buckets {data['active_rate_limit_buckets']}"]
+               f"axiom_auth_rejections_total {data['auth_rejections_total']}",f"axiom_extraction_shed_total {data['extraction_shed_total']}",f"axiom_log_dropped_total {data['log_dropped_total']}",f"axiom_rate_limit_buckets {data['active_rate_limit_buckets']}"]
         lines += [f'axiom_http_status_total{{code="{code}"}} {count}' for code,count in data["status_counts"].items()]
         return HTMLResponse("\n".join(lines)+"\n", media_type="text/plain; version=0.0.4")
     return data

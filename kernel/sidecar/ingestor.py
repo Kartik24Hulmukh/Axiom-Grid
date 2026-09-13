@@ -16,8 +16,8 @@ import hashlib
 import logging
 import pathlib
 import re
-from datetime import datetime, timezone
 from dataclasses import replace
+from datetime import datetime, timezone
 
 from kernel.core.data_model import BBox, Chunk, Document, Page
 
@@ -223,7 +223,7 @@ class IngestorImpl:
 
             if chunks:
                 return chunks, page_count, pages
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 -- isolate optional engine or worker failure at boundary
             logger.warning("Docling failed to parse PDF, trying PyMuPDF: %s", e)
 
         # Fallback to PyMuPDF
@@ -256,7 +256,7 @@ class IngestorImpl:
                 image_path = page_images_dir / f"{image_sha}.png"
                 if not image_path.exists():
                     image_path.write_bytes(img_data)
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001 -- isolate optional engine or worker failure at boundary
                 logger.warning("Failed to render page image: %s", e)
 
             pages.append(Page(

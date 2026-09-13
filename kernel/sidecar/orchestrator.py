@@ -18,20 +18,14 @@ from dataclasses import replace
 from typing import Any
 
 from kernel.core.contracts import (
-    ActionExecutor,
     GateVerdict,
     InferenceGateway,
-    InferenceTier,
     PackInterface,
     ProvenanceLog,
     QualityGate,
     SecurityFilter,
 )
 from kernel.core.data_model import (
-    Action,
-    ActionKind,
-    ActionStatus,
-    Chunk,
     Document,
     Extraction,
     ExtractionStatus,
@@ -82,7 +76,7 @@ class OrchestratorImpl:
         t0 = time.monotonic()
         try:
             chunks, ingested_doc, pages = self._ingestor.ingest(doc.source_path)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 -- isolate optional engine or worker failure at boundary
             return Trace(
                 stages=(TraceStage(
                     name="context_capture",
@@ -172,7 +166,10 @@ class OrchestratorImpl:
         t0 = time.monotonic()
         compression_stats = None
         try:
-            from kairo.context.compressor import compress_document_chunks, record_compression
+            from kairo.context.compressor import (
+                compress_document_chunks,
+                record_compression,
+            )
             compressed_chunks, compression_stats = compress_document_chunks(chunks)
             record_compression(compression_stats)
             # Use compressed chunks for extraction (preserves bbox/page metadata)
@@ -201,7 +198,7 @@ class OrchestratorImpl:
             chunks = [_replace(c, source_type=_source_filename) for c in chunks]
         try:
             extractions = self._pack.extract(extraction_chunks)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 -- isolate optional engine or worker failure at boundary
             stages.append(TraceStage(
                 name="extractor",
                 input_data={"chunk_count": len(chunks)},

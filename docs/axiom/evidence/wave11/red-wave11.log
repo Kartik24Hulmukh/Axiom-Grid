@@ -1,0 +1,481 @@
+FFFFFFFF...FFFFFFFFFF                                                    [100%]
+=================================== FAILURES ===================================
+____ test_origin_must_be_exact_authority[http://localhost:80@evil.example] _____
+
+origin = 'http://localhost:80@evil.example'
+
+    @pytest.mark.parametrize("origin", [
+        "http://localhost:80@evil.example",
+        "http://127.0.0.1:80@evil.example",
+        "http://localhost:bad",
+        "http://localhost:65536",
+        "http://localhost:80/path",
+        "http://localhost:80?query=x",
+        "http://localhost:80#fragment",
+        "http://testserver:80@evil.example",
+    ])
+    def test_origin_must_be_exact_authority(origin):
+        with TestClient(server.app) as client:
+>           assert client.get("/healthz", headers={"Origin": origin}).status_code == 403
+E           AssertionError: assert 200 == 403
+E            +  where 200 = <Response [200 OK]>.status_code
+E            +    where <Response [200 OK]> = get('/healthz', headers={'Origin': 'http://localhost:80@evil.example'})
+E            +      where get = <starlette.testclient.TestClient object at 0x7ff366a0ef90>.get
+
+overlay/tests/test_server_wave11.py:19: AssertionError
+----------------------------- Captured stderr call -----------------------------
+{"ts":"2026-09-13T12:51:22.875Z","level":"INFO","logger":"overlay.server","msg":"request completed","service":"axiom-grid-overlay","request_id":"5d23a5671cc74320b2b7438bc21cac66","path":"/healthz","status":200,"latency_ms":1.27,"client":"testclient"}
+{"ts":"2026-09-13T12:51:22.876Z","level":"INFO","logger":"httpx2","msg":"HTTP Request: GET http://testserver/healthz \"HTTP/1.1 200 OK\"","service":"axiom-grid-overlay"}
+------------------------------ Captured log call -------------------------------
+INFO     overlay.server:server.py:275 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/healthz "HTTP/1.1 200 OK"
+____ test_origin_must_be_exact_authority[http://127.0.0.1:80@evil.example] _____
+
+origin = 'http://127.0.0.1:80@evil.example'
+
+    @pytest.mark.parametrize("origin", [
+        "http://localhost:80@evil.example",
+        "http://127.0.0.1:80@evil.example",
+        "http://localhost:bad",
+        "http://localhost:65536",
+        "http://localhost:80/path",
+        "http://localhost:80?query=x",
+        "http://localhost:80#fragment",
+        "http://testserver:80@evil.example",
+    ])
+    def test_origin_must_be_exact_authority(origin):
+        with TestClient(server.app) as client:
+>           assert client.get("/healthz", headers={"Origin": origin}).status_code == 403
+E           AssertionError: assert 200 == 403
+E            +  where 200 = <Response [200 OK]>.status_code
+E            +    where <Response [200 OK]> = get('/healthz', headers={'Origin': 'http://127.0.0.1:80@evil.example'})
+E            +      where get = <starlette.testclient.TestClient object at 0x7ff366969e50>.get
+
+overlay/tests/test_server_wave11.py:19: AssertionError
+----------------------------- Captured stderr call -----------------------------
+{"ts":"2026-09-13T12:51:22.939Z","level":"INFO","logger":"overlay.server","msg":"request completed","service":"axiom-grid-overlay","request_id":"4b257eeeb7b24d51b56dbd5af078598d","path":"/healthz","status":200,"latency_ms":0.85,"client":"testclient"}
+{"ts":"2026-09-13T12:51:22.940Z","level":"INFO","logger":"httpx2","msg":"HTTP Request: GET http://testserver/healthz \"HTTP/1.1 200 OK\"","service":"axiom-grid-overlay"}
+------------------------------ Captured log call -------------------------------
+INFO     overlay.server:server.py:275 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/healthz "HTTP/1.1 200 OK"
+__________ test_origin_must_be_exact_authority[http://localhost:bad] ___________
+
+origin = 'http://localhost:bad'
+
+    @pytest.mark.parametrize("origin", [
+        "http://localhost:80@evil.example",
+        "http://127.0.0.1:80@evil.example",
+        "http://localhost:bad",
+        "http://localhost:65536",
+        "http://localhost:80/path",
+        "http://localhost:80?query=x",
+        "http://localhost:80#fragment",
+        "http://testserver:80@evil.example",
+    ])
+    def test_origin_must_be_exact_authority(origin):
+        with TestClient(server.app) as client:
+>           assert client.get("/healthz", headers={"Origin": origin}).status_code == 403
+E           AssertionError: assert 200 == 403
+E            +  where 200 = <Response [200 OK]>.status_code
+E            +    where <Response [200 OK]> = get('/healthz', headers={'Origin': 'http://localhost:bad'})
+E            +      where get = <starlette.testclient.TestClient object at 0x7ff3668aafd0>.get
+
+overlay/tests/test_server_wave11.py:19: AssertionError
+----------------------------- Captured stderr call -----------------------------
+{"ts":"2026-09-13T12:51:22.947Z","level":"INFO","logger":"overlay.server","msg":"request completed","service":"axiom-grid-overlay","request_id":"c7237adb77b8459589b86b068f4d20f4","path":"/healthz","status":200,"latency_ms":1.27,"client":"testclient"}
+{"ts":"2026-09-13T12:51:22.947Z","level":"INFO","logger":"httpx2","msg":"HTTP Request: GET http://testserver/healthz \"HTTP/1.1 200 OK\"","service":"axiom-grid-overlay"}
+------------------------------ Captured log call -------------------------------
+INFO     overlay.server:server.py:275 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/healthz "HTTP/1.1 200 OK"
+_________ test_origin_must_be_exact_authority[http://localhost:65536] __________
+
+origin = 'http://localhost:65536'
+
+    @pytest.mark.parametrize("origin", [
+        "http://localhost:80@evil.example",
+        "http://127.0.0.1:80@evil.example",
+        "http://localhost:bad",
+        "http://localhost:65536",
+        "http://localhost:80/path",
+        "http://localhost:80?query=x",
+        "http://localhost:80#fragment",
+        "http://testserver:80@evil.example",
+    ])
+    def test_origin_must_be_exact_authority(origin):
+        with TestClient(server.app) as client:
+>           assert client.get("/healthz", headers={"Origin": origin}).status_code == 403
+E           AssertionError: assert 200 == 403
+E            +  where 200 = <Response [200 OK]>.status_code
+E            +    where <Response [200 OK]> = get('/healthz', headers={'Origin': 'http://localhost:65536'})
+E            +      where get = <starlette.testclient.TestClient object at 0x7ff366a8b490>.get
+
+overlay/tests/test_server_wave11.py:19: AssertionError
+----------------------------- Captured stderr call -----------------------------
+{"ts":"2026-09-13T12:51:22.954Z","level":"INFO","logger":"overlay.server","msg":"request completed","service":"axiom-grid-overlay","request_id":"9fc5c00ec73a4630a45025e75bd3206f","path":"/healthz","status":200,"latency_ms":0.63,"client":"testclient"}
+{"ts":"2026-09-13T12:51:22.954Z","level":"INFO","logger":"httpx2","msg":"HTTP Request: GET http://testserver/healthz \"HTTP/1.1 200 OK\"","service":"axiom-grid-overlay"}
+------------------------------ Captured log call -------------------------------
+INFO     overlay.server:server.py:275 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/healthz "HTTP/1.1 200 OK"
+________ test_origin_must_be_exact_authority[http://localhost:80/path] _________
+
+origin = 'http://localhost:80/path'
+
+    @pytest.mark.parametrize("origin", [
+        "http://localhost:80@evil.example",
+        "http://127.0.0.1:80@evil.example",
+        "http://localhost:bad",
+        "http://localhost:65536",
+        "http://localhost:80/path",
+        "http://localhost:80?query=x",
+        "http://localhost:80#fragment",
+        "http://testserver:80@evil.example",
+    ])
+    def test_origin_must_be_exact_authority(origin):
+        with TestClient(server.app) as client:
+>           assert client.get("/healthz", headers={"Origin": origin}).status_code == 403
+E           AssertionError: assert 200 == 403
+E            +  where 200 = <Response [200 OK]>.status_code
+E            +    where <Response [200 OK]> = get('/healthz', headers={'Origin': 'http://localhost:80/path'})
+E            +      where get = <starlette.testclient.TestClient object at 0x7ff366971cd0>.get
+
+overlay/tests/test_server_wave11.py:19: AssertionError
+----------------------------- Captured stderr call -----------------------------
+{"ts":"2026-09-13T12:51:22.960Z","level":"INFO","logger":"overlay.server","msg":"request completed","service":"axiom-grid-overlay","request_id":"35122b8e58c04b65841348588739f1be","path":"/healthz","status":200,"latency_ms":0.5,"client":"testclient"}
+{"ts":"2026-09-13T12:51:22.960Z","level":"INFO","logger":"httpx2","msg":"HTTP Request: GET http://testserver/healthz \"HTTP/1.1 200 OK\"","service":"axiom-grid-overlay"}
+------------------------------ Captured log call -------------------------------
+INFO     overlay.server:server.py:275 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/healthz "HTTP/1.1 200 OK"
+_______ test_origin_must_be_exact_authority[http://localhost:80?query=x] _______
+
+origin = 'http://localhost:80?query=x'
+
+    @pytest.mark.parametrize("origin", [
+        "http://localhost:80@evil.example",
+        "http://127.0.0.1:80@evil.example",
+        "http://localhost:bad",
+        "http://localhost:65536",
+        "http://localhost:80/path",
+        "http://localhost:80?query=x",
+        "http://localhost:80#fragment",
+        "http://testserver:80@evil.example",
+    ])
+    def test_origin_must_be_exact_authority(origin):
+        with TestClient(server.app) as client:
+>           assert client.get("/healthz", headers={"Origin": origin}).status_code == 403
+E           AssertionError: assert 200 == 403
+E            +  where 200 = <Response [200 OK]>.status_code
+E            +    where <Response [200 OK]> = get('/healthz', headers={'Origin': 'http://localhost:80?query=x'})
+E            +      where get = <starlette.testclient.TestClient object at 0x7ff3667b5010>.get
+
+overlay/tests/test_server_wave11.py:19: AssertionError
+----------------------------- Captured stderr call -----------------------------
+{"ts":"2026-09-13T12:51:22.965Z","level":"INFO","logger":"overlay.server","msg":"request completed","service":"axiom-grid-overlay","request_id":"acce0f5b18664e27b107db7553d6e5d1","path":"/healthz","status":200,"latency_ms":0.45,"client":"testclient"}
+{"ts":"2026-09-13T12:51:22.966Z","level":"INFO","logger":"httpx2","msg":"HTTP Request: GET http://testserver/healthz \"HTTP/1.1 200 OK\"","service":"axiom-grid-overlay"}
+------------------------------ Captured log call -------------------------------
+INFO     overlay.server:server.py:275 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/healthz "HTTP/1.1 200 OK"
+______ test_origin_must_be_exact_authority[http://localhost:80#fragment] _______
+
+origin = 'http://localhost:80#fragment'
+
+    @pytest.mark.parametrize("origin", [
+        "http://localhost:80@evil.example",
+        "http://127.0.0.1:80@evil.example",
+        "http://localhost:bad",
+        "http://localhost:65536",
+        "http://localhost:80/path",
+        "http://localhost:80?query=x",
+        "http://localhost:80#fragment",
+        "http://testserver:80@evil.example",
+    ])
+    def test_origin_must_be_exact_authority(origin):
+        with TestClient(server.app) as client:
+>           assert client.get("/healthz", headers={"Origin": origin}).status_code == 403
+E           AssertionError: assert 200 == 403
+E            +  where 200 = <Response [200 OK]>.status_code
+E            +    where <Response [200 OK]> = get('/healthz', headers={'Origin': 'http://localhost:80#fragment'})
+E            +      where get = <starlette.testclient.TestClient object at 0x7ff3668ff350>.get
+
+overlay/tests/test_server_wave11.py:19: AssertionError
+----------------------------- Captured stderr call -----------------------------
+{"ts":"2026-09-13T12:51:22.972Z","level":"INFO","logger":"overlay.server","msg":"request completed","service":"axiom-grid-overlay","request_id":"58bd0ff4e6334b81b09eb1b4df1b4566","path":"/healthz","status":200,"latency_ms":0.99,"client":"testclient"}
+{"ts":"2026-09-13T12:51:22.972Z","level":"INFO","logger":"httpx2","msg":"HTTP Request: GET http://testserver/healthz \"HTTP/1.1 200 OK\"","service":"axiom-grid-overlay"}
+------------------------------ Captured log call -------------------------------
+INFO     overlay.server:server.py:275 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/healthz "HTTP/1.1 200 OK"
+____ test_origin_must_be_exact_authority[http://testserver:80@evil.example] ____
+
+origin = 'http://testserver:80@evil.example'
+
+    @pytest.mark.parametrize("origin", [
+        "http://localhost:80@evil.example",
+        "http://127.0.0.1:80@evil.example",
+        "http://localhost:bad",
+        "http://localhost:65536",
+        "http://localhost:80/path",
+        "http://localhost:80?query=x",
+        "http://localhost:80#fragment",
+        "http://testserver:80@evil.example",
+    ])
+    def test_origin_must_be_exact_authority(origin):
+        with TestClient(server.app) as client:
+>           assert client.get("/healthz", headers={"Origin": origin}).status_code == 403
+E           AssertionError: assert 200 == 403
+E            +  where 200 = <Response [200 OK]>.status_code
+E            +    where <Response [200 OK]> = get('/healthz', headers={'Origin': 'http://testserver:80@evil.example'})
+E            +      where get = <starlette.testclient.TestClient object at 0x7ff3668fe9c0>.get
+
+overlay/tests/test_server_wave11.py:19: AssertionError
+----------------------------- Captured stderr call -----------------------------
+{"ts":"2026-09-13T12:51:22.978Z","level":"INFO","logger":"overlay.server","msg":"request completed","service":"axiom-grid-overlay","request_id":"90f0c804d48d4767b687a1e8b34b1d26","path":"/healthz","status":200,"latency_ms":0.42,"client":"testclient"}
+{"ts":"2026-09-13T12:51:22.978Z","level":"INFO","logger":"httpx2","msg":"HTTP Request: GET http://testserver/healthz \"HTTP/1.1 200 OK\"","service":"axiom-grid-overlay"}
+------------------------------ Captured log call -------------------------------
+INFO     overlay.server:server.py:275 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/healthz "HTTP/1.1 200 OK"
+__________________ test_explicit_configured_origin_is_honored __________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7ff3669735c0>
+
+    def test_explicit_configured_origin_is_honored(monkeypatch):
+        monkeypatch.setattr(server, "_CORS_ORIGINS", ["https://app.example.com"])
+        with TestClient(server.app) as client:
+>           assert client.get("/healthz", headers={"Origin": "https://app.example.com"}).status_code == 200
+E           AssertionError: assert 403 == 200
+E            +  where 403 = <Response [403 Forbidden]>.status_code
+E            +    where <Response [403 Forbidden]> = get('/healthz', headers={'Origin': 'https://app.example.com'})
+E            +      where get = <starlette.testclient.TestClient object at 0x7ff3667e16a0>.get
+
+overlay/tests/test_server_wave11.py:31: AssertionError
+----------------------------- Captured stderr call -----------------------------
+{"ts":"2026-09-13T12:51:22.996Z","level":"INFO","logger":"overlay.server","msg":"request completed","service":"axiom-grid-overlay","request_id":"62d60f281b564ffaa5cf0d4da19c1ddc","path":"/healthz","status":403,"latency_ms":0.25,"client":"testclient"}
+{"ts":"2026-09-13T12:51:22.997Z","level":"INFO","logger":"httpx2","msg":"HTTP Request: GET http://testserver/healthz \"HTTP/1.1 403 Forbidden\"","service":"axiom-grid-overlay"}
+------------------------------ Captured log call -------------------------------
+INFO     overlay.server:server.py:275 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/healthz "HTTP/1.1 403 Forbidden"
+_______________________ test_request_id_strips_non_ascii _______________________
+
+    def test_request_id_strips_non_ascii():
+        with TestClient(server.app) as client:
+>           response = client.get("/healthz", headers=[(b"x-request-id", b"id-\xff")])
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+overlay/tests/test_server_wave11.py:36:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+/usr/local/lib/python3.14/site-packages/starlette/testclient.py:482: in get
+    return super().get(
+/usr/local/lib/python3.14/site-packages/httpx2/_client.py:1118: in get
+    return self.request(
+/usr/local/lib/python3.14/site-packages/starlette/testclient.py:454: in request
+    return super().request(
+/usr/local/lib/python3.14/site-packages/httpx2/_client.py:803: in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.14/site-packages/httpx2/_client.py:985: in send
+    response = self._send_handling_auth(
+/usr/local/lib/python3.14/site-packages/httpx2/_client.py:1013: in _send_handling_auth
+    response = self._send_handling_redirects(
+/usr/local/lib/python3.14/site-packages/httpx2/_client.py:1048: in _send_handling_redirects
+    response = self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.14/site-packages/httpx2/_client.py:1081: in _send_single_request
+    response = transport.handle_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.14/site-packages/starlette/testclient.py:356: in handle_request
+    raise exc
+/usr/local/lib/python3.14/site-packages/starlette/testclient.py:353: in handle_request
+    portal.call(self.app, scope, receive, send)
+/usr/local/lib/python3.14/site-packages/anyio/from_thread.py:338: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.14/concurrent/futures/_base.py:454: in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.14/concurrent/futures/_base.py:396: in __get_result
+    raise self._exception
+/usr/local/lib/python3.14/site-packages/anyio/from_thread.py:263: in _call_func
+    retval = await retval_or_awaitable
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+../.local/lib/python3.14/site-packages/fastapi/applications.py:1163: in __call__
+    await super().__call__(scope, receive, send)
+/usr/local/lib/python3.14/site-packages/starlette/applications.py:90: in __call__
+    await self.middleware_stack(scope, receive, send)
+/usr/local/lib/python3.14/site-packages/starlette/middleware/errors.py:186: in __call__
+    raise exc
+/usr/local/lib/python3.14/site-packages/starlette/middleware/errors.py:164: in __call__
+    await self.app(scope, receive, _send)
+/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py:194: in __call__
+    await response(scope, wrapped_receive, send)
+/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py:223: in __call__
+    await send(
+/usr/local/lib/python3.14/site-packages/starlette/middleware/errors.py:161: in _send
+    await send(message)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+message = {'type': 'http.response.start', 'status': 200, 'headers': [(b'content-length', b'67'), (b'content-type', b'application...'), (b'x-content-type-options', b'nosniff'), (b'x-frame-options', b'DENY'), (b'referrer-policy', b'no-referrer'), ...]}
+
+    async def send(message: Message) -> None:
+        nonlocal raw_kwargs, response_started, template, context
+
+        if message["type"] == "http.response.start":
+            assert not response_started, 'Received multiple "http.response.start" messages.'
+            raw_kwargs["status_code"] = message["status"]
+>           raw_kwargs["headers"] = [(key.decode(), value.decode()) for key, value in message.get("headers", [])]
+                                                    ^^^^^^^^^^^^^^
+E           UnicodeDecodeError: 'utf-8' codec can't decode byte 0xc3 in position 3: unexpected end of data
+
+/usr/local/lib/python3.14/site-packages/starlette/testclient.py:334: UnicodeDecodeError
+----------------------------- Captured stderr call -----------------------------
+{"ts":"2026-09-13T12:51:23.002Z","level":"INFO","logger":"overlay.server","msg":"request completed","service":"axiom-grid-overlay","request_id":"id-\u00c3","path":"/healthz","status":200,"latency_ms":0.41,"client":"testclient"}
+------------------------------ Captured log call -------------------------------
+INFO     overlay.server:server.py:275 request completed
+___________ test_bad_usage_falls_back_without_partial_success[None] ____________
+
+usage = None
+
+    @pytest.mark.parametrize("usage", [None, [], {"prompt_tokens": 3, "completion_tokens": "bad"}, {"prompt_tokens": -1}, {"total_tokens": True}, {"completion_tokens_details": []}])
+    def test_bad_usage_falls_back_without_partial_success(usage):
+        def transport(model, payload, timeout):
+            return {"choices": [{"message": {"content": "ok"}}], "usage": usage if model == "a" else {"total_tokens": 2}}
+        router = MeliousModelRouter(models=("a", "b"), max_retries=0, transport=transport)
+        result = router.complete(MSG)
+        assert result["router"]["selected_model"] == "b"
+        metrics = router.get_metrics()
+>       assert metrics["successes"] == 1
+E       assert 2 == 1
+
+kernel/tests/test_melious_router_wave11.py:16: AssertionError
+__________ test_bad_usage_falls_back_without_partial_success[usage1] ___________
+
+usage = []
+
+    @pytest.mark.parametrize("usage", [None, [], {"prompt_tokens": 3, "completion_tokens": "bad"}, {"prompt_tokens": -1}, {"total_tokens": True}, {"completion_tokens_details": []}])
+    def test_bad_usage_falls_back_without_partial_success(usage):
+        def transport(model, payload, timeout):
+            return {"choices": [{"message": {"content": "ok"}}], "usage": usage if model == "a" else {"total_tokens": 2}}
+        router = MeliousModelRouter(models=("a", "b"), max_retries=0, transport=transport)
+        result = router.complete(MSG)
+        assert result["router"]["selected_model"] == "b"
+        metrics = router.get_metrics()
+>       assert metrics["successes"] == 1
+E       assert 2 == 1
+
+kernel/tests/test_melious_router_wave11.py:16: AssertionError
+__________ test_bad_usage_falls_back_without_partial_success[usage2] ___________
+
+usage = {'prompt_tokens': 3, 'completion_tokens': 'bad'}
+
+    @pytest.mark.parametrize("usage", [None, [], {"prompt_tokens": 3, "completion_tokens": "bad"}, {"prompt_tokens": -1}, {"total_tokens": True}, {"completion_tokens_details": []}])
+    def test_bad_usage_falls_back_without_partial_success(usage):
+        def transport(model, payload, timeout):
+            return {"choices": [{"message": {"content": "ok"}}], "usage": usage if model == "a" else {"total_tokens": 2}}
+        router = MeliousModelRouter(models=("a", "b"), max_retries=0, transport=transport)
+        result = router.complete(MSG)
+        assert result["router"]["selected_model"] == "b"
+        metrics = router.get_metrics()
+>       assert metrics["successes"] == 1
+E       assert 2 == 1
+
+kernel/tests/test_melious_router_wave11.py:16: AssertionError
+__________ test_bad_usage_falls_back_without_partial_success[usage3] ___________
+
+usage = {'prompt_tokens': -1}
+
+    @pytest.mark.parametrize("usage", [None, [], {"prompt_tokens": 3, "completion_tokens": "bad"}, {"prompt_tokens": -1}, {"total_tokens": True}, {"completion_tokens_details": []}])
+    def test_bad_usage_falls_back_without_partial_success(usage):
+        def transport(model, payload, timeout):
+            return {"choices": [{"message": {"content": "ok"}}], "usage": usage if model == "a" else {"total_tokens": 2}}
+        router = MeliousModelRouter(models=("a", "b"), max_retries=0, transport=transport)
+        result = router.complete(MSG)
+>       assert result["router"]["selected_model"] == "b"
+E       AssertionError: assert 'a' == 'b'
+E
+E         - b
+E         + a
+
+kernel/tests/test_melious_router_wave11.py:14: AssertionError
+__________ test_bad_usage_falls_back_without_partial_success[usage4] ___________
+
+usage = {'total_tokens': True}
+
+    @pytest.mark.parametrize("usage", [None, [], {"prompt_tokens": 3, "completion_tokens": "bad"}, {"prompt_tokens": -1}, {"total_tokens": True}, {"completion_tokens_details": []}])
+    def test_bad_usage_falls_back_without_partial_success(usage):
+        def transport(model, payload, timeout):
+            return {"choices": [{"message": {"content": "ok"}}], "usage": usage if model == "a" else {"total_tokens": 2}}
+        router = MeliousModelRouter(models=("a", "b"), max_retries=0, transport=transport)
+        result = router.complete(MSG)
+>       assert result["router"]["selected_model"] == "b"
+E       AssertionError: assert 'a' == 'b'
+E
+E         - b
+E         + a
+
+kernel/tests/test_melious_router_wave11.py:14: AssertionError
+__________ test_bad_usage_falls_back_without_partial_success[usage5] ___________
+
+usage = {'completion_tokens_details': []}
+
+    @pytest.mark.parametrize("usage", [None, [], {"prompt_tokens": 3, "completion_tokens": "bad"}, {"prompt_tokens": -1}, {"total_tokens": True}, {"completion_tokens_details": []}])
+    def test_bad_usage_falls_back_without_partial_success(usage):
+        def transport(model, payload, timeout):
+            return {"choices": [{"message": {"content": "ok"}}], "usage": usage if model == "a" else {"total_tokens": 2}}
+        router = MeliousModelRouter(models=("a", "b"), max_retries=0, transport=transport)
+        result = router.complete(MSG)
+>       assert result["router"]["selected_model"] == "b"
+E       AssertionError: assert 'a' == 'b'
+E
+E         - b
+E         + a
+
+kernel/tests/test_melious_router_wave11.py:14: AssertionError
+______________ test_transport_exception_text_not_exposed_in_trace ______________
+
+    def test_transport_exception_text_not_exposed_in_trace():
+        def transport(*args):
+            raise RuntimeError("credential=PRIVATE_SENTINEL document=CONFIDENTIAL")
+        router = MeliousModelRouter(models=("a",), max_retries=0, transport=transport)
+        with pytest.raises(RouterError) as error:
+            router.complete(MSG)
+>       assert "PRIVATE_SENTINEL" not in str(error.value)
+E       assert 'PRIVATE_SENTINEL' not in "all model r...tus': None}]"
+E
+E         'PRIVATE_SENTINEL' is contained here:
+E           redential=PRIVATE_SENTINEL document=CONFIDENTIAL', 'status': None}]
+E         ?           ++++++++++++++++
+
+kernel/tests/test_melious_router_wave11.py:27: AssertionError
+_________ test_success_fallback_trace_does_not_leak_transport_message __________
+
+    def test_success_fallback_trace_does_not_leak_transport_message():
+        def transport(model, *args):
+            if model == "a":
+                raise RuntimeError("PRIVATE_SENTINEL")
+            return {"choices": [{"message": {"content": "ok"}}]}
+        router = MeliousModelRouter(models=("a", "b"), max_retries=0, transport=transport)
+>       assert "PRIVATE_SENTINEL" not in str(router.complete(MSG))
+E       assert 'PRIVATE_SENTINEL' not in "{'choices':...success'}]}}"
+E
+E         'PRIVATE_SENTINEL' is contained here:
+E           detail': 'PRIVATE_SENTINEL', 'status': None}, {'model': 'b', 'result': 'success'}]}}
+E         ?           ++++++++++++++++
+
+kernel/tests/test_melious_router_wave11.py:37: AssertionError
+=========================== short test summary info ============================
+FAILED overlay/tests/test_server_wave11.py::test_origin_must_be_exact_authority[http://localhost:80@evil.example]
+FAILED overlay/tests/test_server_wave11.py::test_origin_must_be_exact_authority[http://127.0.0.1:80@evil.example]
+FAILED overlay/tests/test_server_wave11.py::test_origin_must_be_exact_authority[http://localhost:bad]
+FAILED overlay/tests/test_server_wave11.py::test_origin_must_be_exact_authority[http://localhost:65536]
+FAILED overlay/tests/test_server_wave11.py::test_origin_must_be_exact_authority[http://localhost:80/path]
+FAILED overlay/tests/test_server_wave11.py::test_origin_must_be_exact_authority[http://localhost:80?query=x]
+FAILED overlay/tests/test_server_wave11.py::test_origin_must_be_exact_authority[http://localhost:80#fragment]
+FAILED overlay/tests/test_server_wave11.py::test_origin_must_be_exact_authority[http://testserver:80@evil.example]
+FAILED overlay/tests/test_server_wave11.py::test_explicit_configured_origin_is_honored
+FAILED overlay/tests/test_server_wave11.py::test_request_id_strips_non_ascii
+FAILED kernel/tests/test_melious_router_wave11.py::test_bad_usage_falls_back_without_partial_success[None]
+FAILED kernel/tests/test_melious_router_wave11.py::test_bad_usage_falls_back_without_partial_success[usage1]
+FAILED kernel/tests/test_melious_router_wave11.py::test_bad_usage_falls_back_without_partial_success[usage2]
+FAILED kernel/tests/test_melious_router_wave11.py::test_bad_usage_falls_back_without_partial_success[usage3]
+FAILED kernel/tests/test_melious_router_wave11.py::test_bad_usage_falls_back_without_partial_success[usage4]
+FAILED kernel/tests/test_melious_router_wave11.py::test_bad_usage_falls_back_without_partial_success[usage5]
+FAILED kernel/tests/test_melious_router_wave11.py::test_transport_exception_text_not_exposed_in_trace
+FAILED kernel/tests/test_melious_router_wave11.py::test_success_fallback_trace_does_not_leak_transport_message
+18 failed, 3 passed in 0.71s

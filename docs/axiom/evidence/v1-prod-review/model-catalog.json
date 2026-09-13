@@ -1,0 +1,31 @@
+{
+  "http_status": 200,
+  "model_ids": [
+    "glm-5",
+    "glm-5.1",
+    "glm-5.2",
+    "glm-5.3",
+    "glm-5.3-flash",
+    "kimi-k2.5",
+    "kimi-k2.6",
+    "kimi-k2.7-code",
+    "kimi-k3",
+    "qwen-image",
+    "qwen2.5-vl-72b-instruct",
+    "qwen3-235b-a22b-instruct",
+    "qwen3-30b-a3b-instruct",
+    "qwen3-32b",
+    "qwen3-coder-30b-a3b-instruct",
+    "qwen3-coder-next",
+    "qwen3-embedding-8b",
+    "qwen3.5-122b-a10b",
+    "qwen3.5-397b-a17b",
+    "qwen3.5-9b",
+    "qwen3.6-27b",
+    "qwen3.6-35b-a3b",
+    "qwen3.8-27b",
+    "qwen3.8-max",
+    "qwen3guard-gen-0.6b",
+    "qwen3guard-gen-8b"
+  ]
+}

@@ -1,0 +1,74 @@
+[
+  {
+    "model": "glm-5.3",
+    "status": "pass",
+    "seconds": 0.511,
+    "usage": {
+      "prompt_tokens": 17,
+      "completion_tokens": 3,
+      "total_tokens": 20,
+      "cached_tokens": 0,
+      "reasoning_tokens": 1,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1
+      }
+    }
+  },
+  {
+    "model": "glm-5.3-flash",
+    "status": "pass",
+    "seconds": 0.95,
+    "usage": {
+      "prompt_tokens": 21,
+      "completion_tokens": 20,
+      "total_tokens": 41,
+      "cached_tokens": 0,
+      "reasoning_tokens": 20,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 20
+      }
+    }
+  },
+  {
+    "model": "kimi-k3",
+    "status": "pass",
+    "seconds": 1.201,
+    "usage": {
+      "prompt_tokens": 129,
+      "completion_tokens": 20,
+      "total_tokens": 149,
+      "cached_tokens": 0,
+      "reasoning_tokens": 20,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 20
+      }
+    }
+  },
+  {
+    "model": "qwen3.8-27b",
+    "status": "pass",
+    "seconds": 0.67,
+    "usage": {
+      "prompt_tokens": 15,
+      "completion_tokens": 20,
+      "total_tokens": 35,
+      "cached_tokens": 0,
+      "reasoning_tokens": 20,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 20
+      }
+    }
+  }
+]

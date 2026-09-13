@@ -30,10 +30,18 @@ jobs:
       - run: node --test phantom-overlay/tests/app.test.cjs
       - name: Validate real-model runner syntax
         run: python3 -m py_compile scripts/axiom-live-e2e.py
+      - name: Python lint gate (ruff E9/F - syntax errors, undefined names, unused imports)
+        run: |
+          python3 -m pip install --quiet ruff
+          python3 -m ruff check --select E9,F overlay kernel scripts/stress_sec006_gauntlet.py stress_test.py
       - name: Overlay server gate (real provenance digest, strict input schema)
         run: |
-          python3 -m pip install --quiet pytest fastapi httpx uvicorn
-          python3 -m pytest -q -p no:cacheprovider overlay/tests/test_server.py kernel/tests/test_melious_router.py
+          python3 -m pip install --quiet pytest pytest-asyncio hypothesis fastapi httpx uvicorn ruff psutil
+          python3 -m pytest -q -p no:cacheprovider overlay/tests kernel/tests -W error::ResourceWarning -W error::pytest.PytestUnraisableExceptionWarning
+      - name: Wave 11 changed-file lint gate
+        run: python3 -m ruff check overlay/server.py kernel/sidecar/melious_router.py overlay/tests/test_server_wave11.py kernel/tests/test_melious_router_wave11.py scripts/stress_wave11.py
+      - name: Wave 11 undrained-stderr spike and shutdown gate
+        run: python3 scripts/stress_wave11.py
       - name: Ops endpoints smoke gate (healthz/readyz/metrics, security headers)
         run: |
           python3 - <<'PY'

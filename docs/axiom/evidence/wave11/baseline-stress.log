@@ -1,0 +1,28 @@
+=== Step 1: Running Red Team Security & Boundary Matrix ===
+PASS: POST /api/extract-document -> 404
+PASS: POST /api/extract-document -> 404
+PASS: POST /demo -> 404
+PASS: POST /demo -> 404
+PASS: POST /demo -> 404
+PASS: POST /demo -> 404
+PASS: POST /demo -> 404
+PASS: GET /api/figures/doc1?file=/etc/passwd -> 404
+PASS: POST /demo -> 403
+PASS: POST /demo -> 403
+PASS: POST /demo -> 403
+PASS: POST /demo -> 200
+PASS: POST /api/extract-document -> 422
+PASS: POST /api/extract-document -> 422
+PASS: POST /api/extract-document -> 422
+PASS: POST /api/extract-document -> 200
+
+Probe Matrix: 16/16 passed
+
+=== Step 2: Running 300 Mixed Concurrent Requests (30 Threads) ===
+Wall time: 2.2345s
+Throughput: 134.26 req/s
+Status distribution: {200: 100, 404: 103, 422: 81, 429: 16}
+Latency: p50=29.48ms, p95=1124.61ms, p99=1158.25ms
+Unhandled crashes: 0
+
+Saved stress test report to docs/axiom/evidence/stress_test_report_100x.json

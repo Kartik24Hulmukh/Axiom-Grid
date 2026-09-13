@@ -1,0 +1,46 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__________ test_cancelled_request_retains_slot_until_worker_finishes ___________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fc591b8a3f0>
+
+    @pytest.mark.asyncio
+    async def test_cancelled_request_retains_slot_until_worker_finishes(monkeypatch):
+        import asyncio
+        import threading
+
+        entered, release, finished = threading.Event(), threading.Event(), threading.Event()
+        slots = threading.BoundedSemaphore(1)
+        monkeypatch.setattr(server, "_extraction_slots", slots)
+
+        def blocked_run(self, doc):
+            entered.set()
+            try:
+                release.wait(5)
+                raise RuntimeError("synthetic worker failure")
+            finally:
+                finished.set()
+
+        monkeypatch.setattr(server.OrchestratorImpl, "run", blocked_run)
+        task = asyncio.create_task(server.extract_document(
+            server.ExtractDocumentRequest(file="fixtures/wedge/sample_memo_01.txt")))
+        try:
+            assert await asyncio.to_thread(entered.wait, 3)
+            task.cancel()
+            with pytest.raises(asyncio.CancelledError):
+                await task
+            acquired = slots.acquire(blocking=False)
+            if acquired:
+                slots.release()
+>           assert not acquired, "request cancellation released capacity for still-running work"
+E           AssertionError: request cancellation released capacity for still-running work
+E           assert not True
+
+overlay/tests/test_server_wave11.py:70: AssertionError
+----------------------------- Captured stderr call -----------------------------
+{"ts":"2026-09-13T12:53:26.701Z","level":"INFO","logger":"kernel.sidecar.memory_store","msg":"MemoryStore initialized: :memory:","service":"axiom-grid-overlay"}
+------------------------------ Captured log call -------------------------------
+INFO     kernel.sidecar.memory_store:memory_store.py:145 MemoryStore initialized: :memory:
+=========================== short test summary info ============================
+FAILED overlay/tests/test_server_wave11.py::test_cancelled_request_retains_slot_until_worker_finishes
+1 failed, 13 deselected in 0.48s

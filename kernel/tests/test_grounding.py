@@ -2,8 +2,12 @@
 Tests for GroundingVerifierImpl.
 """
 
-from kernel.core.data_model import Chunk, BBox, GroundingMethod
-from kernel.core.grounding import GroundingVerifierImpl, normalize_text, levenshtein_ratio
+from kernel.core.data_model import BBox, Chunk, GroundingMethod
+from kernel.core.grounding import (
+    GroundingVerifierImpl,
+    levenshtein_ratio,
+    normalize_text,
+)
 
 
 def test_normalize_text():
