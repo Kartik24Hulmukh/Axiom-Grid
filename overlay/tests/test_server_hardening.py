@@ -21,7 +21,7 @@ def test_xff_is_ignored_unless_proxy_trusted(monkeypatch):
     _reset_buckets()
     monkeypatch.setattr(s, "_TRUST_PROXY", False)
     for i in range(50):
-        assert client.get("/metrics", headers={"x-forwarded-for": f"10.0.0.{i}"}).status_code == 200
+        assert client.get("/api/traces", headers={"x-forwarded-for": f"10.0.0.{i}"}).status_code == 200
     # Every spoofed source collapses onto the real socket peer: one bucket.
     assert len(s._rate_limit_buckets) == 1
 
@@ -30,9 +30,9 @@ def test_xff_spoof_cannot_bypass_limit(monkeypatch):
     _reset_buckets()
     monkeypatch.setattr(s, "_TRUST_PROXY", False)
     monkeypatch.setattr(s, "_RATE_LIMIT_PER_MIN", 5)
-    codes = [client.get("/metrics", headers={"x-forwarded-for": f"10.1.0.{i}"}).status_code for i in range(8)]
+    codes = [client.get("/api/traces", headers={"x-forwarded-for": f"10.1.0.{i}"}).status_code for i in range(8)]
     assert codes.count(429) == 3 and codes[:5] == [200] * 5
-    r = client.get("/metrics")
+    r = client.get("/api/traces")
     assert r.status_code == 429 and int(r.headers["Retry-After"]) >= 1
 
 
@@ -40,10 +40,10 @@ def test_xff_honoured_when_proxy_trusted(monkeypatch):
     _reset_buckets()
     monkeypatch.setattr(s, "_TRUST_PROXY", True)
     for i in range(5):
-        client.get("/metrics", headers={"x-forwarded-for": f"10.2.0.{i}, 192.168.0.1"})
+        client.get("/api/traces", headers={"x-forwarded-for": f"10.2.0.{i}, 192.168.0.1"})
     assert {"10.2.0.0", "10.2.0.4"} <= set(s._rate_limit_buckets)
     # Over-long header values are not used as keys (cardinality / memory guard).
-    client.get("/metrics", headers={"x-forwarded-for": "x" * 200})
+    client.get("/api/traces", headers={"x-forwarded-for": "x" * 200})
     assert all(len(k) <= 64 for k in s._rate_limit_buckets)
 
 
@@ -53,7 +53,7 @@ def test_bucket_hard_cap_bounds_memory_under_rotating_flood(monkeypatch):
     monkeypatch.setattr(s, "_RATE_LIMIT_BUCKET_HIGH_WATER", 10)
     monkeypatch.setattr(s, "_RATE_LIMIT_BUCKET_HARD_CAP", 20)
     for i in range(300):
-        client.get("/metrics", headers={"x-forwarded-for": f"172.16.{i // 250}.{i % 250}"})
+        client.get("/api/traces", headers={"x-forwarded-for": f"172.16.{i // 250}.{i % 250}"})
     assert len(s._rate_limit_buckets) <= 20
 
 
@@ -68,7 +68,7 @@ def test_bucket_hard_cap_is_thread_safe(monkeypatch):
         try:
             for i in range(60):
                 assert client.get("/livez").status_code == 200
-                assert client.get("/metrics", headers={"x-forwarded-for": f"10.{n}.{i // 250}.{i % 250}"}).status_code < 500
+                assert client.get("/api/traces", headers={"x-forwarded-for": f"10.{n}.{i // 250}.{i % 250}"}).status_code < 500
         except Exception as exc:  # noqa: BLE001 -- isolate optional engine or worker failure at boundary
             errors.append(exc)
 
