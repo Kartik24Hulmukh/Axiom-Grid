@@ -2,7 +2,6 @@
 Tests for TieredInferenceGateway.
 """
 
-import os
 import shutil
 import tempfile
 import pytest
@@ -12,7 +11,6 @@ from kernel.core.contracts import InferenceTier, InferenceResult
 from kernel.sidecar.inference_gateway import (
     TieredInferenceGateway,
     AirGapViolationError,
-    InferenceGatewayError,
 )
 
 

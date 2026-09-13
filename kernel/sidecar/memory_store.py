@@ -16,7 +16,6 @@ import logging
 import pathlib
 import sqlite3
 from datetime import datetime
-from typing import Sequence
 
 from kernel.core.data_model import (
     Action,

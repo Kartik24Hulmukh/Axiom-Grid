@@ -13,11 +13,11 @@ from __future__ import annotations
 import hashlib
 import json
 import random
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Any, Sequence
+from typing import Any
 
-from kernel.core.data_model import Answer, Anchor, BBox, GroundingMethod
+from kernel.core.data_model import Answer
 
 
 @dataclass(frozen=True)
@@ -232,5 +232,5 @@ def assert_byte_identical(
         for f in mismatches:
             details.append(f"  {f}: {getattr(r1, f)!r} != {getattr(r2, f)!r}")
         raise AssertionError(
-            f"Receipts are not byte-identical. Mismatched fields:\n" + "\n".join(details)
+            "Receipts are not byte-identical. Mismatched fields:\n" + "\n".join(details)
         )
