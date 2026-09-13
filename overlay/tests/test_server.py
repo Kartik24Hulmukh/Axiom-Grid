@@ -314,9 +314,9 @@ def test_rate_limit_enforced_and_healthz_exempt(client, monkeypatch):
     assert all(s == 200 for s in statuses)
 
     srv._rate_limit_buckets.clear()
-    results = [client.get("/metrics").status_code for _ in range(10)]
+    results = [client.get("/api/traces").status_code for _ in range(10)]
     assert 429 in results
-    resp = client.get("/metrics")
+    resp = client.get("/api/traces")
     assert resp.status_code == 429
     assert "Retry-After" in resp.headers
 
@@ -356,13 +356,13 @@ def test_auth_disabled_by_default_local_first(client):
 
 def test_auth_rejects_missing_and_wrong_key(client, monkeypatch):
     _enable_auth(monkeypatch, _GOOD_KEY)
-    r = client.get("/metrics")
+    r = client.get("/api/traces")
     assert r.status_code == 401
     assert r.headers["WWW-Authenticate"].startswith("Bearer")
-    assert client.get("/metrics", headers={"Authorization": "Bearer nope_nope_nope_nope"}).status_code == 401
-    assert client.get("/metrics", headers={"X-API-Key": _GOOD_KEY + "x"}).status_code == 401
+    assert client.get("/api/traces", headers={"Authorization": "Bearer nope_nope_nope_nope"}).status_code == 401
+    assert client.get("/api/traces", headers={"X-API-Key": _GOOD_KEY + "x"}).status_code == 401
     # a prefix of the real key must never pass (constant-time digest compare)
-    assert client.get("/metrics", headers={"Authorization": f"Bearer {_GOOD_KEY[:-1]}"}).status_code == 401
+    assert client.get("/api/traces", headers={"Authorization": f"Bearer {_GOOD_KEY[:-1]}"}).status_code == 401
     # mutating endpoints are gated too
     assert client.post("/demo", json={"file": "x.txt", "question": "q"}).status_code == 401
     assert client.post("/api/extract-document", json={"file": "x.txt"}).status_code == 401
@@ -370,9 +370,9 @@ def test_auth_rejects_missing_and_wrong_key(client, monkeypatch):
 
 def test_auth_accepts_bearer_and_x_api_key(client, monkeypatch):
     _enable_auth(monkeypatch, _GOOD_KEY, _GOOD_KEY_2)
-    assert client.get("/metrics", headers={"Authorization": f"Bearer {_GOOD_KEY}"}).status_code == 200
-    assert client.get("/metrics", headers={"Authorization": f"bearer {_GOOD_KEY_2}"}).status_code == 200
-    assert client.get("/metrics", headers={"X-API-Key": _GOOD_KEY}).status_code == 200
+    assert client.get("/api/traces", headers={"Authorization": f"Bearer {_GOOD_KEY}"}).status_code == 200
+    assert client.get("/api/traces", headers={"Authorization": f"bearer {_GOOD_KEY_2}"}).status_code == 200
+    assert client.get("/api/traces", headers={"X-API-Key": _GOOD_KEY}).status_code == 200
 
 
 def test_auth_probes_and_landing_exempt(client, monkeypatch):
@@ -391,7 +391,7 @@ def test_auth_required_without_keys_fails_closed(client, monkeypatch):
 
     monkeypatch.setattr(srv, "_API_KEY_DIGESTS", {})
     monkeypatch.setattr(srv, "_AUTH_REQUIRED", True)
-    r = client.get("/metrics", headers={"Authorization": f"Bearer {_GOOD_KEY}"})
+    r = client.get("/api/traces", headers={"Authorization": f"Bearer {_GOOD_KEY}"})
     assert r.status_code == 503
     assert client.get("/healthz").status_code == 200
 
@@ -400,7 +400,7 @@ def test_auth_rejections_are_rate_limited(client, monkeypatch):
     """Brute-forcing keys must still hit the SEC-005 per-IP limiter (429)."""
     srv = _enable_auth(monkeypatch, _GOOD_KEY)
     monkeypatch.setattr(srv, "_RATE_LIMIT_PER_MIN", 5)
-    results = [client.get("/metrics", headers={"X-API-Key": f"guess_{i}_0123456789"}).status_code for i in range(12)]
+    results = [client.get("/api/traces", headers={"X-API-Key": f"guess_{i}_0123456789"}).status_code for i in range(12)]
     assert 401 in results and 429 in results
     assert results.index(401) < results.index(429)
 
@@ -412,14 +412,14 @@ def test_authenticated_tenant_gets_own_rate_tier(client, monkeypatch):
     monkeypatch.setattr(srv, "_RATE_LIMIT_PER_MIN", 3)
     monkeypatch.setattr(srv, "_RATE_LIMIT_PER_MIN_AUTH", 8)
     # exhaust the anonymous per-IP budget
-    anon = [client.get("/metrics").status_code for _ in range(6)]
+    anon = [client.get("/api/traces").status_code for _ in range(6)]
     assert 429 in anon
     # tenant A still has its own budget of 8
-    a = [client.get("/metrics", headers={"Authorization": f"Bearer {_GOOD_KEY}"}).status_code for _ in range(8)]
+    a = [client.get("/api/traces", headers={"Authorization": f"Bearer {_GOOD_KEY}"}).status_code for _ in range(8)]
     assert a == [200] * 8
-    assert client.get("/metrics", headers={"Authorization": f"Bearer {_GOOD_KEY}"}).status_code == 429
+    assert client.get("/api/traces", headers={"Authorization": f"Bearer {_GOOD_KEY}"}).status_code == 429
     # tenant B is isolated from tenant A's exhaustion
-    assert client.get("/metrics", headers={"Authorization": f"Bearer {_GOOD_KEY_2}"}).status_code == 200
+    assert client.get("/api/traces", headers={"Authorization": f"Bearer {_GOOD_KEY_2}"}).status_code == 200
 
 
 def test_livez_and_prometheus_metrics(client):
