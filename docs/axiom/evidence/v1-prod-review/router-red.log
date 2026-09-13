@@ -1,0 +1,320 @@
+FFFFFFFFFFFFFFF.                                                         [100%]
+=================================== FAILURES ===================================
+____________________ test_malformed_choice_falls_back[None] ____________________
+
+choice = None
+
+    @pytest.mark.parametrize("choice", [None, 1, {}, {"message": []}, {"message": {}}, {"message": {"content": 7}}])
+    def test_malformed_choice_falls_back(choice):
+        def transport(model, payload, timeout):
+            return {"choices": [choice if model == "a" else {"message": {"content": "ok"}}]}
+        router = MeliousModelRouter(models=("a", "b"), max_retries=0, transport=transport)
+>       assert router.complete(MSG)["router"]["selected_model"] == "b"
+E       AssertionError: assert 'a' == 'b'
+E         
+E         - b
+E         + a
+
+kernel/tests/test_melious_router_prod.py:14: AssertionError
+_____________________ test_malformed_choice_falls_back[1] ______________________
+
+choice = 1
+
+    @pytest.mark.parametrize("choice", [None, 1, {}, {"message": []}, {"message": {}}, {"message": {"content": 7}}])
+    def test_malformed_choice_falls_back(choice):
+        def transport(model, payload, timeout):
+            return {"choices": [choice if model == "a" else {"message": {"content": "ok"}}]}
+        router = MeliousModelRouter(models=("a", "b"), max_retries=0, transport=transport)
+>       assert router.complete(MSG)["router"]["selected_model"] == "b"
+E       AssertionError: assert 'a' == 'b'
+E         
+E         - b
+E         + a
+
+kernel/tests/test_melious_router_prod.py:14: AssertionError
+__________________ test_malformed_choice_falls_back[choice2] ___________________
+
+choice = {}
+
+    @pytest.mark.parametrize("choice", [None, 1, {}, {"message": []}, {"message": {}}, {"message": {"content": 7}}])
+    def test_malformed_choice_falls_back(choice):
+        def transport(model, payload, timeout):
+            return {"choices": [choice if model == "a" else {"message": {"content": "ok"}}]}
+        router = MeliousModelRouter(models=("a", "b"), max_retries=0, transport=transport)
+>       assert router.complete(MSG)["router"]["selected_model"] == "b"
+E       AssertionError: assert 'a' == 'b'
+E         
+E         - b
+E         + a
+
+kernel/tests/test_melious_router_prod.py:14: AssertionError
+__________________ test_malformed_choice_falls_back[choice3] ___________________
+
+choice = {'message': []}
+
+    @pytest.mark.parametrize("choice", [None, 1, {}, {"message": []}, {"message": {}}, {"message": {"content": 7}}])
+    def test_malformed_choice_falls_back(choice):
+        def transport(model, payload, timeout):
+            return {"choices": [choice if model == "a" else {"message": {"content": "ok"}}]}
+        router = MeliousModelRouter(models=("a", "b"), max_retries=0, transport=transport)
+>       assert router.complete(MSG)["router"]["selected_model"] == "b"
+E       AssertionError: assert 'a' == 'b'
+E         
+E         - b
+E         + a
+
+kernel/tests/test_melious_router_prod.py:14: AssertionError
+__________________ test_malformed_choice_falls_back[choice4] ___________________
+
+choice = {'message': {}}
+
+    @pytest.mark.parametrize("choice", [None, 1, {}, {"message": []}, {"message": {}}, {"message": {"content": 7}}])
+    def test_malformed_choice_falls_back(choice):
+        def transport(model, payload, timeout):
+            return {"choices": [choice if model == "a" else {"message": {"content": "ok"}}]}
+        router = MeliousModelRouter(models=("a", "b"), max_retries=0, transport=transport)
+>       assert router.complete(MSG)["router"]["selected_model"] == "b"
+E       AssertionError: assert 'a' == 'b'
+E         
+E         - b
+E         + a
+
+kernel/tests/test_melious_router_prod.py:14: AssertionError
+__________________ test_malformed_choice_falls_back[choice5] ___________________
+
+choice = {'message': {'content': 7}}
+
+    @pytest.mark.parametrize("choice", [None, 1, {}, {"message": []}, {"message": {}}, {"message": {"content": 7}}])
+    def test_malformed_choice_falls_back(choice):
+        def transport(model, payload, timeout):
+            return {"choices": [choice if model == "a" else {"message": {"content": "ok"}}]}
+        router = MeliousModelRouter(models=("a", "b"), max_retries=0, transport=transport)
+>       assert router.complete(MSG)["router"]["selected_model"] == "b"
+E       AssertionError: assert 'a' == 'b'
+E         
+E         - b
+E         + a
+
+kernel/tests/test_melious_router_prod.py:14: AssertionError
+_______________ test_invalid_budget_rejected_before_transport[0] _______________
+
+budget = 0
+
+    @pytest.mark.parametrize("budget", [0, -1, True, 1.5, "4", None, 4097])
+    def test_invalid_budget_rejected_before_transport(budget):
+        calls = []
+        router = MeliousModelRouter(models=("a",), transport=lambda *args: calls.append(args))
+>       with pytest.raises(RouterError, match="budget"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'budget'
+E         Actual message: "all model routes failed: [{'model': 'a', 'result': 'failure', 'error': 'RouterError', 'detail': 'upstream request failed', 'status': None}, {'model': 'a', 'result': 'failure', 'error': 'RouterError', 'detail': 'upstream request failed', 'status': None}]"
+
+kernel/tests/test_melious_router_prod.py:20: AssertionError
+______________ test_invalid_budget_rejected_before_transport[-1] _______________
+
+budget = -1
+
+    @pytest.mark.parametrize("budget", [0, -1, True, 1.5, "4", None, 4097])
+    def test_invalid_budget_rejected_before_transport(budget):
+        calls = []
+        router = MeliousModelRouter(models=("a",), transport=lambda *args: calls.append(args))
+>       with pytest.raises(RouterError, match="budget"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'budget'
+E         Actual message: "all model routes failed: [{'model': 'a', 'result': 'failure', 'error': 'RouterError', 'detail': 'upstream request failed', 'status': None}, {'model': 'a', 'result': 'failure', 'error': 'RouterError', 'detail': 'upstream request failed', 'status': None}]"
+
+kernel/tests/test_melious_router_prod.py:20: AssertionError
+_____________ test_invalid_budget_rejected_before_transport[True] ______________
+
+budget = True
+
+    @pytest.mark.parametrize("budget", [0, -1, True, 1.5, "4", None, 4097])
+    def test_invalid_budget_rejected_before_transport(budget):
+        calls = []
+        router = MeliousModelRouter(models=("a",), transport=lambda *args: calls.append(args))
+>       with pytest.raises(RouterError, match="budget"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'budget'
+E         Actual message: "all model routes failed: [{'model': 'a', 'result': 'failure', 'error': 'RouterError', 'detail': 'upstream request failed', 'status': None}, {'model': 'a', 'result': 'failure', 'error': 'RouterError', 'detail': 'upstream request failed', 'status': None}]"
+
+kernel/tests/test_melious_router_prod.py:20: AssertionError
+______________ test_invalid_budget_rejected_before_transport[1.5] ______________
+
+budget = 1.5
+
+    @pytest.mark.parametrize("budget", [0, -1, True, 1.5, "4", None, 4097])
+    def test_invalid_budget_rejected_before_transport(budget):
+        calls = []
+        router = MeliousModelRouter(models=("a",), transport=lambda *args: calls.append(args))
+>       with pytest.raises(RouterError, match="budget"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'budget'
+E         Actual message: "all model routes failed: [{'model': 'a', 'result': 'failure', 'error': 'RouterError', 'detail': 'upstream request failed', 'status': None}, {'model': 'a', 'result': 'failure', 'error': 'RouterError', 'detail': 'upstream request failed', 'status': None}]"
+
+kernel/tests/test_melious_router_prod.py:20: AssertionError
+_______________ test_invalid_budget_rejected_before_transport[4] _______________
+
+budget = '4'
+
+    @pytest.mark.parametrize("budget", [0, -1, True, 1.5, "4", None, 4097])
+    def test_invalid_budget_rejected_before_transport(budget):
+        calls = []
+        router = MeliousModelRouter(models=("a",), transport=lambda *args: calls.append(args))
+>       with pytest.raises(RouterError, match="budget"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'budget'
+E         Actual message: "all model routes failed: [{'model': 'a', 'result': 'failure', 'error': 'RouterError', 'detail': 'upstream request failed', 'status': None}, {'model': 'a', 'result': 'failure', 'error': 'RouterError', 'detail': 'upstream request failed', 'status': None}]"
+
+kernel/tests/test_melious_router_prod.py:20: AssertionError
+_____________ test_invalid_budget_rejected_before_transport[None] ______________
+
+budget = None
+
+    @pytest.mark.parametrize("budget", [0, -1, True, 1.5, "4", None, 4097])
+    def test_invalid_budget_rejected_before_transport(budget):
+        calls = []
+        router = MeliousModelRouter(models=("a",), transport=lambda *args: calls.append(args))
+>       with pytest.raises(RouterError, match="budget"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'budget'
+E         Actual message: "all model routes failed: [{'model': 'a', 'result': 'failure', 'error': 'RouterError', 'detail': 'upstream request failed', 'status': None}, {'model': 'a', 'result': 'failure', 'error': 'RouterError', 'detail': 'upstream request failed', 'status': None}]"
+
+kernel/tests/test_melious_router_prod.py:20: AssertionError
+_____________ test_invalid_budget_rejected_before_transport[4097] ______________
+
+budget = 4097
+
+    @pytest.mark.parametrize("budget", [0, -1, True, 1.5, "4", None, 4097])
+    def test_invalid_budget_rejected_before_transport(budget):
+        calls = []
+        router = MeliousModelRouter(models=("a",), transport=lambda *args: calls.append(args))
+>       with pytest.raises(RouterError, match="budget"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'budget'
+E         Actual message: "all model routes failed: [{'model': 'a', 'result': 'failure', 'error': 'RouterError', 'detail': 'upstream request failed', 'status': None}, {'model': 'a', 'result': 'failure', 'error': 'RouterError', 'detail': 'upstream request failed', 'status': None}]"
+
+kernel/tests/test_melious_router_prod.py:20: AssertionError
+_______ test_default_budget_is_sent_and_over_budget_response_falls_back ________
+
+model = 'b', payload = {'messages': [{'role': 'user', 'content': 'x'}]}
+timeout = 10.0
+
+    def transport(model, payload, timeout):
+>       assert payload["max_tokens"] == 4096
+               ^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'max_tokens'
+
+kernel/tests/test_melious_router_prod.py:26: KeyError
+
+The above exception was the direct cause of the following exception:
+
+    def test_default_budget_is_sent_and_over_budget_response_falls_back():
+        def transport(model, payload, timeout):
+            assert payload["max_tokens"] == 4096
+            return {"choices": [{"message": {"content": "ok"}}],
+                    "usage": {"completion_tokens": 4097 if model == "a" else 2}}
+        router = MeliousModelRouter(models=("a", "b"), max_retries=0, transport=transport)
+>       assert router.complete(MSG)["router"]["selected_model"] == "b"
+               ^^^^^^^^^^^^^^^^^^^^
+
+kernel/tests/test_melious_router_prod.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <kernel.sidecar.melious_router.MeliousModelRouter object at 0x73ac2c341630>
+messages = [{'role': 'user', 'content': 'x'}], options = {}
+
+    def complete(self, messages, **options):
+        # Sanitize the I/O boundary before any network cost is incurred.
+        if not isinstance(messages, list) or not messages or len(messages) > self.MAX_MESSAGES:
+            raise RouterError(f"messages must be a non-empty list of at most {self.MAX_MESSAGES} items")
+        for m in messages:
+            if not isinstance(m, dict) or not isinstance(m.get("role"), str) or not isinstance(m.get("content"), str):
+                raise RouterError("each message needs string 'role' and 'content'")
+        if "model" in options: raise RouterError("model is chosen by the router; do not pass it")
+        payload={"messages":messages,**options}; trace=[]; last=None
+        if not self._lock.acquire(timeout=self.acquire_timeout):
+            raise RouterError(f"router saturated: lock not acquired within {self.acquire_timeout}s")
+        try: self.metrics["requests"]+=1
+        finally: self._lock.release()
+        for index,model in enumerate(self.models):
+            now=time.monotonic()
+            if not self._lock.acquire(timeout=self.acquire_timeout):
+                raise RouterError(f"router saturated: lock not acquired within {self.acquire_timeout}s")
+            try:
+                allowed=self.breakers[model].allow(now)
+                is_probe = allowed and self.breakers[model].probing
+            finally: self._lock.release()
+            if not allowed: trace.append({"model":model,"result":"circuit_open"}); continue
+            if index and self._lock.acquire(timeout=self.acquire_timeout):
+                try: self.metrics["fallbacks"]+=1
+                finally: self._lock.release()
+            for attempt in range(self.max_retries+1):
+                try:
+                    # Half-open probe gets the shorter probe_timeout deadline.
+                    data=self._transport(model,payload,self.probe_timeout if is_probe else self.timeout)
+                    if not isinstance(data, dict) or not isinstance(data.get("choices"), list) or not data["choices"]:
+                        raise RouterError("malformed upstream response")
+                    counts = self._usage_counts(data)
+                    if not self._lock.acquire(timeout=self.acquire_timeout):
+                        raise RouterError(f"router saturated: lock not acquired within {self.acquire_timeout}s")
+                    try:
+                        self.breakers[model].success(); self.metrics["successes"]+=1
+                        for key, value in counts.items():
+                            self.metrics[key] += value
+                    finally: self._lock.release()
+                    data["router"]={"selected_model":model,"fallback_chain":trace+[ {"model":model,"result":"success"} ]}
+                    return data
+                except Exception as exc:  # noqa: BLE001 -- isolate arbitrary injected transport failures
+                    last=exc; trace.append({"model":model,"result":"failure","error":type(exc).__name__,"detail":f"upstream HTTP {exc.status}" if type(getattr(exc,"status",None)) is int else "upstream request failed","status":getattr(exc,"status",None)})
+                    if self._lock.acquire(timeout=self.acquire_timeout):
+                        try: self.breakers[model].failure(time.monotonic())
+                        finally: self._lock.release()
+                    if attempt < self.max_retries:
+                        delay=min(float(getattr(exc,"retry_after",0) or 0) or .1*(2**attempt)+random.random()*.05,2.0); self._sleep(delay)
+        if self._lock.acquire(timeout=self.acquire_timeout):
+            try: self.metrics["failures"]+=1
+            finally: self._lock.release()
+        err = RouterError(f"all model routes failed: {trace}")
+        # Preserve the last upstream HTTP status so callers can map 429/5xx
+        # without parsing the trace text.
+        if last is not None and getattr(last, "status", None) is not None:
+            err.status = last.status
+>       raise err from last
+E       kernel.sidecar.melious_router.RouterError: all model routes failed: [{'model': 'a', 'result': 'failure', 'error': 'KeyError', 'detail': 'upstream request failed', 'status': None}, {'model': 'b', 'result': 'failure', 'error': 'KeyError', 'detail': 'upstream request failed', 'status': None}]
+
+kernel/sidecar/melious_router.py:147: RouterError
+____________________ test_conflicting_token_limits_rejected ____________________
+
+    def test_conflicting_token_limits_rejected():
+        router = MeliousModelRouter(models=("a",))
+>       with pytest.raises(RouterError, match="budget"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'budget'
+E         Actual message: "all model routes failed: [{'model': 'a', 'result': 'failure', 'error': 'RouterError', 'detail': 'upstream request failed', 'status': None}, {'model': 'a', 'result': 'failure', 'error': 'RouterError', 'detail': 'upstream request failed', 'status': None}]"
+
+kernel/tests/test_melious_router_prod.py:35: AssertionError
+=========================== short test summary info ============================
+FAILED kernel/tests/test_melious_router_prod.py::test_malformed_choice_falls_back[None]
+FAILED kernel/tests/test_melious_router_prod.py::test_malformed_choice_falls_back[1]
+FAILED kernel/tests/test_melious_router_prod.py::test_malformed_choice_falls_back[choice2]
+FAILED kernel/tests/test_melious_router_prod.py::test_malformed_choice_falls_back[choice3]
+FAILED kernel/tests/test_melious_router_prod.py::test_malformed_choice_falls_back[choice4]
+FAILED kernel/tests/test_melious_router_prod.py::test_malformed_choice_falls_back[choice5]
+FAILED kernel/tests/test_melious_router_prod.py::test_invalid_budget_rejected_before_transport[0]
+FAILED kernel/tests/test_melious_router_prod.py::test_invalid_budget_rejected_before_transport[-1]
+FAILED kernel/tests/test_melious_router_prod.py::test_invalid_budget_rejected_before_transport[True]
+FAILED kernel/tests/test_melious_router_prod.py::test_invalid_budget_rejected_before_transport[1.5]
+FAILED kernel/tests/test_melious_router_prod.py::test_invalid_budget_rejected_before_transport[4]
+FAILED kernel/tests/test_melious_router_prod.py::test_invalid_budget_rejected_before_transport[None]
+FAILED kernel/tests/test_melious_router_prod.py::test_invalid_budget_rejected_before_transport[4097]
+FAILED kernel/tests/test_melious_router_prod.py::test_default_budget_is_sent_and_over_budget_response_falls_back
+FAILED kernel/tests/test_melious_router_prod.py::test_conflicting_token_limits_rejected
+15 failed, 1 passed in 2.30s

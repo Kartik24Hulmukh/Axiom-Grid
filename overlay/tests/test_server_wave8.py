@@ -7,8 +7,8 @@ import time
 
 import pytest
 from fastapi.testclient import TestClient
-from kernel.sidecar.melious_router import MeliousModelRouter, RouterError
 
+from kernel.sidecar.melious_router import MeliousModelRouter, RouterError
 from overlay import server as s
 from overlay.server import app
 

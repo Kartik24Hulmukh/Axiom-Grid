@@ -1,0 +1,25 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+____________ test_repeated_lifespan_reopens_store_and_reaps_workers ____________
+
+    def test_repeated_lifespan_reopens_store_and_reaps_workers():
+        for _ in range(2):
+            with TestClient(srv.app) as client:
+                assert not srv.memory_store.closed
+                assert client.get("/livez").status_code == 200
+                assert srv._extraction_pool.submit(lambda: 7).result(timeout=2) == 7
+            assert srv.memory_store.closed
+>           assert all(not thread.is_alive() for thread in srv._extraction_pool._threads)
+E           assert False
+E            +  where False = all(<generator object test_repeated_lifespan_reopens_store_and_reaps_workers.<locals>.<genexpr> at 0x7143bc976400>)
+
+overlay/tests/test_server_prod.py:13: AssertionError
+----------------------------- Captured stderr call -----------------------------
+{"ts":"2026-09-13T13:57:56.072Z","level":"INFO","logger":"overlay.server","msg":"request completed","service":"axiom-grid-overlay","request_id":"2c7bd771b76045289a129da0f90d89a2","path":"/livez","status":200,"latency_ms":0.96,"client":"testclient"}
+{"ts":"2026-09-13T13:57:56.072Z","level":"INFO","logger":"httpx2","msg":"HTTP Request: GET http://testserver/livez \"HTTP/1.1 200 OK\"","service":"axiom-grid-overlay"}
+------------------------------ Captured log call -------------------------------
+INFO     overlay.server:server.py:309 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/livez "HTTP/1.1 200 OK"
+=========================== short test summary info ============================
+FAILED overlay/tests/test_server_prod.py::test_repeated_lifespan_reopens_store_and_reaps_workers
+1 failed in 0.35s
