@@ -25,8 +25,8 @@ expected_exit = 0
 >       assert bench.main() == expected_exit
                ^^^^^^^^^^^^
 
-overlay/tests/test_bench_prod.py:25: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+overlay/tests/test_bench_prod.py:25:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
     def main() -> int:
         parser = argparse.ArgumentParser(description=__doc__)
@@ -92,8 +92,8 @@ expected_exit = 1
 >       assert bench.main() == expected_exit
                ^^^^^^^^^^^^
 
-overlay/tests/test_bench_prod.py:25: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+overlay/tests/test_bench_prod.py:25:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
     def main() -> int:
         parser = argparse.ArgumentParser(description=__doc__)
@@ -163,8 +163,8 @@ expected_exit = 1
 >       assert bench.main() == expected_exit
                ^^^^^^^^^^^^
 
-overlay/tests/test_bench_prod.py:25: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+overlay/tests/test_bench_prod.py:25:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
     def main() -> int:
         parser = argparse.ArgumentParser(description=__doc__)
@@ -234,8 +234,8 @@ expected_exit = 1
 >       assert bench.main() == expected_exit
                ^^^^^^^^^^^^
 
-overlay/tests/test_bench_prod.py:25: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+overlay/tests/test_bench_prod.py:25:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
     def main() -> int:
         parser = argparse.ArgumentParser(description=__doc__)
@@ -305,8 +305,8 @@ expected_exit = 1
 >       assert bench.main() == expected_exit
                ^^^^^^^^^^^^
 
-overlay/tests/test_bench_prod.py:25: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+overlay/tests/test_bench_prod.py:25:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
     def main() -> int:
         parser = argparse.ArgumentParser(description=__doc__)
