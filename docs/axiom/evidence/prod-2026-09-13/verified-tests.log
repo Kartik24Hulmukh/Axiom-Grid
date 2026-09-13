@@ -1,0 +1,362 @@
+FFFFF................................................................... [ 42%]
+........................................................................ [ 84%]
+...........................                                              [100%]
+=================================== FAILURES ===================================
+________________ test_benchmark_gate_checks_http_success[200-0] ________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7a72ae7e8050>
+capsys = <_pytest.capture.CaptureFixture object at 0x7a72ae3c97f0>, status = 200
+expected_exit = 0
+
+    @pytest.mark.parametrize("status, expected_exit", [(200, 0), (404, 1), (429, 1), (503, 1), (0, 1)])
+    def test_benchmark_gate_checks_http_success(monkeypatch, capsys, status, expected_exit):
+        class Process:
+            pid = 1
+            def terminate(self):
+                pass
+            def wait(self, timeout=None):
+                pass
+            def poll(self):
+                return 0
+        monkeypatch.setattr(bench.subprocess, "Popen", lambda *a, **kw: Process())
+        monkeypatch.setattr(bench, "_rss_bytes", lambda pid: 1000)
+        monkeypatch.setattr(bench.sys, "argv", ["bench", "10", "1"])
+        monkeypatch.setattr(bench, "_hit", lambda base, i, *paths: (1.0, status if paths else 200))
+>       assert bench.main() == expected_exit
+               ^^^^^^^^^^^^
+
+overlay/tests/test_bench_prod.py:25: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def main() -> int:
+        parser = argparse.ArgumentParser(description=__doc__)
+        parser.add_argument("requests", nargs="?", type=int, default=2000)
+        parser.add_argument("threads", nargs="?", type=int, default=100)
+        parser.add_argument("--paths", default=",".join(PATHS), help="Comma-separated paths; all must return 2xx")
+        args = parser.parse_args()
+        n, threads = args.requests, args.threads
+        if n < 2 or not 1 <= threads <= 1000:
+            parser.error("requests >= 2 and threads in 1..1000 required")
+        paths = tuple(args.paths.split(","))
+        if not paths or any(not p.startswith("/") or p.startswith("//") for p in paths):
+            parser.error("paths must be local absolute paths")
+        sock = socket.socket()
+        sock.bind(("127.0.0.1", 0))
+        port = sock.getsockname()[1]
+        sock.close()
+        env = dict(os.environ, PYTHONPATH=ROOT)
+        proc = subprocess.Popen(
+            [sys.executable, "-m", "uvicorn", "overlay.server:app", "--host", "127.0.0.1",
+             "--port", str(port), "--log-level", "warning"],
+            cwd=ROOT, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        )
+        base = f"http://127.0.0.1:{port}"
+        try:
+            for _ in range(200):
+                if _hit(base, 0)[1] == 200:
+                    break
+                time.sleep(0.05)
+            else:
+                raise SystemExit("server did not boot")
+            rss0 = _rss_bytes(proc.pid)
+            t0 = time.perf_counter()
+            with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as pool:
+                samples = list(pool.map(lambda i: _hit(base, i, paths), range(n)))
+            wall = time.perf_counter() - t0
+            rss1 = _rss_bytes(proc.pid)
+>           peak_rss = _rss_bytes(proc.pid, "VmHWM")
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: test_benchmark_gate_checks_http_success.<locals>.<lambda>() takes 1 positional argument but 2 were given
+
+scripts/bench_v1_prod.py:83: TypeError
+________________ test_benchmark_gate_checks_http_success[404-1] ________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7a72ae4003e0>
+capsys = <_pytest.capture.CaptureFixture object at 0x7a72af232710>, status = 404
+expected_exit = 1
+
+    @pytest.mark.parametrize("status, expected_exit", [(200, 0), (404, 1), (429, 1), (503, 1), (0, 1)])
+    def test_benchmark_gate_checks_http_success(monkeypatch, capsys, status, expected_exit):
+        class Process:
+            pid = 1
+            def terminate(self):
+                pass
+            def wait(self, timeout=None):
+                pass
+            def poll(self):
+                return 0
+        monkeypatch.setattr(bench.subprocess, "Popen", lambda *a, **kw: Process())
+        monkeypatch.setattr(bench, "_rss_bytes", lambda pid: 1000)
+        monkeypatch.setattr(bench.sys, "argv", ["bench", "10", "1"])
+        monkeypatch.setattr(bench, "_hit", lambda base, i, *paths: (1.0, status if paths else 200))
+>       assert bench.main() == expected_exit
+               ^^^^^^^^^^^^
+
+overlay/tests/test_bench_prod.py:25: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def main() -> int:
+        parser = argparse.ArgumentParser(description=__doc__)
+        parser.add_argument("requests", nargs="?", type=int, default=2000)
+        parser.add_argument("threads", nargs="?", type=int, default=100)
+        parser.add_argument("--paths", default=",".join(PATHS), help="Comma-separated paths; all must return 2xx")
+        args = parser.parse_args()
+        n, threads = args.requests, args.threads
+        if n < 2 or not 1 <= threads <= 1000:
+            parser.error("requests >= 2 and threads in 1..1000 required")
+        paths = tuple(args.paths.split(","))
+        if not paths or any(not p.startswith("/") or p.startswith("//") for p in paths):
+            parser.error("paths must be local absolute paths")
+        sock = socket.socket()
+        sock.bind(("127.0.0.1", 0))
+        port = sock.getsockname()[1]
+        sock.close()
+        env = dict(os.environ, PYTHONPATH=ROOT)
+        proc = subprocess.Popen(
+            [sys.executable, "-m", "uvicorn", "overlay.server:app", "--host", "127.0.0.1",
+             "--port", str(port), "--log-level", "warning"],
+            cwd=ROOT, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        )
+        base = f"http://127.0.0.1:{port}"
+        try:
+            for _ in range(200):
+                if _hit(base, 0)[1] == 200:
+                    break
+                time.sleep(0.05)
+            else:
+                raise SystemExit("server did not boot")
+            rss0 = _rss_bytes(proc.pid)
+            t0 = time.perf_counter()
+            with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as pool:
+                samples = list(pool.map(lambda i: _hit(base, i, paths), range(n)))
+            wall = time.perf_counter() - t0
+            rss1 = _rss_bytes(proc.pid)
+>           peak_rss = _rss_bytes(proc.pid, "VmHWM")
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: test_benchmark_gate_checks_http_success.<locals>.<lambda>() takes 1 positional argument but 2 were given
+
+scripts/bench_v1_prod.py:83: TypeError
+---------------------------- Captured stderr setup -----------------------------
+{"ts":"2026-09-13T17:56:08.568Z","level":"INFO","logger":"kernel.sidecar.memory_store","msg":"MemoryStore initialized: /home/daytona/axiom-grid/.kairo/overlay_store.db","service":"axiom-grid-overlay"}
+------------------------------ Captured log setup ------------------------------
+INFO     kernel.sidecar.memory_store:memory_store.py:165 MemoryStore initialized: /home/daytona/axiom-grid/.kairo/overlay_store.db
+________________ test_benchmark_gate_checks_http_success[429-1] ________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7a72ae3bc3b0>
+capsys = <_pytest.capture.CaptureFixture object at 0x7a72ae3c7750>, status = 429
+expected_exit = 1
+
+    @pytest.mark.parametrize("status, expected_exit", [(200, 0), (404, 1), (429, 1), (503, 1), (0, 1)])
+    def test_benchmark_gate_checks_http_success(monkeypatch, capsys, status, expected_exit):
+        class Process:
+            pid = 1
+            def terminate(self):
+                pass
+            def wait(self, timeout=None):
+                pass
+            def poll(self):
+                return 0
+        monkeypatch.setattr(bench.subprocess, "Popen", lambda *a, **kw: Process())
+        monkeypatch.setattr(bench, "_rss_bytes", lambda pid: 1000)
+        monkeypatch.setattr(bench.sys, "argv", ["bench", "10", "1"])
+        monkeypatch.setattr(bench, "_hit", lambda base, i, *paths: (1.0, status if paths else 200))
+>       assert bench.main() == expected_exit
+               ^^^^^^^^^^^^
+
+overlay/tests/test_bench_prod.py:25: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def main() -> int:
+        parser = argparse.ArgumentParser(description=__doc__)
+        parser.add_argument("requests", nargs="?", type=int, default=2000)
+        parser.add_argument("threads", nargs="?", type=int, default=100)
+        parser.add_argument("--paths", default=",".join(PATHS), help="Comma-separated paths; all must return 2xx")
+        args = parser.parse_args()
+        n, threads = args.requests, args.threads
+        if n < 2 or not 1 <= threads <= 1000:
+            parser.error("requests >= 2 and threads in 1..1000 required")
+        paths = tuple(args.paths.split(","))
+        if not paths or any(not p.startswith("/") or p.startswith("//") for p in paths):
+            parser.error("paths must be local absolute paths")
+        sock = socket.socket()
+        sock.bind(("127.0.0.1", 0))
+        port = sock.getsockname()[1]
+        sock.close()
+        env = dict(os.environ, PYTHONPATH=ROOT)
+        proc = subprocess.Popen(
+            [sys.executable, "-m", "uvicorn", "overlay.server:app", "--host", "127.0.0.1",
+             "--port", str(port), "--log-level", "warning"],
+            cwd=ROOT, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        )
+        base = f"http://127.0.0.1:{port}"
+        try:
+            for _ in range(200):
+                if _hit(base, 0)[1] == 200:
+                    break
+                time.sleep(0.05)
+            else:
+                raise SystemExit("server did not boot")
+            rss0 = _rss_bytes(proc.pid)
+            t0 = time.perf_counter()
+            with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as pool:
+                samples = list(pool.map(lambda i: _hit(base, i, paths), range(n)))
+            wall = time.perf_counter() - t0
+            rss1 = _rss_bytes(proc.pid)
+>           peak_rss = _rss_bytes(proc.pid, "VmHWM")
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: test_benchmark_gate_checks_http_success.<locals>.<lambda>() takes 1 positional argument but 2 were given
+
+scripts/bench_v1_prod.py:83: TypeError
+---------------------------- Captured stderr setup -----------------------------
+{"ts":"2026-09-13T17:56:08.577Z","level":"INFO","logger":"kernel.sidecar.memory_store","msg":"MemoryStore initialized: /home/daytona/axiom-grid/.kairo/overlay_store.db","service":"axiom-grid-overlay"}
+------------------------------ Captured log setup ------------------------------
+INFO     kernel.sidecar.memory_store:memory_store.py:165 MemoryStore initialized: /home/daytona/axiom-grid/.kairo/overlay_store.db
+________________ test_benchmark_gate_checks_http_success[503-1] ________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7a72ae3f5bf0>
+capsys = <_pytest.capture.CaptureFixture object at 0x7a72ae402d70>, status = 503
+expected_exit = 1
+
+    @pytest.mark.parametrize("status, expected_exit", [(200, 0), (404, 1), (429, 1), (503, 1), (0, 1)])
+    def test_benchmark_gate_checks_http_success(monkeypatch, capsys, status, expected_exit):
+        class Process:
+            pid = 1
+            def terminate(self):
+                pass
+            def wait(self, timeout=None):
+                pass
+            def poll(self):
+                return 0
+        monkeypatch.setattr(bench.subprocess, "Popen", lambda *a, **kw: Process())
+        monkeypatch.setattr(bench, "_rss_bytes", lambda pid: 1000)
+        monkeypatch.setattr(bench.sys, "argv", ["bench", "10", "1"])
+        monkeypatch.setattr(bench, "_hit", lambda base, i, *paths: (1.0, status if paths else 200))
+>       assert bench.main() == expected_exit
+               ^^^^^^^^^^^^
+
+overlay/tests/test_bench_prod.py:25: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def main() -> int:
+        parser = argparse.ArgumentParser(description=__doc__)
+        parser.add_argument("requests", nargs="?", type=int, default=2000)
+        parser.add_argument("threads", nargs="?", type=int, default=100)
+        parser.add_argument("--paths", default=",".join(PATHS), help="Comma-separated paths; all must return 2xx")
+        args = parser.parse_args()
+        n, threads = args.requests, args.threads
+        if n < 2 or not 1 <= threads <= 1000:
+            parser.error("requests >= 2 and threads in 1..1000 required")
+        paths = tuple(args.paths.split(","))
+        if not paths or any(not p.startswith("/") or p.startswith("//") for p in paths):
+            parser.error("paths must be local absolute paths")
+        sock = socket.socket()
+        sock.bind(("127.0.0.1", 0))
+        port = sock.getsockname()[1]
+        sock.close()
+        env = dict(os.environ, PYTHONPATH=ROOT)
+        proc = subprocess.Popen(
+            [sys.executable, "-m", "uvicorn", "overlay.server:app", "--host", "127.0.0.1",
+             "--port", str(port), "--log-level", "warning"],
+            cwd=ROOT, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        )
+        base = f"http://127.0.0.1:{port}"
+        try:
+            for _ in range(200):
+                if _hit(base, 0)[1] == 200:
+                    break
+                time.sleep(0.05)
+            else:
+                raise SystemExit("server did not boot")
+            rss0 = _rss_bytes(proc.pid)
+            t0 = time.perf_counter()
+            with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as pool:
+                samples = list(pool.map(lambda i: _hit(base, i, paths), range(n)))
+            wall = time.perf_counter() - t0
+            rss1 = _rss_bytes(proc.pid)
+>           peak_rss = _rss_bytes(proc.pid, "VmHWM")
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: test_benchmark_gate_checks_http_success.<locals>.<lambda>() takes 1 positional argument but 2 were given
+
+scripts/bench_v1_prod.py:83: TypeError
+---------------------------- Captured stderr setup -----------------------------
+{"ts":"2026-09-13T17:56:08.585Z","level":"INFO","logger":"kernel.sidecar.memory_store","msg":"MemoryStore initialized: /home/daytona/axiom-grid/.kairo/overlay_store.db","service":"axiom-grid-overlay"}
+------------------------------ Captured log setup ------------------------------
+INFO     kernel.sidecar.memory_store:memory_store.py:165 MemoryStore initialized: /home/daytona/axiom-grid/.kairo/overlay_store.db
+_________________ test_benchmark_gate_checks_http_success[0-1] _________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7a72ae3f6250>
+capsys = <_pytest.capture.CaptureFixture object at 0x7a72ae5f3bb0>, status = 0
+expected_exit = 1
+
+    @pytest.mark.parametrize("status, expected_exit", [(200, 0), (404, 1), (429, 1), (503, 1), (0, 1)])
+    def test_benchmark_gate_checks_http_success(monkeypatch, capsys, status, expected_exit):
+        class Process:
+            pid = 1
+            def terminate(self):
+                pass
+            def wait(self, timeout=None):
+                pass
+            def poll(self):
+                return 0
+        monkeypatch.setattr(bench.subprocess, "Popen", lambda *a, **kw: Process())
+        monkeypatch.setattr(bench, "_rss_bytes", lambda pid: 1000)
+        monkeypatch.setattr(bench.sys, "argv", ["bench", "10", "1"])
+        monkeypatch.setattr(bench, "_hit", lambda base, i, *paths: (1.0, status if paths else 200))
+>       assert bench.main() == expected_exit
+               ^^^^^^^^^^^^
+
+overlay/tests/test_bench_prod.py:25: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def main() -> int:
+        parser = argparse.ArgumentParser(description=__doc__)
+        parser.add_argument("requests", nargs="?", type=int, default=2000)
+        parser.add_argument("threads", nargs="?", type=int, default=100)
+        parser.add_argument("--paths", default=",".join(PATHS), help="Comma-separated paths; all must return 2xx")
+        args = parser.parse_args()
+        n, threads = args.requests, args.threads
+        if n < 2 or not 1 <= threads <= 1000:
+            parser.error("requests >= 2 and threads in 1..1000 required")
+        paths = tuple(args.paths.split(","))
+        if not paths or any(not p.startswith("/") or p.startswith("//") for p in paths):
+            parser.error("paths must be local absolute paths")
+        sock = socket.socket()
+        sock.bind(("127.0.0.1", 0))
+        port = sock.getsockname()[1]
+        sock.close()
+        env = dict(os.environ, PYTHONPATH=ROOT)
+        proc = subprocess.Popen(
+            [sys.executable, "-m", "uvicorn", "overlay.server:app", "--host", "127.0.0.1",
+             "--port", str(port), "--log-level", "warning"],
+            cwd=ROOT, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        )
+        base = f"http://127.0.0.1:{port}"
+        try:
+            for _ in range(200):
+                if _hit(base, 0)[1] == 200:
+                    break
+                time.sleep(0.05)
+            else:
+                raise SystemExit("server did not boot")
+            rss0 = _rss_bytes(proc.pid)
+            t0 = time.perf_counter()
+            with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as pool:
+                samples = list(pool.map(lambda i: _hit(base, i, paths), range(n)))
+            wall = time.perf_counter() - t0
+            rss1 = _rss_bytes(proc.pid)
+>           peak_rss = _rss_bytes(proc.pid, "VmHWM")
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: test_benchmark_gate_checks_http_success.<locals>.<lambda>() takes 1 positional argument but 2 were given
+
+scripts/bench_v1_prod.py:83: TypeError
+---------------------------- Captured stderr setup -----------------------------
+{"ts":"2026-09-13T17:56:08.596Z","level":"INFO","logger":"kernel.sidecar.memory_store","msg":"MemoryStore initialized: /home/daytona/axiom-grid/.kairo/overlay_store.db","service":"axiom-grid-overlay"}
+------------------------------ Captured log setup ------------------------------
+INFO     kernel.sidecar.memory_store:memory_store.py:165 MemoryStore initialized: /home/daytona/axiom-grid/.kairo/overlay_store.db
+=========================== short test summary info ============================
+FAILED overlay/tests/test_bench_prod.py::test_benchmark_gate_checks_http_success[200-0]
+FAILED overlay/tests/test_bench_prod.py::test_benchmark_gate_checks_http_success[404-1]
+FAILED overlay/tests/test_bench_prod.py::test_benchmark_gate_checks_http_success[429-1]
+FAILED overlay/tests/test_bench_prod.py::test_benchmark_gate_checks_http_success[503-1]
+FAILED overlay/tests/test_bench_prod.py::test_benchmark_gate_checks_http_success[0-1]
+5 failed, 166 passed in 12.77s
