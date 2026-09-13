@@ -88,6 +88,7 @@ class MeliousModelRouter:
         return counts
 
     MAX_MESSAGES = 256
+    MAX_COMPLETION_TOKENS = 4096
     def complete(self, messages, **options):
         # Sanitize the I/O boundary before any network cost is incurred.
         if not isinstance(messages, list) or not messages or len(messages) > self.MAX_MESSAGES:
@@ -96,7 +97,17 @@ class MeliousModelRouter:
             if not isinstance(m, dict) or not isinstance(m.get("role"), str) or not isinstance(m.get("content"), str):
                 raise RouterError("each message needs string 'role' and 'content'")
         if "model" in options: raise RouterError("model is chosen by the router; do not pass it")
-        payload={"messages":messages,**options}; trace=[]; last=None
+        if "max_tokens" in options and "max_completion_tokens" in options:
+            raise RouterError("provide exactly one completion budget")
+        budget_key = "max_completion_tokens" if "max_completion_tokens" in options else "max_tokens"
+        budget = options.get(budget_key, self.MAX_COMPLETION_TOKENS)
+        if type(budget) is not int or not 1 <= budget <= self.MAX_COMPLETION_TOKENS:
+            raise RouterError(f"completion budget must be an integer in 1..{self.MAX_COMPLETION_TOKENS}")
+        if options.get("stream"):
+            raise RouterError("streaming is not supported by the JSON completion router")
+        if options.get("n", 1) != 1:
+            raise RouterError("only one completion is supported per budget")
+        payload={"messages":messages,**options, budget_key: budget}; trace=[]; last=None
         if not self._lock.acquire(timeout=self.acquire_timeout):
             raise RouterError(f"router saturated: lock not acquired within {self.acquire_timeout}s")
         try: self.metrics["requests"]+=1
@@ -119,7 +130,16 @@ class MeliousModelRouter:
                     data=self._transport(model,payload,self.probe_timeout if is_probe else self.timeout)
                     if not isinstance(data, dict) or not isinstance(data.get("choices"), list) or not data["choices"]:
                         raise RouterError("malformed upstream response")
+                    for choice in data["choices"]:
+                        if not isinstance(choice, dict) or not isinstance(choice.get("message"), dict):
+                            raise RouterError("malformed upstream choice")
+                        if not isinstance(choice["message"].get("content"), str):
+                            raise RouterError("upstream text completion content must be a string")
+                    if len(data["choices"]) != 1:
+                        raise RouterError("unexpected multiple completions")
                     counts = self._usage_counts(data)
+                    if counts["completion_tokens"] > budget:
+                        raise RouterError("upstream exceeded completion budget")
                     if not self._lock.acquire(timeout=self.acquire_timeout):
                         raise RouterError(f"router saturated: lock not acquired within {self.acquire_timeout}s")
                     try:
