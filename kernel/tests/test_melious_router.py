@@ -102,4 +102,4 @@ def test_models_env_override_and_trace_detail(monkeypatch):
  assert chain[0]["status"]==404 and "HTTP 404" in chain[0]["detail"] and chain[-1]["result"]=="success"
 
 def test_default_models_are_distinct_and_nonempty():
- assert len(set(MeliousModelRouter.DEFAULT_MODELS))==3 and all(MeliousModelRouter.DEFAULT_MODELS)
+ assert len(set(MeliousModelRouter.DEFAULT_MODELS))==4 and all(MeliousModelRouter.DEFAULT_MODELS)

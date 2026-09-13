@@ -60,8 +60,8 @@ def test_rate_limit_retry_delay_is_bounded_and_falls_back():
     router = MeliousModelRouter(models=("a", "b"), max_retries=1,
                                transport=transport, sleep=delays.append)
     assert router.complete(MSG)["router"]["selected_model"] == "b"
-    assert calls == ["a", "a", "b"]
-    assert delays == [2.0]
+    assert calls == ["a", "b"]
+    assert delays == []  # Retry-After exceeds deadline: fall back, never retry early
 
 
 def test_out_of_order_success_keeps_usage_atomic():
