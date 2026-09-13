@@ -69,7 +69,7 @@ def test_bucket_hard_cap_is_thread_safe(monkeypatch):
             for i in range(60):
                 assert client.get("/livez").status_code == 200
                 assert client.get("/metrics", headers={"x-forwarded-for": f"10.{n}.{i // 250}.{i % 250}"}).status_code < 500
-        except Exception as exc:  # pragma: no cover
+        except Exception as exc:  # noqa: BLE001  # pragma: no cover
             errors.append(exc)
 
     threads = [threading.Thread(target=worker, args=(n,)) for n in range(16)]

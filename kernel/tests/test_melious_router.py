@@ -1,5 +1,6 @@
 from kernel.sidecar.melious_router import MeliousModelRouter, RouterError
 
+
 def test_fallback_and_usage():
  calls=[]
  def tx(model,payload,timeout):

@@ -10,7 +10,6 @@ and search_similar_corrections path end-to-end.
 
 from __future__ import annotations
 
-
 from kernel.core.contracts import GateVerdict
 from kernel.core.data_model import Anchor, Correction, Extraction, GroundingMethod
 from kernel.sidecar.memory_store import MemoryStoreImpl

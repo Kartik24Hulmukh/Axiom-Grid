@@ -332,6 +332,7 @@ _GOOD_KEY_2 = "ag_second_tenant_fedcba9876543210"
 
 def _enable_auth(monkeypatch, *keys):
     import hashlib
+
     import overlay.server as srv
 
     digests = {hashlib.sha256(k.encode()).hexdigest(): hashlib.sha256(k.encode()).hexdigest()[:12] for k in keys}
