@@ -32,10 +32,17 @@ WORKDIR /app
 
 # Runtime supply chain is LOCKED (no floating versions). Install before COPY for layer caching.
 COPY docker/requirements-runtime.txt /app/docker/requirements-runtime.txt
-RUN pip install --no-cache-dir --requirement /app/docker/requirements-runtime.txt
+COPY requirements-telemetry.txt /app/requirements-telemetry.txt
+RUN pip install --no-cache-dir --requirement /app/docker/requirements-runtime.txt --requirement /app/requirements-telemetry.txt
 
 # Non-root runtime user (defense in depth)
-RUN useradd --create-home --uid 10001 axiom
+RUN useradd --create-home --uid 10001 axiom \
+    && mkdir -p /var/lib/axiom/page_images \
+    && chown -R axiom:axiom /var/lib/axiom
+ENV AXIOM_STATE_DIR=/var/lib/axiom \
+    OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf \
+    OTEL_METRICS_EXPORTER=none \
+    OTEL_LOGS_EXPORTER=none
 
 COPY overlay/ /app/overlay/
 COPY kernel/ /app/kernel/
@@ -53,4 +60,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
 
 # Worker count comes from WEB_CONCURRENCY (uvicorn native). Size it to the container CPU limit:
 # ~800 RPS per vCPU measured at 1.2 ms service time; set WEB_CONCURRENCY == cpu limit.
-CMD ["python3", "-m", "uvicorn", "overlay.server:app", "--host", "0.0.0.0", "--port", "8765", "--proxy-headers", "--timeout-keep-alive", "15"]
+CMD ["opentelemetry-instrument", "python3", "-m", "uvicorn", "overlay.server:app", "--host", "0.0.0.0", "--port", "8765", "--proxy-headers", "--timeout-keep-alive", "15", "--timeout-graceful-shutdown", "20", "--limit-concurrency", "128"]

@@ -1,0 +1,121 @@
+{
+  "scope": "one serial completion per configured default model; max_tokens=128; no retries; not a latency benchmark",
+  "results": [
+    {
+      "model": "glm-5.3",
+      "ok": true,
+      "usage": {
+        "prompt_tokens": 17,
+        "completion_tokens": 3,
+        "total_tokens": 20,
+        "cached_tokens": 0,
+        "reasoning_tokens": 1,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 1
+        }
+      },
+      "nonempty_text": true,
+      "finish_reason": "stop",
+      "router": {
+        "selected_model": "glm-5.3",
+        "fallback_chain": [
+          {
+            "model": "glm-5.3",
+            "result": "success"
+          }
+        ]
+      },
+      "elapsed_ms": 5336.25
+    },
+    {
+      "model": "glm-5.3-flash",
+      "ok": true,
+      "usage": {
+        "prompt_tokens": 21,
+        "completion_tokens": 42,
+        "total_tokens": 63,
+        "cached_tokens": 0,
+        "reasoning_tokens": 40,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 40
+        }
+      },
+      "nonempty_text": true,
+      "finish_reason": "stop",
+      "router": {
+        "selected_model": "glm-5.3-flash",
+        "fallback_chain": [
+          {
+            "model": "glm-5.3-flash",
+            "result": "success"
+          }
+        ]
+      },
+      "elapsed_ms": 7396.85
+    },
+    {
+      "model": "kimi-k3",
+      "ok": true,
+      "usage": {
+        "prompt_tokens": 129,
+        "completion_tokens": 33,
+        "total_tokens": 162,
+        "cached_tokens": 0,
+        "reasoning_tokens": 22,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 22
+        }
+      },
+      "nonempty_text": true,
+      "finish_reason": "stop",
+      "router": {
+        "selected_model": "kimi-k3",
+        "fallback_chain": [
+          {
+            "model": "kimi-k3",
+            "result": "success"
+          }
+        ]
+      },
+      "elapsed_ms": 1395.62
+    },
+    {
+      "model": "qwen3.8-27b",
+      "ok": true,
+      "usage": {
+        "prompt_tokens": 15,
+        "completion_tokens": 36,
+        "total_tokens": 51,
+        "cached_tokens": 0,
+        "reasoning_tokens": 33,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 33
+        }
+      },
+      "nonempty_text": true,
+      "finish_reason": "stop",
+      "router": {
+        "selected_model": "qwen3.8-27b",
+        "fallback_chain": [
+          {
+            "model": "qwen3.8-27b",
+            "result": "success"
+          }
+        ]
+      },
+      "elapsed_ms": 875.47
+    }
+  ]
+}

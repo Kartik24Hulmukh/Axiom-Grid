@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
+import os
 import pathlib
 import re
 from dataclasses import replace
@@ -240,7 +241,7 @@ class IngestorImpl:
         page_count = len(doc)
 
         # Ensure page images dir exists
-        page_images_dir = pathlib.Path(".kairo/page_images")
+        page_images_dir = pathlib.Path(os.environ.get("AXIOM_STATE_DIR", ".kairo")) / "page_images"
         page_images_dir.mkdir(parents=True, exist_ok=True)
 
         for page_num in range(page_count):

@@ -92,3 +92,28 @@ jobs:
         env:
           RUSTUP_TOOLCHAIN: 1.98.1
       - run: node --check phantom-overlay/dist/app.js
+
+  overlay-container:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build exact overlay image
+        run: docker build -t axiom-overlay:ci -f docker/Dockerfile.overlay .
+      - name: Read-only non-root startup, private state and readiness
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run -d --name axiom-smoke --read-only --tmpfs /tmp --tmpfs /var/lib/axiom:uid=10001,gid=10001,mode=0700 \
+            -e WEB_CONCURRENCY=1 -e AXIOM_OTEL_ENABLED=1 -e OTEL_TRACES_EXPORTER=none \
+            -p 127.0.0.1:8765:8765 axiom-overlay:ci
+          trap 'docker logs axiom-smoke; docker rm -f axiom-smoke' EXIT
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8765/readyz; then break; fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:8765/readyz
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8765/static/overlay_store.db)" = 503
+          test "$(curl -s -o /dev/null -w '%{http_code}' -H 'Content-Type: application/json' -d '{"file":"sample_memo_01.txt"}' http://127.0.0.1:8765/demo)" = 503
+          docker stop --time 20 axiom-smoke
+          test "$(docker inspect -f '{{.State.ExitCode}}' axiom-smoke)" = 0

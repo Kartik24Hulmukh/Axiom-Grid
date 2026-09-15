@@ -1,0 +1,97 @@
+{
+  "scope": "sequential closed-loop local probe routes, not offered-rate production load; client and server same cgroup",
+  "runs": [
+    {
+      "revision": "a9afd8c",
+      "result": {
+        "cpu_count": 48,
+        "python": "3.14.6",
+        "results": [
+          {
+            "workers": 1,
+            "client_procs": 1,
+            "threads_per_proc": 1,
+            "concurrency": 1,
+            "requests": 500,
+            "p50_ms": 1.25,
+            "p95_ms": 1.61,
+            "p99_ms": 12.91,
+            "max_ms": 29.07,
+            "rps": 566.0,
+            "errors": 0,
+            "peak_rss_mib_total": 80.9
+          }
+        ]
+      }
+    },
+    {
+      "revision": "a9afd8c",
+      "result": {
+        "cpu_count": 48,
+        "python": "3.14.6",
+        "results": [
+          {
+            "workers": 1,
+            "client_procs": 4,
+            "threads_per_proc": 25,
+            "concurrency": 100,
+            "requests": 2000,
+            "p50_ms": 150.83,
+            "p95_ms": 230.83,
+            "p99_ms": 394.16,
+            "max_ms": 407.43,
+            "rps": 567.6,
+            "errors": 0,
+            "peak_rss_mib_total": 101.8
+          }
+        ]
+      }
+    },
+    {
+      "revision": "working-tree",
+      "result": {
+        "cpu_count": 48,
+        "python": "3.14.6",
+        "results": [
+          {
+            "workers": 1,
+            "client_procs": 1,
+            "threads_per_proc": 1,
+            "concurrency": 1,
+            "requests": 500,
+            "p50_ms": 1.26,
+            "p95_ms": 1.66,
+            "p99_ms": 1.95,
+            "max_ms": 13.14,
+            "rps": 619.2,
+            "errors": 0,
+            "peak_rss_mib_total": 80.2
+          }
+        ]
+      }
+    },
+    {
+      "revision": "working-tree",
+      "result": {
+        "cpu_count": 48,
+        "python": "3.14.6",
+        "results": [
+          {
+            "workers": 1,
+            "client_procs": 4,
+            "threads_per_proc": 25,
+            "concurrency": 100,
+            "requests": 2000,
+            "p50_ms": 113.97,
+            "p95_ms": 188.83,
+            "p99_ms": 322.8,
+            "max_ms": 344.84,
+            "rps": 695.5,
+            "errors": 0,
+            "peak_rss_mib_total": 102.1
+          }
+        ]
+      }
+    }
+  ]
+}

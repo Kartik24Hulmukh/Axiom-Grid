@@ -57,7 +57,10 @@ class TieredInferenceGateway:
     ) -> None:
         self._tier3_enabled = tier3_enabled
         self._litellm_base_url = litellm_base_url.rstrip("/")
-        self._log_dir = Path(log_dir or _DEFAULT_LOG_DIR)
+        self._log_dir = Path(log_dir) if log_dir else (
+            Path(os.environ["AXIOM_STATE_DIR"]) / "inference_logs"
+            if os.environ.get("AXIOM_STATE_DIR") else Path(_DEFAULT_LOG_DIR)
+        )
         self._tier1_model = tier1_model
         self._tier3_model = tier3_model
         self._log_dir.mkdir(parents=True, exist_ok=True)

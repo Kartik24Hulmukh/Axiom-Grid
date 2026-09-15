@@ -1,0 +1,44 @@
+=========================== short test summary info ============================
+ERROR kairo-sidecar/test_domain2_excel.py
+ERROR kairo-sidecar/test_domain3_pptx.py
+ERROR kairo-sidecar/test_domain4_pdf.py
+ERROR kairo-sidecar/test_phase0_1_e2e.py
+ERROR kairo-sidecar/tests/test_adjacent_unchanged.py
+ERROR kairo-sidecar/tests/test_air_gap_validation.py
+ERROR kairo-sidecar/tests/test_airgap_egress.py
+ERROR kairo-sidecar/tests/test_audit_log_ed25519.py
+ERROR kairo-sidecar/tests/test_best_of_n.py
+ERROR kairo-sidecar/tests/test_crash_safety.py
+ERROR kairo-sidecar/tests/test_creators.py
+ERROR kairo-sidecar/tests/test_domain_registry.py
+ERROR kairo-sidecar/tests/test_e2e_docx.py
+ERROR kairo-sidecar/tests/test_excel_master.py
+ERROR kairo-sidecar/tests/test_excel_oracles.py
+ERROR kairo-sidecar/tests/test_formula_validation.py
+ERROR kairo-sidecar/tests/test_gui_artifact_oracle.py
+ERROR kairo-sidecar/tests/test_legal_redline_e2e.py
+ERROR kairo-sidecar/tests/test_offline.py
+ERROR kairo-sidecar/tests/test_oracle_hardening_adversarial.py
+ERROR kairo-sidecar/tests/test_oracle_hardening_challenger.py
+ERROR kairo-sidecar/tests/test_oracles.py
+ERROR kairo-sidecar/tests/test_parallel_sandbox.py
+ERROR kairo-sidecar/tests/test_phase10_loop.py
+ERROR kairo-sidecar/tests/test_phase11_drift_alarm.py
+ERROR kairo-sidecar/tests/test_production_gates.py
+ERROR kairo-sidecar/tests/test_production_gates_v2.py
+ERROR kairo-sidecar/tests/test_prompt_leak.py
+ERROR kairo-sidecar/tests/test_rapid_fire.py
+ERROR kairo-sidecar/tests/test_router.py
+ERROR kairo-sidecar/tests/test_sm3_sm4.py
+ERROR kairo-sidecar/tests/test_sprints_new.py
+ERROR kairo-sidecar/tests/test_undo.py
+ERROR kairo-sidecar/tests/test_wedge_gauntlet.py
+ERROR kairo-sidecar/tests/test_word_master.py
+ERROR kairo-sidecar/tests/test_word_style.py
+ERROR legacy/wedge/test_wedge_pack.py
+ERROR tests/latency_test.py
+ERROR tests/memory_leak_test.py
+ERROR tests/test_docx_tracked_changes_oracle.py
+ERROR tests/test_production_ops_oracles.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 41 errors during collection !!!!!!!!!!!!!!!!!!!
+2607 tests collected, 41 errors in 10.41s

@@ -47,6 +47,7 @@ from kernel.sidecar.memory_store import MemoryStoreImpl
 from kernel.sidecar.orchestrator import OrchestratorImpl
 from kernel.sidecar.quality_gate import LocalQualityGate
 from kernel.sidecar.security_filter import LocalSecurityFilter
+from overlay.body_limit import BodyLimitMiddleware
 from overlay.telemetry import install_tracing, log_context
 from packs.contract.pack import ContractPack
 from packs.generic.pack import GenericPack
@@ -310,6 +311,8 @@ async def request_governor_middleware(request, call_next):
     content_length = request.headers.get("content-length")
     if content_length is not None:
         try:
+            if not content_length.isascii() or not content_length.isdecimal():
+                raise ValueError("invalid length")
             if int(content_length) > MAX_UPLOAD_BYTES:
                 return JSONResponse(status_code=413, content={"detail": "Payload too large"})
         except ValueError:
@@ -361,7 +364,7 @@ async def request_governor_middleware(request, call_next):
 # the rate limiter (SEC-005) can apply a per-key quota tier instead of per-IP.
 
 _AUTH_EXEMPT_PATHS = {"/", "/healthz", "/api/health", "/livez", "/readyz", "/metrics", "/dashboard", "/docs", "/openapi.json", "/redoc"}
-_AUTH_EXEMPT_PREFIXES = ("/static/",)
+_AUTH_EXEMPT_PREFIXES: tuple[str, ...] = ()
 
 
 def _load_api_key_digests() -> dict[str, str]:
@@ -545,7 +548,8 @@ def resolve_sandbox_path(file_path_str: str) -> pathlib.Path:
 
 # Initialize Core Services
 provenance_log = ProvenanceLogImpl()
-memory_store = MemoryStoreImpl(BASE_DIR / ".kairo" / "overlay_store.db")
+STATE_DIR = pathlib.Path(os.environ.get("AXIOM_STATE_DIR", str(BASE_DIR / ".kairo")))
+memory_store = MemoryStoreImpl(STATE_DIR / "overlay_store.db")
 ingestor = IngestorImpl()
 security_filter = LocalSecurityFilter(enable_pii_scan=False)
 
@@ -751,9 +755,12 @@ async def record_flywheel_correction(req: CorrectionRequest):
         return {"success": False, "error": str(e)}
 
 
-# Mount static directory for serving page images
-if pathlib.Path(".kairo").exists():
-    app.mount("/static", StaticFiles(directory=".kairo"), name="static")
+# Serve only rendered images, never the runtime database, WAL, or audit files.
+# Authentication middleware protects this mount like every document API.
+(STATE_DIR / "page_images").mkdir(parents=True, exist_ok=True)
+app.mount("/static/page_images", StaticFiles(
+    directory=str(STATE_DIR / "page_images"), check_dir=False
+), name="page_images")
 
 
 @app.get("/api/compression/stats")
@@ -1257,3 +1264,7 @@ async def metrics(format: str = "json"):
 
 # Register last so spans enclose auth, rate limiting and request logging.
 install_tracing(app)
+
+
+# Outer ASGI boundary counts actual bytes before any endpoint parses JSON.
+app.add_middleware(BodyLimitMiddleware, limit=lambda: MAX_UPLOAD_BYTES)

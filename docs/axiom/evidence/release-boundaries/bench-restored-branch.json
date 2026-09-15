@@ -1,0 +1,26 @@
+{
+ "cpu_count": 64,
+ "workers": 1,
+ "results": [
+  {
+   "concurrency": 1,
+   "requests": 500,
+   "p50_ms": 1.03,
+   "p95_ms": 1.29,
+   "p99_ms": 1.52,
+   "rps": 930.5,
+   "errors": 0,
+   "server_rss_mib": 80.2
+  },
+  {
+   "concurrency": 100,
+   "requests": 2000,
+   "p50_ms": 98.03,
+   "p95_ms": 168.62,
+   "p99_ms": 170.08,
+   "rps": 928.2,
+   "errors": 0,
+   "server_rss_mib": 103.0
+  }
+ ]
+}

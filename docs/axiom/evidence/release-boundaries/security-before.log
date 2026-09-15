@@ -1,0 +1,80 @@
+lay.server:server.py:321 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/static/overlay_store.db "HTTP/1.1 200 OK"
+________________________ test_page_images_require_auth _________________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x76ac8fff9940>
+
+    def test_page_images_require_auth(monkeypatch):
+        monkeypatch.setattr(server, "_AUTH_REQUIRED", True)
+        monkeypatch.setattr(server, "_API_KEY_DIGESTS", {"a" * 64: "tenant"})
+        with TestClient(server.app) as client:
+>           assert client.get("/static/page_images/missing.png").status_code == 401
+E           AssertionError: assert 404 == 401
+E            +  where 404 = <Response [404 Not Found]>.status_code
+E            +    where <Response [404 Not Found]> = get('/static/page_images/missing.png')
+E            +      where get = <starlette.testclient.TestClient object at 0x76ac8fff9f30>.get
+
+overlay/tests/test_release_boundaries.py:19: AssertionError
+---------------------------- Captured stderr setup -----------------------------
+{"ts":"2026-09-15T09:28:21.486Z","level":"INFO","logger":"kernel.sidecar.memory_store","msg":"MemoryStore initialized: /home/daytona/axiom-grid/.kairo/overlay_store.db","service":"axiom-grid-overlay"}
+------------------------------ Captured log setup ------------------------------
+INFO     kernel.sidecar.memory_store:memory_store.py:165 MemoryStore initialized: /home/daytona/axiom-grid/.kairo/overlay_store.db
+----------------------------- Captured stderr call -----------------------------
+{"ts":"2026-09-15T09:28:21.489Z","level":"INFO","logger":"overlay.server","msg":"request completed","service":"axiom-grid-overlay","request_id":"1880f91ccd0d48c1889d972189e4ecb0","path":"/static/page_images/missing.png","status":404,"latency_ms":0.88,"client":"testclient"}
+{"ts":"2026-09-15T09:28:21.490Z","level":"INFO","logger":"httpx2","msg":"HTTP Request: GET http://testserver/static/page_images/missing.png \"HTTP/1.1 404 Not Found\"","service":"axiom-grid-overlay"}
+------------------------------ Captured log call -------------------------------
+INFO     overlay.server:server.py:321 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/static/page_images/missing.png "HTTP/1.1 404 Not Found"
+____________________ test_chunked_body_cannot_bypass_limit _____________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x76ac941ae210>
+
+    @pytest.mark.asyncio
+    async def test_chunked_body_cannot_bypass_limit(monkeypatch):
+        monkeypatch.setattr(server, "MAX_UPLOAD_BYTES", 64)
+        async def chunks():
+            yield b'{"file":"'
+            yield b'x' * 80
+            yield b'"}'
+        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=server.app), base_url="http://testserver") as client:
+            response = await client.post("/demo", content=chunks(), headers={"Content-Type": "application/json"})
+>       assert response.status_code == 413
+E       assert 404 == 413
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+overlay/tests/test_release_boundaries.py:31: AssertionError
+---------------------------- Captured stderr setup -----------------------------
+{"ts":"2026-09-15T09:28:21.495Z","level":"INFO","logger":"kernel.sidecar.memory_store","msg":"MemoryStore initialized: /home/daytona/axiom-grid/.kairo/overlay_store.db","service":"axiom-grid-overlay"}
+------------------------------ Captured log setup ------------------------------
+INFO     kernel.sidecar.memory_store:memory_store.py:165 MemoryStore initialized: /home/daytona/axiom-grid/.kairo/overlay_store.db
+----------------------------- Captured stderr call -----------------------------
+{"ts":"2026-09-15T09:28:21.500Z","level":"INFO","logger":"overlay.server","msg":"request completed","service":"axiom-grid-overlay","request_id":"f943ddc822c7423bac8c7d7ca86284e1","path":"/demo","status":404,"latency_ms":3.64,"client":"127.0.0.1"}
+------------------------------ Captured log call -------------------------------
+INFO     overlay.server:server.py:321 request completed
+____________________ test_negative_content_length_rejected _____________________
+
+    def test_negative_content_length_rejected():
+        with TestClient(server.app) as client:
+>           assert client.post("/demo", content=b"{}", headers={"Content-Length": "-1"}).status_code == 400
+E           AssertionError: assert 422 == 400
+E            +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+E            +    where <Response [422 Unprocessable Entity]> = post('/demo', content=b'{}', headers={'Content-Length': '-1'})
+E            +      where post = <starlette.testclient.TestClient object at 0x76ac8fedd6a0>.post
+
+overlay/tests/test_release_boundaries.py:36: AssertionError
+---------------------------- Captured stderr setup -----------------------------
+{"ts":"2026-09-15T09:28:21.506Z","level":"INFO","logger":"kernel.sidecar.memory_store","msg":"MemoryStore initialized: /home/daytona/axiom-grid/.kairo/overlay_store.db","service":"axiom-grid-overlay"}
+------------------------------ Captured log setup ------------------------------
+INFO     kernel.sidecar.memory_store:memory_store.py:165 MemoryStore initialized: /home/daytona/axiom-grid/.kairo/overlay_store.db
+----------------------------- Captured stderr call -----------------------------
+{"ts":"2026-09-15T09:28:21.508Z","level":"INFO","logger":"overlay.server","msg":"request completed","service":"axiom-grid-overlay","request_id":"a88a37fb264c43449785a13e3a12bda9","path":"/demo","status":422,"latency_ms":1.01,"client":"testclient"}
+{"ts":"2026-09-15T09:28:21.509Z","level":"INFO","logger":"httpx2","msg":"HTTP Request: POST http://testserver/demo \"HTTP/1.1 422 Unprocessable Entity\"","service":"axiom-grid-overlay"}
+------------------------------ Captured log call -------------------------------
+INFO     overlay.server:server.py:321 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 422 Unprocessable Entity"
+=========================== short test summary info ============================
+FAILED overlay/tests/test_release_boundaries.py::test_runtime_database_is_never_public
+FAILED overlay/tests/test_release_boundaries.py::test_page_images_require_auth
+FAILED overlay/tests/test_release_boundaries.py::test_chunked_body_cannot_bypass_limit
+FAILED overlay/tests/test_release_boundaries.py::test_negative_content_length_rejected
+4 failed in 0.21s
