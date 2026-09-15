@@ -24,6 +24,7 @@ import threading
 import time
 import uuid
 from collections import deque
+from typing import Self
 from urllib.parse import urlsplit
 
 from fastapi import FastAPI, HTTPException
@@ -602,7 +603,7 @@ class _BoundedGate:
         self.limit = limit
         self._sem = threading.BoundedSemaphore(limit)
 
-    def __enter__(self) -> "_BoundedGate":
+    def __enter__(self) -> Self:
         self._sem.acquire()
         return self
 
