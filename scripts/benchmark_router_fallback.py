@@ -15,7 +15,7 @@ import psutil
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from kernel.sidecar import melious_router as current  # noqa: E402
+from kernel.sidecar import melious_router as current
 
 
 def measure(module, status):
@@ -78,7 +78,7 @@ def main():
     old = types.ModuleType("baseline_router")
     sys.modules[old.__name__] = old
     source = subprocess.check_output(["git", "show", f"{rev}:kernel/sidecar/melious_router.py"], cwd=ROOT, text=True)
-    exec(compile(source, "baseline_router.py", "exec"), old.__dict__)
+    exec(compile(source, "baseline_router.py", "exec"), old.__dict__)  # noqa: S102 -- operator-selected local git revision
     report = {"method": "100-worker barrier, real sleeps, synthetic 429/503 then healthy fallback; nearest-rank percentiles; process RSS sampled every 5ms; thread startup included in throughput", "baseline_revision": rev,
               "before": [measure(old, s) for s in (429, 503)],
               "after": [measure(current, s) for s in (429, 503)]}
