@@ -2,7 +2,7 @@
 # A stage isn't done until its command prints a real green result.
 # The kernel imports nothing from /domains or /legacy.
 
-.PHONY: build test demo bench gauntlet safety acceptance domains-check license-check run samples help
+.PHONY: build test demo bench gauntlet safety acceptance domains-check license-check run samples help lint pre-push
 
 PYTHON ?= python
 FIXTURES_DIR ?= fixtures/invoice
@@ -101,3 +101,10 @@ samples: ## Run Q&A on all bundled samples (grounded + refusal demo)
 release-check: ## Release gate automation — asserts all 4 gates + air-gap + verifier on held-out corpus
 	$(PYTHON) scripts/release_check.py
 	@echo "RELEASE-CHECK: see RELEASE_REPORT.md"
+
+lint: ## Ruff gates exactly as CI focused-runtime runs them (repo root)
+	python3 -m ruff check --select E9,F overlay kernel kairo/context/compressor.py scripts/stress_sec006_gauntlet.py stress_test.py
+	python3 -m ruff check overlay/server.py kernel/sidecar/melious_router.py overlay/tests/test_server_wave11.py kernel/tests/test_melious_router_wave11.py scripts/stress_wave11.py
+
+pre-push: ## Full local release gate: lint + focused suites + runner syntax
+	./ci/pre-push.sh
