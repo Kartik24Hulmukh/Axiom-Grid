@@ -59,6 +59,52 @@ class BudgetExhaustedError(RouterError):
     upstream fault: it must not trip breakers or cascade through the
     fallback chain (which would multiply spend and still return nothing)."""
 
+class SpendCeilingError(RouterError):
+    """Admitting this request would push aggregate provider token spend past
+    the configured fleet ceiling. Refused before any network cost is incurred
+    so a 100x burst cannot overshoot the operator's spend envelope."""
+
+class SpendGovernor:
+    """Thread-safe aggregate token ledger: reserve-before-dispatch,
+    settle-to-actual, release-on-failure.
+
+    Per-call ``max_tokens`` bounds one response; it does not bound the fleet.
+    Concurrent callers therefore reserve their worst case up front, so the sum
+    of *committed + reserved* tokens can never exceed ``ceiling``. ``None``
+    keeps the ledger (for observability) without enforcing a limit.
+    """
+    def __init__(self, ceiling: int | None = None):
+        if ceiling is not None and (type(ceiling) is not int or ceiling < 1):
+            raise RouterError("spend ceiling must be a positive integer or None")
+        self.ceiling = ceiling
+        self._lock = threading.Lock()
+        self.reserved = 0; self.committed = 0; self.refused = 0
+    def reserve(self, tokens: int) -> int:
+        if type(tokens) is not int or tokens < 0:
+            raise RouterError("reservation must be a non-negative integer")
+        with self._lock:
+            if self.ceiling is not None and self.committed + self.reserved + tokens > self.ceiling:
+                self.refused += 1
+                raise SpendCeilingError(
+                    f"spend ceiling {self.ceiling} would be exceeded: committed={self.committed} reserved={self.reserved} requested={tokens}")
+            self.reserved += tokens
+            return tokens
+    def settle(self, reservation: int, actual: int) -> None:
+        """Convert a reservation into committed spend. ``actual`` may exceed
+        the reservation (upstream overshoot is still real money) and is never
+        clamped; it may be 0 when the request produced no billable usage."""
+        with self._lock:
+            self.reserved -= reservation
+            if self.reserved < 0: self.reserved = 0
+            self.committed += max(0, int(actual))
+    def release(self, reservation: int) -> None:
+        self.settle(reservation, 0)
+    def snapshot(self) -> dict:
+        with self._lock:
+            return {"spend_ceiling": self.ceiling if self.ceiling is not None else 0,
+                    "spend_reserved": self.reserved, "spend_committed": self.committed,
+                    "spend_refused": self.refused}
+
 class MeliousModelRouter:
     """Bounded-time fallback router with independent, thread-safe breakers."""
     DEFAULT_MODELS = ("glm-5.3", "glm-5.3-flash", "kimi-k3", "qwen3.8-27b")
@@ -68,7 +114,8 @@ class MeliousModelRouter:
     def __init__(self, models=None, base_url=None, timeout=10.0, max_retries=1,
                  acquire_timeout=5.0, probe_timeout=None,
                  transport: Callable | None=None, sleep: Callable=time.sleep,
-                 max_inflight=32, total_timeout=30.0):
+                 max_inflight=32, total_timeout=30.0, spend_ceiling=None,
+                 spend: SpendGovernor | None=None):
         env_models=tuple(m.strip() for m in os.getenv("MELIOUS_MODELS","").split(",") if m.strip())
         self.models=tuple(models or env_models or self.DEFAULT_MODELS)
         if not self.models: raise RouterError("no models configured")
@@ -87,6 +134,17 @@ class MeliousModelRouter:
             if not math.isfinite(value) or value <= 0:
                 raise RouterError("timeouts must be finite and positive")
         self._slots = threading.BoundedSemaphore(max_inflight)
+        # Fleet-wide spend envelope. MELIOUS_TOKEN_CEILING="<int>" enables it
+        # without a redeploy; a shared SpendGovernor lets several routers
+        # (or processes behind one ledger) draw from a single ceiling.
+        if spend is None:
+            if spend_ceiling is None:
+                env_ceiling = os.getenv("MELIOUS_TOKEN_CEILING", "").strip()
+                if env_ceiling:
+                    if not env_ceiling.isdigit(): raise RouterError("MELIOUS_TOKEN_CEILING must be a positive integer")
+                    spend_ceiling = int(env_ceiling)
+            spend = SpendGovernor(spend_ceiling)
+        self.spend = spend
         self._transport=transport or self._http_transport; self._sleep=sleep
         self._lock=threading.RLock(); self.breakers={m:CircuitBreaker() for m in self.models}
         self._cooldown_until = {m: 0.0 for m in self.models}
@@ -149,11 +207,30 @@ class MeliousModelRouter:
         if not self._slots.acquire(blocking=False):
             raise RouterError("router saturated: inflight capacity exhausted")
         try:
-            return self._complete(messages, time.monotonic() + self.total_timeout, **options)
+            reservation = self.spend.reserve(self._reservation_estimate(messages, options))
+        except RouterError:
+            self._slots.release(); raise
+        spent = [0]
+        try:
+            return self._complete(messages, time.monotonic() + self.total_timeout, spent, **options)
         finally:
+            # Failure paths may still have billed tokens (e.g. reasoning ate the
+            # budget); settle whatever was actually reported, never the estimate.
+            self.spend.settle(reservation, spent[0])
             self._slots.release()
 
-    def _complete(self, messages, deadline, **options):
+    # Conservative prompt heuristic: 1 token per 3 characters overestimates for
+    # English (~4 chars/token) so the reservation is an upper bound, not a guess.
+    PROMPT_CHARS_PER_TOKEN = 3
+    def _reservation_estimate(self, messages, options) -> int:
+        if not isinstance(messages, list): return 0
+        chars = sum(len(m.get("content", "")) for m in messages if isinstance(m, dict) and isinstance(m.get("content"), str))
+        budget = options.get("max_completion_tokens", options.get("max_tokens", self.MAX_COMPLETION_TOKENS))
+        if type(budget) is not int or budget < 1: budget = self.MAX_COMPLETION_TOKENS
+        return math.ceil(chars / self.PROMPT_CHARS_PER_TOKEN) + budget
+
+    def _complete(self, messages, deadline, spent=None, **options):
+        if spent is None: spent = [0]
         # Sanitize the I/O boundary before any network cost is incurred.
         if not isinstance(messages, list) or not messages or len(messages) > self.MAX_MESSAGES:
             raise RouterError(f"messages must be a non-empty list of at most {self.MAX_MESSAGES} items")
@@ -247,6 +324,7 @@ class MeliousModelRouter:
                             self.breakers[model].success(generation); self.metrics["successes"]+=1
                             for key, value in counts.items():
                                 self.metrics[key] += value
+                            spent[0] += counts["total_tokens"]
                         finally: self._lock.release()
                         data["router"]={"selected_model":model,"fallback_chain":trace+[ {"model":model,"result":"success"} ]}
                         return data
@@ -263,6 +341,7 @@ class MeliousModelRouter:
                                 self.metrics["failures"]+=1; self.metrics["budget_exhausted"]+=1
                                 for key, value in (exc.usage or {}).items():
                                     self.metrics[key] += value
+                                spent[0] += int((exc.usage or {}).get("total_tokens", 0) or 0)
                             finally: self._lock.release()
                         exc.trace = trace; exc.status = None
                         raise
@@ -315,7 +394,8 @@ class MeliousModelRouter:
             err.status = last.status
         raise err from last
     def get_metrics(self):
-        with self._lock: return {**self.metrics,"circuits":{m:b.state for m,b in self.breakers.items()}}
+        with self._lock: base = dict(self.metrics)
+        return {**base, **self.spend.snapshot(), "circuits":{m:b.state for m,b in self.breakers.items()}}
     def get_prometheus_metrics(self):
         m=self.get_metrics(); lines=[f"axiom_router_{k} {v}" for k,v in m.items() if isinstance(v,int)]
         lines += [f'axiom_router_circuit_state{{model="{name}",state="{state}"}} 1' for name,state in m["circuits"].items()]
