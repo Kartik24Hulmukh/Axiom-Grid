@@ -1,0 +1,74 @@
+# Axiom-Grid production topology (single node; scale `api` horizontally behind `edge`).
+# Usage: AXIOM_API_KEYS=$(openssl rand -hex 32) docker compose -f deploy/docker-compose.prod.yml up -d --scale api=2
+# Design rules enforced here:
+#   - api is NEVER exposed directly: only `edge` publishes a port. /metrics is restricted to the internal network.
+#   - hard CPU/memory limits; WEB_CONCURRENCY == CPU limit (~800 RPS per vCPU at 1.2 ms service time).
+#   - OTel spans are exported to a local collector; the collector applies tail sampling + memory limits.
+#   - keys are injected at runtime (fail-closed). Never bake credentials into images or this file.
+services:
+  api:
+    build: { context: .., dockerfile: docker/Dockerfile.overlay }
+    image: axiom-grid:${AXIOM_VERSION:-latest}
+    environment:
+      AXIOM_API_KEYS: ${AXIOM_API_KEYS:?set AXIOM_API_KEYS (fail-closed)}
+      AXIOM_REQUIRE_AUTH: "1"
+      WEB_CONCURRENCY: "2"
+      AXIOM_OTEL_ENABLED: "1"
+      AXIOM_TRUST_PROXY: "1"
+      AXIOM_LOG_FORMAT: json
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+      OTEL_SERVICE_NAME: axiom-grid-api
+      OTEL_TRACES_SAMPLER: parentbased_traceidratio
+      OTEL_TRACES_SAMPLER_ARG: "0.10"
+    deploy:
+      resources:
+        limits: { cpus: "2.0", memory: 768M }
+        reservations: { cpus: "1.0", memory: 256M }
+    stop_grace_period: 25s
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen(\"http://127.0.0.1:8765/readyz\").status==200 else 1)"]
+      interval: 15s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+    networks: [internal]
+    restart: unless-stopped
+
+  edge:
+    image: nginx:1.27-alpine
+    ports: ["443:443", "80:80"]
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ${AXIOM_TLS_DIR:-./tls}:/etc/nginx/tls:ro
+    depends_on: [api]
+    deploy:
+      resources: { limits: { cpus: "0.5", memory: 128M } }
+    networks: [internal, public]
+    restart: unless-stopped
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.111.0
+    command: ["--config=/etc/otelcol/config.yaml"]
+    volumes: ["./otel-collector.yaml:/etc/otelcol/config.yaml:ro"]
+    deploy:
+      resources: { limits: { cpus: "0.5", memory: 256M } }
+    networks: [internal]
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v2.55.0
+    command: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.retention.time=15d"]
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./alerts.yml:/etc/prometheus/alerts.yml:ro
+    deploy:
+      resources: { limits: { cpus: "0.5", memory: 512M } }
+    networks: [internal]
+    restart: unless-stopped
+
+networks:
+  internal: { internal: true }
+  public: {}
