@@ -27,14 +27,22 @@ _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
 
-os.environ.setdefault("KAIRO_SEALED", "1")
-os.environ.setdefault("KAIRO_OFFLINE", "1")
-os.environ.setdefault("KAIRO_NO_NET", "1")
-
 from kairo.sealed_profile import activate_sealed_mode, is_sealed
 
-if not is_sealed():
-    activate_sealed_mode(reason="canary break tests")
+
+@pytest.fixture(scope="module", autouse=True)
+def _scoped_sealed_environment():
+    """Keep this module sealed without leaking environment state at collection."""
+    previous = {name: os.environ.get(name) for name in ("KAIRO_SEALED", "KAIRO_OFFLINE", "KAIRO_NO_NET")}
+    os.environ.update({"KAIRO_SEALED": "1", "KAIRO_OFFLINE": "1", "KAIRO_NO_NET": "1"})
+    if not is_sealed():
+        activate_sealed_mode(reason="canary break tests")
+    yield
+    for name, value in previous.items():
+        if value is None:
+            os.environ.pop(name, None)
+        else:
+            os.environ[name] = value
 
 
 @pytest.fixture

@@ -68,6 +68,7 @@ def sample_xlsx(tmp_path):
     ws["A2"] = "Test"
     ws["B2"] = 42
     wb.save(str(path))
+    wb.close()
     return str(path)
 
 
