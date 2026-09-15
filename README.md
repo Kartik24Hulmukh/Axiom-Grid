@@ -27,6 +27,56 @@ cargo clippy --locked --all-targets -- -D warnings
 
 An already-installed Ollama model is required for real inference. Local tests use a mock model server, not benchmark evidence.
 
+## Quickstart (cold install, Python sidecar)
+
+A fresh machine to a working overlay in four commands:
+
+```sh
+git clone https://github.com/Kartik24Hulmukh/Axiom-Grid.git && cd Axiom-Grid
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.lock -r requirements-test.txt
+make run            # hardened overlay API on http://127.0.0.1:8765
+```
+
+Required Python dependencies (pinned in `requirements.lock`): `numpy`
+(embeddings and similarity search), `fastapi` + `uvicorn` (overlay API),
+`pydantic` (strict request schemas), `pdfplumber`/`pypdf` (PDF text and layout),
+`python-docx`, `openpyxl`, `python-pptx` (Office readers).
+
+```sh
+make test           # 1100+ kernel/overlay regression tests
+make run            # start the overlay, then open http://127.0.0.1:8765
+```
+
+### Why the sidecar is Python
+
+The launch runtime is Rust, but document intake runs in a Python sidecar on
+purpose: the OCR and **layout** engines the product depends on (Docling,
+pdfplumber, the Office readers) are **python-native**, and bbox-accurate layout
+is what makes every suggestion citable. Rust keeps the UI, IPC and security
+boundary; Python keeps OCR/layout. The boundary is a local loopback contract,
+so the sidecar can be restarted or sandboxed without touching the runtime.
+
+### Platform support
+
+| Platform | Overlay API + extraction | Desktop preview UI | Ghost-typing / injection |
+|---|---|---|---|
+| Linux (CI-tested) | Supported | Supported | Not shipped (gated) |
+| macOS | Supported, community-tested | Supported | Not shipped (gated) |
+| Windows | Supported, community-tested | Supported | Not shipped (gated) |
+
+Ghost-typing into third-party applications stays disabled on every platform
+until target-bound approval and per-platform native CI exist. See
+`CROSS_PLATFORM_REPORT.md` for the per-platform evidence matrix.
+
+### Concurrency posture (production)
+
+The overlay runs pipelines **concurrently** under a bounded gate
+(`AXIOM_PIPELINE_CONCURRENCY`, default `min(32, 4 x cores)`). Shared services
+(`ProvenanceLogImpl`, `MemoryStoreImpl`) are thread-safe at class level via
+`kernel/core/threadsafe.py`, and SQLite runs in WAL mode with a 5s busy
+timeout. No global mutex serializes requests.
+
 ## Scope and provenance
 
 Imported from `Kartik24Hulmukh/Kairo-Phantom` at `8975743`. **No upstream changes.** MIT license and source history retained; inherited Rust crate names remain compatible during extraction.

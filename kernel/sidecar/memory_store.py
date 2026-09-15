@@ -20,6 +20,7 @@ import weakref
 from datetime import datetime
 from typing import Self
 
+from kernel.core.threadsafe import synchronized_class
 from kernel.core.data_model import (
     Action,
     ActionKind,
@@ -138,6 +139,7 @@ def _close_connection(conn: sqlite3.Connection) -> None:
         pass
 
 
+@synchronized_class(exclude={"reopen", "close"})
 class MemoryStoreImpl:
     """SQLite-backed MemoryStore implementing the MemoryStore Protocol.
 
@@ -156,6 +158,9 @@ class MemoryStoreImpl:
         try:
             conn.row_factory = sqlite3.Row
             conn.execute("PRAGMA journal_mode=WAL")
+            # Never fail a request because a peer thread holds the write lock.
+            conn.execute("PRAGMA busy_timeout=5000")
+            conn.execute("PRAGMA synchronous=NORMAL")
             conn.executescript(_SCHEMA)
         except sqlite3.Error:
             conn.close()
