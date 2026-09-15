@@ -1,5 +1,5 @@
-# Axiom-Grid overlay runtime lock (docker/Dockerfile.overlay)
-# Pinned to the exact versions the focused suite (171 tests) passed against on 2026-09-15.
+# Axiom-Grid overlay direct dependency pins (docker/Dockerfile.overlay)
+# Direct dependencies tested on 2026-09-15; transitive dependencies are not fully locked.
 # Update deliberately: bump, re-run `pytest overlay/tests kernel/tests`, then commit.
 fastapi==0.141.1
 starlette==1.3.1
@@ -13,3 +13,8 @@ typing-extensions==4.16.0
 annotated-types==0.8.0
 idna==3.18
 sniffio==1.3.1
+
+# Launch document intake (local text PDF and DOCX; no model downloads).
+numpy==2.4.1
+pdfplumber==0.11.10
+python-docx==1.2.0

@@ -29,24 +29,27 @@ An already-installed Ollama model is required for real inference. Local tests us
 
 ## Quickstart (cold install, Python sidecar)
 
-A fresh machine to a working overlay in four commands:
+Use Python 3.11–3.14. Install the focused overlay dependencies, not the
+inherited `requirements.lock` (which is neither a complete nor an exact lock):
 
 ```sh
 git clone https://github.com/Kartik24Hulmukh/Axiom-Grid.git && cd Axiom-Grid
 python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.lock -r requirements-test.txt
-make run            # hardened overlay API on http://127.0.0.1:8765
+pip install -r docker/requirements-runtime.txt
+make serve          # local overlay API on http://127.0.0.1:8765
 ```
 
-Required Python dependencies (pinned in `requirements.lock`): `numpy`
-(embeddings and similarity search), `fastapi` + `uvicorn` (overlay API),
-`pydantic` (strict request schemas), `pdfplumber`/`pypdf` (PDF text and layout),
-`python-docx`, `openpyxl`, `python-pptx` (Office readers).
+`make run DOC=... Q="..."` is the separate grounded-Q&A CLI, not a server.
+For the focused regression suite, install `pytest pytest-asyncio hypothesis
+httpx ruff psutil` and run `make pre-push`. `make test` is the kernel/pack suite;
+it does not mean all inherited tests have been run.
 
-```sh
-make test           # 1100+ kernel/overlay regression tests
-make run            # start the overlay, then open http://127.0.0.1:8765
-```
+Launch ingestion supports text/Markdown, text-bearing PDF (`pdfplumber`) and
+DOCX (`python-docx`). Scanned PDFs require a separately qualified OCR workflow;
+XLSX/PPTX are not supported by this overlay ingestion path. PDF boxes enclose
+page text, not precise field-level highlights; DOCX pagination is estimated.
+The overlay intentionally uses a deterministic demo gateway. A healthy overlay
+is **not evidence of live model integration** or production document Q&A.
 
 ### Why the sidecar is Python
 
@@ -92,7 +95,7 @@ The hardened FastAPI overlay ships with ops probes and a production container:
 ```sh
 # Containerized one-liner
 docker build -t axiom-grid -f docker/Dockerfile.overlay .
-docker run --rm -p 8765:8765 axiom-grid
+docker run --rm -p 127.0.0.1:8765:8765 -e AXIOM_API_KEYS="$(python3 -c 'import secrets; print(secrets.token_hex(32))')" axiom-grid
 
 # Ops endpoints
 curl localhost:8765/healthz   # liveness

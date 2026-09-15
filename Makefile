@@ -108,3 +108,7 @@ lint: ## Ruff gates exactly as CI focused-runtime runs them (repo root)
 
 pre-push: ## Full local release gate: lint + focused suites + runner syntax
 	./ci/pre-push.sh
+
+.PHONY: serve
+serve: ## Start the local overlay API (not the grounded-Q&A CLI)
+	$(PYTHON) -m uvicorn overlay.server:app --host 127.0.0.1 --port 8765
