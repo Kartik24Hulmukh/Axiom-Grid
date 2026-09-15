@@ -45,6 +45,10 @@ async def test_optional_native_engines_keep_serialization(monkeypatch, tmp_path)
     def native_run(self, doc):
         assert entered.is_set(), "native parser executed without guard"
         return Trace(stages=())
+    def native_ingest(self, path):
+        assert entered.is_set(), "classification parser executed without guard"
+        return [], None, []
+    monkeypatch.setattr(server.IngestorImpl, "ingest", native_ingest)
     monkeypatch.setattr(server, "orchestrator_lock", Guard())
     monkeypatch.setattr(server.OrchestratorImpl, "run", native_run)
     path = tmp_path / "guard.pdf"

@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import hashlib
 import logging
-import os
 import pathlib
 import re
 from dataclasses import replace
@@ -33,7 +32,7 @@ class IngestorImpl:
     """Concrete Ingestor implementation.
 
     Ingests files and produces Chunks with guaranteed page + bbox.
-    Supports: .txt, .md, .pdf (via Docling or fitz fallback), .docx (via python-docx).
+    Supports: .txt, .md, .pdf (local pdfplumber), .docx (python-docx).
     """
 
     def ingest(self, path: str) -> tuple[list[Chunk], Document, list[Page]]:
@@ -148,158 +147,43 @@ class IngestorImpl:
     def _ingest_pdf(
         self, filepath: pathlib.Path, sha256: str
     ) -> tuple[list[Chunk], int, list[Page]]:
-        """Ingest a PDF file. Tries Docling first, then fitz (PyMuPDF)."""
-        # Try Docling first
+        """Extract text locally; never decode PDF bytes or auto-load model engines.
+
+        Scanned/image-only PDFs fail explicitly: OCR is not in this launch slice.
+        pdfplumber supplies measured word boxes, not invented layout coordinates.
+        """
         try:
-            from docling.document_converter import DocumentConverter
-            converter = DocumentConverter()
-            result = converter.convert(str(filepath))
-            doc_docling = result.document
+            import pdfplumber
+        except ImportError as exc:
+            raise RuntimeError("PDF ingestion requires pdfplumber") from exc
 
-            page_count = len(doc_docling.pages) if hasattr(doc_docling, "pages") else 0
-            chunks: list[Chunk] = []
-            pages: list[Page] = []
-
-            # Create Page objects
-            for index, page_obj in doc_docling.pages.items():
-                width = 800
-                height = 1000
-                if hasattr(page_obj, "size"):
-                    width = int(page_obj.size.width)
-                    height = int(page_obj.size.height)
-                pages.append(Page(
-                    doc_id="",
-                    index=index,
-                    width_px=width,
-                    height_px=height,
-                    image_sha256="",
-                ))
-
-            # Accessing elements
-            elements = []
-            if hasattr(doc_docling, "texts"):
-                elements.extend(doc_docling.texts)
-            if hasattr(doc_docling, "tables"):
-                elements.extend(doc_docling.tables)
-            if not elements and hasattr(doc_docling, "elements"):
-                elements = list(doc_docling.elements)
-
-            for item in elements:
-                if hasattr(item, "prov") and item.prov:
-                    page_info = item.prov[0]
-                    page_no = page_info.page_no
-                    bbox = page_info.bbox
-
-                    text = ""
-                    if hasattr(item, "text"):
-                        text = item.text
-                    elif hasattr(item, "export_to_markdown"):
-                        text = item.export_to_markdown()
-
-                    text = text.strip()
-                    if not text:
+        chunks: list[Chunk] = []
+        pages: list[Page] = []
+        try:
+            with pdfplumber.open(filepath) as pdf:
+                for number, page in enumerate(pdf.pages, 1):
+                    width, height = float(page.width), float(page.height)
+                    if width <= 0 or height <= 0:
+                        raise ValueError("Invalid PDF page dimensions")
+                    words = page.extract_words()
+                    pages.append(Page(doc_id="", index=number, width_px=int(width),
+                                      height_px=int(height), image_sha256=""))
+                    if not words:
                         continue
-
-                    # Get page dimensions to normalize coordinates
-                    page_width = 1.0
-                    page_height = 1.0
-                    if page_no in doc_docling.pages:
-                        p_obj = doc_docling.pages[page_no]
-                        if hasattr(p_obj, "size"):
-                            page_width = p_obj.size.width
-                            page_height = p_obj.size.height
-
-                    x0 = max(0.0, min(bbox.left / page_width if page_width > 0 else 0, 1.0))
-                    y0 = max(0.0, min(bbox.top / page_height if page_height > 0 else 0, 1.0))
-                    x1 = max(x0, min(bbox.right / page_width if page_width > 0 else 1, 1.0))
-                    y1 = max(y0, min(bbox.bottom / page_height if page_height > 0 else 1, 1.0))
-
-                    chunk = Chunk(
-                        page=page_no,
-                        bbox=BBox(x0=x0, y0=y0, x1=x1, y1=y1),
-                        text=text,
-                        source_type="pdf_docling",
-                    )
-                    chunks.append(chunk)
-
-            if chunks:
-                return chunks, page_count, pages
-        except Exception as e:  # noqa: BLE001 -- isolate optional engine or worker failure at boundary
-            logger.warning("Docling failed to parse PDF, trying PyMuPDF: %s", e)
-
-        # Fallback to PyMuPDF
-        try:
-            import fitz  # PyMuPDF
-        except ImportError:
-            logger.warning("PyMuPDF (fitz) not available — falling back to text extraction")
-            chunks, page_count, pages = self._ingest_text(filepath, sha256)
-            return chunks, page_count, pages
-
-        doc = fitz.open(str(filepath))
-        chunks = []
-        pages = []
-        page_count = len(doc)
-
-        # Ensure page images dir exists
-        page_images_dir = pathlib.Path(os.environ.get("AXIOM_STATE_DIR", ".kairo")) / "page_images"
-        page_images_dir.mkdir(parents=True, exist_ok=True)
-
-        for page_num in range(page_count):
-            page = doc[page_num]
-            page_rect = page.rect
-
-            # Save page image for click-to-source UX
-            image_sha = ""
-            try:
-                pix = page.get_pixmap(dpi=150)
-                img_data = pix.tobytes("png")
-                image_sha = hashlib.sha256(img_data).hexdigest()
-                image_path = page_images_dir / f"{image_sha}.png"
-                if not image_path.exists():
-                    image_path.write_bytes(img_data)
-            except Exception as e:  # noqa: BLE001 -- isolate optional engine or worker failure at boundary
-                logger.warning("Failed to render page image: %s", e)
-
-            pages.append(Page(
-                doc_id="",
-                index=page_num + 1,
-                width_px=int(page_rect.width),
-                height_px=int(page_rect.height),
-                image_sha256=image_sha,
-            ))
-
-            blocks = page.get_text("dict")["blocks"]
-            for block in blocks:
-                if block.get("type") != 0:  # text blocks only
-                    continue
-
-                block_text = ""
-                for line in block.get("lines", []):
-                    for span in line.get("spans", []):
-                        block_text += span.get("text", "")
-                    block_text += "\n"
-
-                block_text = block_text.strip()
-                if not block_text:
-                    continue
-
-                # Normalize bbox to [0,1] range
-                bbox = block["bbox"]
-                chunk = Chunk(
-                    page=page_num + 1,
-                    bbox=BBox(
-                        x0=max(0.0, min(bbox[0] / page_rect.width, 1.0)),
-                        y0=max(0.0, min(bbox[1] / page_rect.height, 1.0)),
-                        x1=max(0.0, min(bbox[2] / page_rect.width, 1.0)),
-                        y1=max(0.0, min(bbox[3] / page_rect.height, 1.0)),
-                    ),
-                    text=block_text,
-                    source_type="pdf_text",
-                )
-                chunks.append(chunk)
-
-        doc.close()
-        return chunks, page_count, pages
+                    text = page.extract_text() or ""
+                    if not text.strip():
+                        continue
+                    x0 = max(0.0, min(1.0, min(w["x0"] for w in words) / width))
+                    x1 = max(x0, min(1.0, max(w["x1"] for w in words) / width))
+                    y0 = max(0.0, min(1.0, min(w["top"] for w in words) / height))
+                    y1 = max(y0, min(1.0, max(w["bottom"] for w in words) / height))
+                    chunks.append(Chunk(page=number, bbox=BBox(x0=x0, y0=y0, x1=x1, y1=y1),
+                                        text=text.strip(), source_type="pdf_text"))
+        except Exception as exc:  # noqa: BLE001 -- parser boundary, never return binary as text
+            raise ValueError("Unable to parse PDF document") from exc
+        if not chunks:
+            raise ValueError("PDF contains no extractable text; OCR is not enabled")
+        return chunks, len(pages), pages
 
     def _ingest_docx(
         self, filepath: pathlib.Path, sha256: str
@@ -307,11 +191,8 @@ class IngestorImpl:
         """Ingest a DOCX file. Uses python-docx if available."""
         try:
             from docx import Document as DocxDocument
-        except ImportError:
-            logger.warning(
-                "python-docx not available — falling back to text extraction"
-            )
-            return self._ingest_text(filepath, sha256)
+        except ImportError as exc:
+            raise RuntimeError("DOCX ingestion requires python-docx") from exc
 
         doc = DocxDocument(str(filepath))
         chunks: list[Chunk] = []

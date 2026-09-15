@@ -36,7 +36,7 @@ jobs:
           python3 -m ruff check --select E9,F overlay kernel kairo/context/compressor.py scripts/stress_sec006_gauntlet.py stress_test.py
       - name: Overlay server gate (real provenance digest, strict input schema)
         run: |
-          python3 -m pip install --quiet pytest pytest-asyncio hypothesis fastapi httpx uvicorn ruff psutil opentelemetry-sdk==1.44.0
+          python3 -m pip install --quiet pytest pytest-asyncio hypothesis fastapi httpx uvicorn ruff psutil pdfplumber==0.11.10 python-docx==1.2.0 opentelemetry-sdk==1.44.0
           python3 -m pytest -q -p no:cacheprovider overlay/tests kernel/tests tests/test_concurrency_safety.py -W error::ResourceWarning -W error::pytest.PytestUnraisableExceptionWarning
       - name: Concurrency posture gate (pipeline gate must be parallel, never a global mutex)
         run: |
@@ -150,3 +150,20 @@ jobs:
           test "$(curl -s -o /dev/null -w '%{http_code}' -H 'Content-Type: application/json' -d '{"file":"sample_memo_01.txt"}' http://127.0.0.1:8765/demo)" = 503
           docker stop --time 20 axiom-smoke
           test "$(docker inspect -f '{{.State.ExitCode}}' axiom-smoke)" = 0
+
+      - name: Authenticated real PDF and DOCX extraction in exact image
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run -d --name axiom-intake --read-only --tmpfs /tmp --tmpfs /var/lib/axiom:uid=10001,gid=10001,mode=0700 \
+            -e WEB_CONCURRENCY=1 -e AXIOM_API_KEYS=ci-only-intake-key -e OTEL_TRACES_EXPORTER=none \
+            -p 127.0.0.1:8765:8765 axiom-overlay:ci
+          trap 'docker logs axiom-intake; docker rm -f axiom-intake' EXIT
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8765/readyz; then break; fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:8765/readyz
+          docker exec -i axiom-intake python3 < scripts/smoke_document_intake.py
+          docker stop --time 20 axiom-intake
+          test "$(docker inspect -f '{{.State.ExitCode}}' axiom-intake)" = 0

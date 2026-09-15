@@ -914,6 +914,16 @@ async def extract_document(req: ExtractDocumentRequest):
             logger.exception("unable to read document for extraction")
             raise HTTPException(status_code=422, detail="Unable to read document") from exc
 
+        if file_path.suffix.lower() not in (".txt", ".md"):
+            # Binary containers are not UTF-8 text. Classify parsed content,
+            # otherwise real PDF/DOCX invoices silently select GenericPack.
+            try:
+                with orchestrator_lock:
+                    chunks, _, _ = IngestorImpl().ingest(filepath)
+                text = "\n\n".join(chunk.text for chunk in chunks)
+            except (ValueError, RuntimeError) as exc:
+                raise HTTPException(status_code=422, detail="Document format is unsupported, invalid, or unavailable") from exc
+
         from kairo.core.classifier import classify_document
         doc_type = classify_document(text)
         pack_class = {

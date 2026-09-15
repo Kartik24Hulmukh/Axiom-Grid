@@ -13,7 +13,7 @@ $PY -m ruff check --select E9,F overlay kernel kairo/context/compressor.py scrip
 echo [2/4] ruff changed-file gate, exact CI file set
 $PY -m ruff check overlay/server.py kernel/sidecar/melious_router.py overlay/tests/test_server_wave11.py kernel/tests/test_melious_router_wave11.py scripts/stress_wave11.py
 echo [3/4] focused runtime suites under strict resource warnings
-$PY -m pytest -q -p no:cacheprovider overlay/tests kernel/tests -W error::ResourceWarning -W error::pytest.PytestUnraisableExceptionWarning
+$PY -m pytest -q -p no:cacheprovider overlay/tests kernel/tests tests/test_concurrency_safety.py tests/test_bench_corpus_hash.py tests/test_corpus_integrity.py -W error::ResourceWarning -W error::pytest.PytestUnraisableExceptionWarning
 echo [4/4] real-model runner syntax
 $PY -m py_compile scripts/axiom-live-e2e.py
 echo PRE-PUSH GATE: PASS
