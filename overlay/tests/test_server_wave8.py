@@ -58,33 +58,36 @@ def test_extract_document_read_error_does_not_leak_path_or_exception(tmp_path):
 
 def test_extraction_pool_sheds_load_fast_when_saturated(monkeypatch):
     monkeypatch.setattr(s, "_extraction_slots", threading.BoundedSemaphore(1))
-    gate = threading.Event()
+    entered, release = threading.Event(), threading.Event()
+    original = s.OrchestratorImpl.run
 
-    def slow_run(_doc):
-        gate.wait(5)
-        raise AssertionError("should be cancelled by gate set in finally")
+    def held_run(self, doc):
+        entered.set()
+        assert release.wait(5), "test did not release extraction worker"
+        return original(self, doc)
 
-    import overlay.server as _srv
-    monkeypatch.setattr(_srv.orchestrator, "run", slow_run)
+    # Extraction uses a request-scoped orchestrator, not the global demo one.
+    # Synchronize actual admission; faster production code must not break tests.
+    monkeypatch.setattr(s.OrchestratorImpl, "run", held_run)
+    responses = {}
+    def occupy():
+        responses["first"] = client.post("/api/extract-document", json={"file": "sample_memo_01.txt"})
+    worker = threading.Thread(target=occupy)
+    worker.start()
     try:
-        # Saturate the single slot from a background thread.
-        bg = {}
-        def occupy():
-            bg["resp"] = client.post("/api/extract-document", json={"file": "fixtures/wedge/sample_memo_01.txt"})
-        t = threading.Thread(target=occupy)
-        t.start()
-        time.sleep(0.5)  # let the background request take the slot
+        assert entered.wait(3)
         t0 = time.perf_counter()
-        r = client.post("/api/extract-document", json={"file": "fixtures/wedge/sample_memo_01.txt"})
-        dt = time.perf_counter() - t0
-        assert r.status_code == 503
-        assert "saturated" in r.json()["detail"]
-        assert r.headers["Retry-After"] == "1"
-        assert dt < 2.0, f"shedding must be fast, took {dt:.2f}s"
+        response = client.post("/api/extract-document", json={"file": "sample_memo_01.txt"})
+        assert response.status_code == 503
+        assert "saturated" in response.json()["detail"]
+        assert response.headers["Retry-After"] == "1"
+        assert time.perf_counter() - t0 < 2.0
         assert s.OPS_METRICS.get("extraction_shed_total", 0) >= 1
     finally:
-        gate.set()
-        t.join(timeout=10)
+        release.set()
+        worker.join(timeout=10)
+    assert not worker.is_alive()
+    assert responses["first"].status_code == 200
 
 
 def test_extraction_shed_counter_in_prometheus_metrics():
