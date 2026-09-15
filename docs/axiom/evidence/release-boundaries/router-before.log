@@ -1,0 +1,20 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_______________ test_empty_reasoning_only_completion_falls_back ________________
+
+    def test_empty_reasoning_only_completion_falls_back():
+        calls = []
+        def transport(model, payload, timeout):
+            calls.append(model)
+            return {"choices": [{"message": {"content": "" if model == "empty" else "OK"}}]}
+        router = MeliousModelRouter(models=["empty", "working"], transport=transport, max_retries=0)
+        result = router.complete([{"role": "user", "content": "hi"}], max_tokens=32)
+>       assert result["choices"][0]["message"]["content"] == "OK"
+E       AssertionError: assert '' == 'OK'
+E         
+E         - OK
+
+kernel/tests/test_router_empty_completion.py:11: AssertionError
+=========================== short test summary info ============================
+FAILED kernel/tests/test_router_empty_completion.py::test_empty_reasoning_only_completion_falls_back
+1 failed in 0.46s

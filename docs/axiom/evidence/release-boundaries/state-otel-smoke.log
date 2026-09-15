@@ -1,0 +1,9 @@
+TracerProvider
+200
+404
+True
+{"ts":"2026-09-15T09:31:29.453Z","level":"INFO","logger":"kernel.sidecar.memory_store","msg":"MemoryStore initialized: /tmp/axiom-state-smoke-_66os4rc/overlay_store.db","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T09:31:29.487Z","level":"INFO","logger":"overlay.server","msg":"request completed","service":"axiom-grid-overlay","trace_id":"2794a2f44826c724fba74008987fbb92","span_id":"837de0993ebd72e8","request_id":"2588e05c48404d2c83ec46850b6d1316","path":"/readyz","status":200,"latency_ms":3.69,"client":"testclient"}
+{"ts":"2026-09-15T09:31:29.489Z","level":"INFO","logger":"httpx2","msg":"HTTP Request: GET http://testserver/readyz \"HTTP/1.1 200 OK\"","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T09:31:29.491Z","level":"INFO","logger":"overlay.server","msg":"request completed","service":"axiom-grid-overlay","trace_id":"b3f6642205b39facdc23691b9534ac36","span_id":"a34b63553e33435b","request_id":"f2bf360fd8f34b44b927c574335a74d4","path":"/static/overlay_store.db","status":404,"latency_ms":0.44,"client":"testclient"}
+{"ts":"2026-09-15T09:31:29.491Z","level":"INFO","logger":"httpx2","msg":"HTTP Request: GET http://testserver/static/overlay_store.db \"HTTP/1.1 404 Not Found\"","service":"axiom-grid-overlay"}
