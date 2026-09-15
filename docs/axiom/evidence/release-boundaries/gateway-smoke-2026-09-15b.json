@@ -1,0 +1,82 @@
+[
+ {
+  "model": "glm-5.3",
+  "status": 200,
+  "ms": 532.5,
+  "text": "ready",
+  "finish": "stop",
+  "usage": {
+   "prompt_tokens": 19,
+   "completion_tokens": 3,
+   "total_tokens": 22,
+   "cached_tokens": 0,
+   "reasoning_tokens": 1,
+   "prompt_tokens_details": {
+    "cached_tokens": 0
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 1
+   }
+  }
+ },
+ {
+  "model": "glm-5.3-flash",
+  "status": 200,
+  "ms": 3937.5,
+  "text": "",
+  "finish": "length",
+  "usage": {
+   "prompt_tokens": 23,
+   "completion_tokens": 16,
+   "total_tokens": 39,
+   "cached_tokens": 0,
+   "reasoning_tokens": 17,
+   "prompt_tokens_details": {
+    "cached_tokens": 0
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 17
+   }
+  }
+ },
+ {
+  "model": "kimi-k3",
+  "status": 200,
+  "ms": 3539.6,
+  "text": "",
+  "finish": "length",
+  "usage": {
+   "prompt_tokens": 131,
+   "completion_tokens": 16,
+   "total_tokens": 147,
+   "cached_tokens": 0,
+   "reasoning_tokens": 16,
+   "prompt_tokens_details": {
+    "cached_tokens": 0
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 16
+   }
+  }
+ },
+ {
+  "model": "qwen3.8-27b",
+  "status": 200,
+  "ms": 618.4,
+  "text": "",
+  "finish": "length",
+  "usage": {
+   "prompt_tokens": 17,
+   "completion_tokens": 16,
+   "total_tokens": 33,
+   "cached_tokens": 0,
+   "reasoning_tokens": 16,
+   "prompt_tokens_details": {
+    "cached_tokens": 0
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 16
+   }
+  }
+ }
+]
