@@ -12,11 +12,14 @@ def install_tracing(app):
     # Explicit opt-in must fail startup if the tracing dependency is absent.
     from opentelemetry import trace
     from opentelemetry.trace import SpanKind, Status, StatusCode
+    from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
     tracer = trace.get_tracer("axiom-grid.overlay")
 
     @app.middleware("http")
     async def traced_request(request, call_next):
-        with tracer.start_as_current_span("HTTP request", kind=SpanKind.SERVER,
+        # Continue W3C tracing without importing untrusted baggage or recording headers.
+        parent = TraceContextTextMapPropagator().extract(carrier=request.headers)
+        with tracer.start_as_current_span("HTTP request", context=parent, kind=SpanKind.SERVER,
                                           record_exception=False,
                                           set_status_on_exception=False) as span:
             span.set_attribute("http.request.method", request.method)
