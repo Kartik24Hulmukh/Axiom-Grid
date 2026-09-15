@@ -18,6 +18,7 @@ import logging.handlers
 import os
 import pathlib
 import queue
+import sys
 import tempfile
 import threading
 import time
@@ -132,7 +133,7 @@ def configure_structured_logging(level: str | None = None) -> None:
         return
     root = logging.getLogger()
     if not any(isinstance(h, _NonBlockingQueueHandler) for h in root.handlers):
-        sink = logging.StreamHandler()
+        sink = logging.StreamHandler(sys.stdout)
         sink.setFormatter(logging.Formatter("%(message)s"))
         log_queue: queue.Queue = queue.Queue(
             maxsize=int(os.environ.get("AXIOM_LOG_QUEUE_MAX", "4096"))

@@ -44,3 +44,18 @@ def test_spans_and_logs_do_not_capture_query_or_headers(monkeypatch):
         assert logs[0]["trace_id"] == format(span.context.trace_id, "032x")
     finally:
         provider.shutdown()
+
+
+def test_structured_logging_sink_is_stdout():
+    import subprocess
+    import sys
+
+    code = (
+        "from overlay.server import logger, _NonBlockingQueueHandler; import logging; "
+        "logger.warning('STDOUT_SENTINEL'); "
+        "[h.queue.join() for h in logging.getLogger().handlers if isinstance(h, _NonBlockingQueueHandler)]"
+    )
+    result = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=10)
+    assert result.returncode == 0
+    assert 'STDOUT_SENTINEL' in result.stdout
+    assert 'STDOUT_SENTINEL' not in result.stderr
