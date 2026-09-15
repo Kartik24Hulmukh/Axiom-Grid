@@ -1,0 +1,49 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_____________ test_spans_and_logs_do_not_capture_query_or_headers ______________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7ceeb393c050>
+
+    def test_spans_and_logs_do_not_capture_query_or_headers(monkeypatch):
+        pytest.importorskip("opentelemetry.sdk")
+        from opentelemetry import trace
+        from opentelemetry.sdk.trace import TracerProvider
+        from opentelemetry.sdk.trace.export import SimpleSpanProcessor
+        from opentelemetry.sdk.trace.export.in_memory_span_exporter import (
+            InMemorySpanExporter,
+        )
+    
+        from overlay.server import JsonLogFormatter
+        from overlay.telemetry import install_tracing
+        provider = TracerProvider()
+        exporter = InMemorySpanExporter()
+        provider.add_span_processor(SimpleSpanProcessor(exporter))
+        monkeypatch.setattr(trace, "get_tracer", provider.get_tracer)
+        monkeypatch.setenv("AXIOM_OTEL_ENABLED", "1")
+        app = FastAPI()
+        logs = []
+        @app.get("/items/{item_id}")
+        def item(item_id: str):
+            logs.append(json.loads(JsonLogFormatter().format(logging.LogRecord("test", 20, "", 0, "safe", (), None))))
+            return {"ok": True}
+        install_tracing(app)
+        try:
+            with TestClient(app) as client:
+                assert client.get("/items/PRIVATE?token=SECRET", headers={"Authorization": "Bearer SECRET", "traceparent": "00-12345678901234567890123456789012-1234567890123456-01"}).status_code == 200
+            spans = exporter.get_finished_spans()
+            assert len(spans) == 1
+            span = spans[0]
+>           assert format(span.context.trace_id, "032x") == "12345678901234567890123456789012"
+E           AssertionError: assert 'f64bf5606999...1f0a612852807' == '123456789012...0123456789012'
+E             
+E             - 12345678901234567890123456789012
+E             + f64bf56069999e4463a1f0a612852807
+
+overlay/tests/test_telemetry.py:39: AssertionError
+----------------------------- Captured stderr call -----------------------------
+{"ts":"2026-09-15T10:33:55.809Z","level":"INFO","logger":"httpx2","msg":"HTTP Request: GET http://testserver/items/PRIVATE?token=SECRET \"HTTP/1.1 200 OK\"","service":"axiom-grid-overlay"}
+------------------------------ Captured log call -------------------------------
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/items/PRIVATE?token=SECRET "HTTP/1.1 200 OK"
+=========================== short test summary info ============================
+FAILED overlay/tests/test_telemetry.py::test_spans_and_logs_do_not_capture_query_or_headers
+1 failed in 0.19s

@@ -1,0 +1,29 @@
+sample_memo_01_adv1          1.000
+sample_memo_01_adv2          1.000
+sample_memo_01_adv3          0.917
+sample_memo_02_adv1          0.806
+sample_memo_02_adv2          1.000
+sample_memo_02_adv3          1.000
+sample_memo_03_adv1          1.000
+sample_memo_03_adv2          1.000
+sample_memo_03_adv3          1.000
+sample_memo_04_adv1          0.979
+sample_memo_04_adv2          0.979
+sample_memo_04_adv3          0.979
+sample_memo_05_adv1          1.000
+sample_memo_05_adv2          1.000
+sample_memo_05_adv3          1.000
+--- per-field mean F1 across 15 adversarial fixtures ---
+  handling_instructions    0.867
+  entities                 0.883
+  pii_spans                0.978
+  classification_marking   1.000
+  portion_marks            1.000
+  control_markings         1.000
+  originating_org          1.000
+  author                   1.000
+  date_of_information      1.000
+  declassify_on            1.000
+  subject                  1.000
+  references               1.000
+ADVERSARIAL_F1 0.977 (gate 0.80, model glm-5.3)

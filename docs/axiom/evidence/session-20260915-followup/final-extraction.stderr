@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "/home/daytona/axiom-grid/scripts/bench_extraction_admission.py", line 104, in <module>
+    "throughput_rps":round(len(samples)/duration,2),"successful_extractions_rps":round(statuses.get(200,0)/duration,2),
+                 ^^^^^^
+  File "/home/daytona/axiom-grid/scripts/bench_extraction_admission.py", line 78, in main
+    except OSError:
+                ^^^
+  File "/usr/local/lib/python3.14/subprocess.py", line 1279, in wait
+    return self._wait(timeout=timeout)
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/subprocess.py", line 2076, in _wait
+    raise TimeoutExpired(self.args, timeout)
+subprocess.TimeoutExpired: Command '['/usr/local/bin/python3', '-m', 'uvicorn', 'overlay.server:app', '--host', '127.0.0.1', '--port', '34017', '--no-access-log']' timed out after 10 seconds

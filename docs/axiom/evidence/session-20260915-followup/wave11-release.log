@@ -1,0 +1,61 @@
+{
+  "workload": "healthz only, undrained stdout and stderr, 4x500 requests; batch0 warmup",
+  "batches": [
+    {
+      "batch": 0,
+      "requests": 500,
+      "concurrency": 40,
+      "rps": 672.19,
+      "p50_ms": 58.61,
+      "p95_ms": 99.42,
+      "p99_ms": 104.93,
+      "statuses": {
+        "200": 500
+      },
+      "rss_bytes": 91467776
+    },
+    {
+      "batch": 1,
+      "requests": 500,
+      "concurrency": 40,
+      "rps": 689.84,
+      "p50_ms": 64.67,
+      "p95_ms": 70.31,
+      "p99_ms": 85.64,
+      "statuses": {
+        "200": 500
+      },
+      "rss_bytes": 93683712
+    },
+    {
+      "batch": 2,
+      "requests": 500,
+      "concurrency": 40,
+      "rps": 658.44,
+      "p50_ms": 57.38,
+      "p95_ms": 113.4,
+      "p99_ms": 114.64,
+      "statuses": {
+        "200": 500
+      },
+      "rss_bytes": 96198656
+    },
+    {
+      "batch": 3,
+      "requests": 500,
+      "concurrency": 40,
+      "rps": 711.98,
+      "p50_ms": 58.03,
+      "p95_ms": 71.41,
+      "p99_ms": 75.88,
+      "statuses": {
+        "200": 500
+      },
+      "rss_bytes": 96215040
+    }
+  ],
+  "shutdown_s": 0.214,
+  "shutdown_timed_out": false,
+  "log_dropped_total": 1715,
+  "rss_growth_after_warmup_bytes": 4747264
+}
