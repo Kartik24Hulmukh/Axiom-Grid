@@ -29,6 +29,7 @@ def main():
     stop = threading.Event()
     rss = []
     monitor = None
+    shutdown_timed_out = False
     def sample_memory():
         process = psutil.Process(proc.pid)
         while not stop.is_set():
@@ -71,11 +72,19 @@ def main():
         with concurrent.futures.ThreadPoolExecutor(100) as pool:
             samples = list(pool.map(hit, range(1000)))
         duration = time.perf_counter()-started
-        with urllib.request.urlopen(base+"/healthz", timeout=2) as response:
-            healthy = response.status == 200
+        try:
+            with urllib.request.urlopen(base+"/healthz", timeout=2) as response:
+                healthy = response.status == 200
+        except OSError:
+            healthy = False
         started = time.perf_counter()
         proc.terminate()
-        exit_code = proc.wait(timeout=10)
+        try:
+            exit_code = proc.wait(timeout=10)
+        except subprocess.TimeoutExpired:
+            shutdown_timed_out = True
+            proc.kill()
+            exit_code = proc.wait()
         shutdown = time.perf_counter()-started
     finally:
         stop.set()
@@ -91,7 +100,7 @@ def main():
     unexpected = sum(s[0] not in (200,404,422,503) or (s[0] == 503 and not s[3]) or not s[2] for s in samples)
     result = {"scope": "co-located real HTTP/extraction, one uvicorn worker; not a 100x certification",
         "requests":1000,"concurrency":100,"statuses":statuses,
-        "unexpected":unexpected,"healthy_after":healthy,"server_exit":exit_code,"shutdown_seconds":round(shutdown,3),
+        "unexpected":unexpected,"healthy_after":healthy,"shutdown_timed_out":shutdown_timed_out,"server_exit":exit_code,"shutdown_seconds":round(shutdown,3),
         "throughput_rps":round(len(samples)/duration,2),"successful_extractions_rps":round(statuses.get(200,0)/duration,2),
         "latency_all":percentiles([s[1] for s in samples]),"latency_success":percentiles([s[1] for s in samples if s[0]==200]),
         "latency_shed":percentiles([s[1] for s in samples if s[3]]),
