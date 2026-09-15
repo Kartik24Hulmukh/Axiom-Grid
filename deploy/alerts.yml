@@ -1,0 +1,45 @@
+# Every expression below references a series that overlay/tests/test_metrics_prometheus_slo.py proves exists.
+groups:
+  - name: axiom-grid-slo
+    rules:
+      - alert: AxiomApiDown
+        expr: up{job="axiom-grid-api"} == 0
+        for: 1m
+        labels: { severity: page }
+        annotations: { summary: "Axiom-Grid API replica unreachable", runbook: "docs/axiom/LAUNCH-RUNBOOK.md#rollback" }
+      - alert: AxiomP95LatencySLO
+        # per-worker summary quantile; take the worst replica
+        expr: max(axiom_request_latency_ms{quantile="0.95"}) > 120
+        for: 10m
+        labels: { severity: page }
+        annotations: { summary: "P95 > 120 ms for 10 m (SLO breach)", runbook: "docs/axiom/LAUNCH-RUNBOOK.md#scale-out" }
+      - alert: AxiomP99LatencySLO
+        expr: max(axiom_request_latency_ms{quantile="0.99"}) > 250
+        for: 10m
+        labels: { severity: page }
+        annotations: { summary: "P99 > 250 ms for 10 m (SLO breach)" }
+      - alert: AxiomErrorBudgetBurn
+        expr: sum(rate(axiom_http_status_total{code=~"5.."}[5m])) / sum(rate(axiom_requests_total[5m])) > 0.01
+        for: 5m
+        labels: { severity: page }
+        annotations: { summary: "5xx ratio > 1% (fast burn)" }
+      - alert: AxiomLoadShedding
+        expr: sum(rate(axiom_extraction_shed_total[5m])) / sum(rate(axiom_requests_total[5m])) > 0.05
+        for: 10m
+        labels: { severity: ticket }
+        annotations: { summary: "> 5% of extraction traffic shed (429) — add replicas or raise WEB_CONCURRENCY" }
+      - alert: AxiomAuthAbuse
+        expr: sum(rate(axiom_auth_rejections_total[5m])) > 5
+        for: 5m
+        labels: { severity: ticket }
+        annotations: { summary: "> 5 auth rejections/s sustained — credential stuffing or leaked key rotation gap" }
+      - alert: AxiomLogDrops
+        expr: increase(axiom_log_dropped_total[10m]) > 0
+        for: 0m
+        labels: { severity: ticket }
+        annotations: { summary: "Structured log queue overflowed; raise AXIOM_LOG_QUEUE_MAX or ship logs faster" }
+      - alert: AxiomMemoryCeiling
+        expr: container_memory_working_set_bytes{container="api"} > 0.85 * container_spec_memory_limit_bytes{container="api"}
+        for: 5m
+        labels: { severity: page }
+        annotations: { summary: "API replica within 15% of memory limit (OOM risk); requires cAdvisor" }

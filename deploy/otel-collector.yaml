@@ -1,0 +1,20 @@
+receivers:
+  otlp:
+    protocols:
+      http: { endpoint: 0.0.0.0:4318 }
+processors:
+  memory_limiter: { check_interval: 1s, limit_mib: 200, spike_limit_mib: 50 }
+  batch: { timeout: 2s, send_batch_size: 512 }
+  tail_sampling:
+    decision_wait: 5s
+    policies:
+      - { name: errors, type: status_code, status_code: { status_codes: [ERROR] } }
+      - { name: slow, type: latency, latency: { threshold_ms: 250 } }
+      - { name: baseline, type: probabilistic, probabilistic: { sampling_percentage: 5 } }
+exporters:
+  debug: { verbosity: basic }
+  # Point at your vendor/backend (Tempo, Honeycomb, Datadog...). Keep credentials in env, not here.
+  otlphttp: { endpoint: ${env:OTEL_BACKEND_ENDPOINT:-http://localhost:4318} }
+service:
+  pipelines:
+    traces: { receivers: [otlp], processors: [memory_limiter, tail_sampling, batch], exporters: [otlphttp] }
