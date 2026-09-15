@@ -1,0 +1,229 @@
+{
+  "concurrency": 8,
+  "requests": 8,
+  "max_tokens_per_attempt": 256,
+  "max_attempts_per_request": 4,
+  "results": [
+    {
+      "requested": "glm-5.3",
+      "selected": "glm-5.3-flash",
+      "outcome": "ok",
+      "latency_ms": 16676.62,
+      "usage": {
+        "prompt_tokens": 21,
+        "completion_tokens": 20,
+        "total_tokens": 41,
+        "cached_tokens": 0,
+        "reasoning_tokens": 18,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 18
+        }
+      },
+      "fallback_chain": [
+        {
+          "model": "glm-5.3",
+          "result": "failure",
+          "error": "TimeoutError",
+          "detail": "upstream request failed",
+          "status": null
+        },
+        {
+          "model": "glm-5.3-flash",
+          "result": "success"
+        }
+      ]
+    },
+    {
+      "requested": "glm-5.3-flash",
+      "selected": "glm-5.3-flash",
+      "outcome": "ok",
+      "latency_ms": 5606.65,
+      "usage": {
+        "prompt_tokens": 21,
+        "completion_tokens": 189,
+        "total_tokens": 210,
+        "cached_tokens": 0,
+        "reasoning_tokens": 187,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 187
+        }
+      },
+      "fallback_chain": [
+        {
+          "model": "glm-5.3-flash",
+          "result": "success"
+        }
+      ]
+    },
+    {
+      "requested": "kimi-k3",
+      "selected": "glm-5.3",
+      "outcome": "ok",
+      "latency_ms": 20503.14,
+      "usage": {
+        "prompt_tokens": 17,
+        "completion_tokens": 63,
+        "total_tokens": 80,
+        "cached_tokens": 0,
+        "reasoning_tokens": 61,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 61
+        }
+      },
+      "fallback_chain": [
+        {
+          "model": "kimi-k3",
+          "result": "failure",
+          "error": "TimeoutError",
+          "detail": "upstream request failed",
+          "status": null
+        },
+        {
+          "model": "glm-5.3",
+          "result": "success"
+        }
+      ]
+    },
+    {
+      "requested": "qwen3.8-27b",
+      "selected": "qwen3.8-27b",
+      "outcome": "ok",
+      "latency_ms": 931.67,
+      "usage": {
+        "prompt_tokens": 15,
+        "completion_tokens": 38,
+        "total_tokens": 53,
+        "cached_tokens": 0,
+        "reasoning_tokens": 35,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 35
+        }
+      },
+      "fallback_chain": [
+        {
+          "model": "qwen3.8-27b",
+          "result": "success"
+        }
+      ]
+    },
+    {
+      "requested": "glm-5.3",
+      "selected": "glm-5.3-flash",
+      "outcome": "ok",
+      "latency_ms": 18007.3,
+      "usage": {
+        "prompt_tokens": 21,
+        "completion_tokens": 98,
+        "total_tokens": 119,
+        "cached_tokens": 0,
+        "reasoning_tokens": 96,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 96
+        }
+      },
+      "fallback_chain": [
+        {
+          "model": "glm-5.3",
+          "result": "failure",
+          "error": "TimeoutError",
+          "detail": "upstream request failed",
+          "status": null
+        },
+        {
+          "model": "glm-5.3-flash",
+          "result": "success"
+        }
+      ]
+    },
+    {
+      "requested": "glm-5.3-flash",
+      "selected": "glm-5.3-flash",
+      "outcome": "ok",
+      "latency_ms": 2033.7,
+      "usage": {
+        "prompt_tokens": 21,
+        "completion_tokens": 72,
+        "total_tokens": 93,
+        "cached_tokens": 0,
+        "reasoning_tokens": 70,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 70
+        }
+      },
+      "fallback_chain": [
+        {
+          "model": "glm-5.3-flash",
+          "result": "success"
+        }
+      ]
+    },
+    {
+      "requested": "kimi-k3",
+      "selected": "kimi-k3",
+      "outcome": "ok",
+      "latency_ms": 1404.48,
+      "usage": {
+        "prompt_tokens": 129,
+        "completion_tokens": 35,
+        "total_tokens": 164,
+        "cached_tokens": 0,
+        "reasoning_tokens": 24,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 24
+        }
+      },
+      "fallback_chain": [
+        {
+          "model": "kimi-k3",
+          "result": "success"
+        }
+      ]
+    },
+    {
+      "requested": "qwen3.8-27b",
+      "selected": "qwen3.8-27b",
+      "outcome": "ok",
+      "latency_ms": 778.15,
+      "usage": {
+        "prompt_tokens": 15,
+        "completion_tokens": 24,
+        "total_tokens": 39,
+        "cached_tokens": 0,
+        "reasoning_tokens": 21,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 21
+        }
+      },
+      "fallback_chain": [
+        {
+          "model": "qwen3.8-27b",
+          "result": "success"
+        }
+      ]
+    }
+  ]
+}

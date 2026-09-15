@@ -1,0 +1,41 @@
+{
+  "method": "same process, 300 real document extraction requests per phase; loopback; 1 then 100 workers; nearest-rank percentiles; RSS sampled 5ms; no production capacity claim",
+  "phases": [
+    {
+      "workers": 1,
+      "requests": 300,
+      "status_counts": {
+        "200": 300
+      },
+      "throughput_rps": 3.42,
+      "useful_rps": 3.42,
+      "latency_ms": {
+        "p50": 272.55,
+        "p95": 424.24,
+        "p99": 511.33
+      },
+      "rss_min_mib": 79.88,
+      "rss_max_mib": 92.81
+    },
+    {
+      "workers": 100,
+      "requests": 300,
+      "status_counts": {
+        "200": 30,
+        "503": 270
+      },
+      "throughput_rps": 26.83,
+      "useful_rps": 2.68,
+      "latency_ms": {
+        "p50": 1461.26,
+        "p95": 6345.59,
+        "p99": 8304.96
+      },
+      "rss_min_mib": 92.81,
+      "rss_max_mib": 113.7
+    }
+  ],
+  "shutdown_exit": -15,
+  "shutdown_completed": true,
+  "shutdown_note": "Uvicorn 0.51 re-raises SIGTERM after graceful lifespan shutdown; -15 is expected on POSIX. Require explicit lifespan-complete marker as independent evidence."
+}

@@ -1,0 +1,66 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_______________ test_writer_releases_macro_archive[operations0] ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-daytona/pytest-9/test_writer_releases_macro_arc0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x75460cd7fbb0>
+operations = []
+
+    @pytest.mark.parametrize("operations", [[], [{"type": "write_cell", "cell": "not-a-cell", "value": 3}]])
+    def test_writer_releases_macro_archive(tmp_path, monkeypatch, operations):
+        path = tmp_path / "sample.xlsx"
+        wb = Workbook()
+        wb.save(path)
+        wb.close()
+        loaded = []
+        original = excel_master.load_workbook
+        def load(*args, **kwargs):
+            book = original(*args, **kwargs)
+            loaded.append(book)
+            return book
+        monkeypatch.setattr(excel_master, "load_workbook", load)
+        try:
+            result = excel_master.ExcelWriter().apply_operations(str(path), operations)
+            assert bool(result["errors"]) == bool(operations)
+            assert loaded
+            archive = loaded[0].vba_archive
+>           assert archive is None or archive.fp is None
+E           AssertionError: assert (<zipfile.ZipFile file=<_io.BytesIO object at 0x75460cc42430> mode='a'> is None or <_io.BytesIO object at 0x75460cc42430> is None)
+E            +  where <_io.BytesIO object at 0x75460cc42430> = <zipfile.ZipFile file=<_io.BytesIO object at 0x75460cc42430> mode='a'>.fp
+
+kairo-sidecar/tests/test_excel_archive_lifecycle.py:27: AssertionError
+_______________ test_writer_releases_macro_archive[operations1] ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-daytona/pytest-9/test_writer_releases_macro_arc1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x75460cd7fce0>
+operations = [{'type': 'write_cell', 'cell': 'not-a-cell', 'value': 3}]
+
+    @pytest.mark.parametrize("operations", [[], [{"type": "write_cell", "cell": "not-a-cell", "value": 3}]])
+    def test_writer_releases_macro_archive(tmp_path, monkeypatch, operations):
+        path = tmp_path / "sample.xlsx"
+        wb = Workbook()
+        wb.save(path)
+        wb.close()
+        loaded = []
+        original = excel_master.load_workbook
+        def load(*args, **kwargs):
+            book = original(*args, **kwargs)
+            loaded.append(book)
+            return book
+        monkeypatch.setattr(excel_master, "load_workbook", load)
+        try:
+            result = excel_master.ExcelWriter().apply_operations(str(path), operations)
+            assert bool(result["errors"]) == bool(operations)
+            assert loaded
+            archive = loaded[0].vba_archive
+>           assert archive is None or archive.fp is None
+E           AssertionError: assert (<zipfile.ZipFile file=<_io.BytesIO object at 0x75460cc84e00> mode='a'> is None or <_io.BytesIO object at 0x75460cc84e00> is None)
+E            +  where <_io.BytesIO object at 0x75460cc84e00> = <zipfile.ZipFile file=<_io.BytesIO object at 0x75460cc84e00> mode='a'>.fp
+
+kairo-sidecar/tests/test_excel_archive_lifecycle.py:27: AssertionError
+------------------------------ Captured log call -------------------------------
+ERROR    kairo-sidecar.excel_master:excel_master.py:642 ExcelWriter operation failed: not-a-cell is not a valid coordinate or range
+=========================== short test summary info ============================
+FAILED kairo-sidecar/tests/test_excel_archive_lifecycle.py::test_writer_releases_macro_archive[operations0]
+FAILED kairo-sidecar/tests/test_excel_archive_lifecycle.py::test_writer_releases_macro_archive[operations1]
+2 failed in 0.61s

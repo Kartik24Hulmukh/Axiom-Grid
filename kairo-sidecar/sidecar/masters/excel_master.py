@@ -455,7 +455,9 @@ class ExcelWriter:
                 f"COM live Excel automation failed: {e}. Falling back to openpyxl formatting writer."
             )
 
-        # Fallback: Write via openpyxl preserving formatting and macros
+        # Fallback: Write via openpyxl preserving formatting and macros.
+        # The optional VBA archive has separate ownership from Workbook.close().
+        wb = None
         try:
             wb = load_workbook(file_path, keep_vba=True)
             applied_count = 0
@@ -656,6 +658,13 @@ class ExcelWriter:
         except Exception as e:
             log.error(f"ExcelWriter failed: {traceback.format_exc()}")
             return {"applied_count": 0, "errors": [str(e)]}
+        finally:
+            if wb is not None:
+                try:
+                    wb.close()
+                finally:
+                    if wb.vba_archive is not None:
+                        wb.vba_archive.close()
 
 
 def _parse_range_spec(range_spec: str, default_sheet: str) -> tuple[str, str]:

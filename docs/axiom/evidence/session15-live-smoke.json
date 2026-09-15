@@ -1,0 +1,85 @@
+{
+  "scope": "One bounded live call per default route; no sustained provider load or fleet budget certification",
+  "results": [
+    {
+      "model": "glm-5.3",
+      "max_tokens": 64,
+      "attempts_limit": 1,
+      "outcome": "BudgetExhaustedError",
+      "http_status": null,
+      "latency_s": 1.303,
+      "ledger": {
+        "spend_ceiling": 256,
+        "spend_reserved": 0,
+        "spend_committed": 80,
+        "spend_refused": 0
+      }
+    },
+    {
+      "model": "glm-5.3-flash",
+      "max_tokens": 64,
+      "attempts_limit": 1,
+      "outcome": "BudgetExhaustedError",
+      "http_status": null,
+      "latency_s": 3.321,
+      "ledger": {
+        "spend_ceiling": 256,
+        "spend_reserved": 0,
+        "spend_committed": 84,
+        "spend_refused": 0
+      }
+    },
+    {
+      "model": "kimi-k3",
+      "max_tokens": 64,
+      "attempts_limit": 1,
+      "outcome": "success",
+      "usage": {
+        "prompt_tokens": 128,
+        "completion_tokens": 55,
+        "total_tokens": 183,
+        "cached_tokens": 0,
+        "reasoning_tokens": 44,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 44
+        }
+      },
+      "latency_s": 1.659,
+      "ledger": {
+        "spend_ceiling": 256,
+        "spend_reserved": 0,
+        "spend_committed": 183,
+        "spend_refused": 0
+      }
+    },
+    {
+      "model": "qwen3.8-27b",
+      "max_tokens": 64,
+      "attempts_limit": 1,
+      "outcome": "success",
+      "usage": {
+        "prompt_tokens": 14,
+        "completion_tokens": 35,
+        "total_tokens": 49,
+        "cached_tokens": 0,
+        "reasoning_tokens": 31,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 31
+        }
+      },
+      "latency_s": 0.818,
+      "ledger": {
+        "spend_ceiling": 256,
+        "spend_reserved": 0,
+        "spend_committed": 49,
+        "spend_refused": 0
+      }
+    }
+  ]
+}

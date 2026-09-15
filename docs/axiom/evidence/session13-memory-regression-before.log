@@ -1,0 +1,58 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+____________________ test_connect_closes_on_pragma_failure _____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-daytona/pytest-3/test_connect_closes_on_pragma_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x75fc3f6a1f30>
+
+    def test_connect_closes_on_pragma_failure(tmp_path, monkeypatch):
+        client = MemMachineClient(str(tmp_path / "memory.db"))
+        opened = []
+        original = sqlite3.connect
+    
+        class FailingConnection(sqlite3.Connection):
+            def execute(self, sql, *args, **kwargs):
+                if sql == "PRAGMA journal_mode=WAL":
+                    raise sqlite3.OperationalError("injected setup failure")
+                return super().execute(sql, *args, **kwargs)
+    
+        def connect(*args, **kwargs):
+            conn = original(*args, factory=FailingConnection, **kwargs)
+            opened.append(conn)
+            return conn
+    
+        monkeypatch.setattr(sqlite3, "connect", connect)
+        try:
+            with pytest.raises(sqlite3.OperationalError, match="setup failure"):
+                client._connect()
+>           with pytest.raises(sqlite3.ProgrammingError, match="closed"):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE ProgrammingError
+
+kairo-sidecar/tests/test_mem_connection_lifecycle.py:33: Failed
+______________________ test_recall_closes_on_sql_failure _______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-daytona/pytest-3/test_recall_closes_on_sql_fail0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x75fc3f6a1e00>
+
+    def test_recall_closes_on_sql_failure(tmp_path, monkeypatch):
+        import sidecar.embeddings as embeddings
+        client = MemMachineClient(str(tmp_path / "memory.db"))
+        conn = client._connect()
+        conn.execute("DROP TABLE interactions")
+        conn.commit()
+        # Embedding is irrelevant to the SQL lifecycle fault under test.
+        monkeypatch.setattr(embeddings, "embed_text", lambda text: [1.0, 0.0])
+        monkeypatch.setattr(client, "_connect", lambda: conn)
+        try:
+            with pytest.raises(sqlite3.OperationalError, match="no such table"):
+                client.recall_contextualized("hello")
+>           with pytest.raises(sqlite3.ProgrammingError, match="closed"):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE ProgrammingError
+
+kairo-sidecar/tests/test_mem_connection_lifecycle.py:52: Failed
+=========================== short test summary info ============================
+FAILED kairo-sidecar/tests/test_mem_connection_lifecycle.py::test_connect_closes_on_pragma_failure
+FAILED kairo-sidecar/tests/test_mem_connection_lifecycle.py::test_recall_closes_on_sql_failure
+2 failed in 0.52s

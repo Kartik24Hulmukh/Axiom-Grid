@@ -1,0 +1,32 @@
+{
+  "baseline_revision": "0800f13",
+  "method": "same-process sequential 20k records then 200 snapshots; tracemalloc around writes; RSS at phase boundaries, not sampled process extremes; no end-to-end capacity claim",
+  "before": {
+    "runs": 20000,
+    "snapshot_samples": 200,
+    "record_rps": 471356.08,
+    "snapshot_latency_ms": {
+      "p50": 1.356661,
+      "p95": 1.561401,
+      "p99": 2.447682
+    },
+    "retained_python_bytes": 3855320,
+    "peak_python_bytes": 3855360,
+    "rss_floor_mib": 18.32,
+    "rss_ceiling_mib": 24.67
+  },
+  "after": {
+    "runs": 20000,
+    "snapshot_samples": 200,
+    "record_rps": 108223.51,
+    "snapshot_latency_ms": {
+      "p50": 0.00293,
+      "p95": 0.00321,
+      "p99": 0.00435
+    },
+    "retained_python_bytes": 1216,
+    "peak_python_bytes": 2664,
+    "rss_floor_mib": 24.67,
+    "rss_ceiling_mib": 24.68
+  }
+}

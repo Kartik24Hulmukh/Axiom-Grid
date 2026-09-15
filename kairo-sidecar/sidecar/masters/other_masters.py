@@ -546,56 +546,55 @@ class WeKnoraPipeline:
         import sqlite3
 
         conn = sqlite3.connect(self.db_path)
-        cur = conn.cursor()
-        cur.execute("SELECT COUNT(*) FROM pdf_chunks WHERE pdf_path = ?", (pdf_path,))
-        exists = cur.fetchone()[0] > 0
-        if exists:
-            conn.close()
-            log.info(f"WeKnora: PDF {pdf_path} already ingested, skipping.")
-            return
-
-        # Extract text using pdfminer.six or fallback to pdf_parser (which tries PyMuPDF etc.)
-        text = ""
         try:
-            # Try pdfminer.six
-            from pdfminer.high_level import extract_text
+            cur = conn.cursor()
+            cur.execute("SELECT COUNT(*) FROM pdf_chunks WHERE pdf_path = ?", (pdf_path,))
+            exists = cur.fetchone()[0] > 0
+            if exists:
+                log.info(f"WeKnora: PDF {pdf_path} already ingested, skipping.")
+                return
 
-            text = extract_text(pdf_path)
-        except Exception as e:
-            log.debug(f"WeKnora: pdfminer.six extraction failed: {e}. Trying parser fallback...")
+            # Extract text using pdfminer.six or fallback to pdf_parser (which tries PyMuPDF etc.)
+            text = ""
             try:
-                from sidecar.parsers.pdf_parser import parse_pdf
+                # Try pdfminer.six
+                from pdfminer.high_level import extract_text
 
-                parsed = parse_pdf(pdf_path)
-                paragraphs = parsed.get("paragraphs", [])
-                text = "\n".join(p.get("text", "") for p in paragraphs)
-            except Exception as e2:
-                log.warning(f"WeKnora: fallback parsing also failed: {e2}")
+                text = extract_text(pdf_path)
+            except Exception as e:
+                log.debug(f"WeKnora: pdfminer.six extraction failed: {e}. Trying parser fallback...")
+                try:
+                    from sidecar.parsers.pdf_parser import parse_pdf
 
-        if not text:
-            conn.close()
-            return
+                    parsed = parse_pdf(pdf_path)
+                    paragraphs = parsed.get("paragraphs", [])
+                    text = "\n".join(p.get("text", "") for p in paragraphs)
+                except Exception as e2:
+                    log.warning(f"WeKnora: fallback parsing also failed: {e2}")
 
-        # Chunk into 300-word chunks
-        words = text.split()
-        chunk_size = 300
-        chunks = []
-        for i in range(0, len(words), chunk_size):
-            chunk = " ".join(words[i : i + chunk_size])
-            if chunk.strip():
-                chunks.append(chunk)
+            if not text:
+                return
 
-        # Write to SQLite pdf_chunks
-        try:
-            for idx, content in enumerate(chunks):
-                cur.execute(
-                    "INSERT INTO pdf_chunks (pdf_path, chunk_index, content) VALUES (?, ?, ?)",
-                    (pdf_path, idx, content),
-                )
-            conn.commit()
-            log.info(f"WeKnora: Ingested {len(chunks)} chunks of 300 words from {pdf_path}")
-        except Exception as e:
-            log.warning(f"WeKnora: insertion failed: {e}")
+            # Chunk into 300-word chunks
+            words = text.split()
+            chunk_size = 300
+            chunks = []
+            for i in range(0, len(words), chunk_size):
+                chunk = " ".join(words[i : i + chunk_size])
+                if chunk.strip():
+                    chunks.append(chunk)
+
+            # Write to SQLite pdf_chunks
+            try:
+                for idx, content in enumerate(chunks):
+                    cur.execute(
+                        "INSERT INTO pdf_chunks (pdf_path, chunk_index, content) VALUES (?, ?, ?)",
+                        (pdf_path, idx, content),
+                    )
+                conn.commit()
+                log.info(f"WeKnora: Ingested {len(chunks)} chunks of 300 words from {pdf_path}")
+            except Exception as e:
+                log.warning(f"WeKnora: insertion failed: {e}")
         finally:
             conn.close()
 

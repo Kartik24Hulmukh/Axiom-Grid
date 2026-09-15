@@ -1,0 +1,55 @@
+{
+ "unlimited_ledger": {
+  "calls": 1000,
+  "admitted": 1000,
+  "refused": 0,
+  "p50_ms": 0.023,
+  "p95_ms": 0.048,
+  "p99_ms": 0.077,
+  "max_ms": 0.11
+ },
+ "ceiling_4000_tokens": {
+  "calls": 1000,
+  "admitted": 500,
+  "refused": 500,
+  "p50_ms": 0.016,
+  "p95_ms": 0.045,
+  "p99_ms": 0.06,
+  "max_ms": 0.095
+ },
+ "ceiling_4000_metrics_after_burst": null,
+ "rss_mib": {
+  "floor": 22.57,
+  "ceiling": 22.57
+ },
+ "live_melious_smoke": {
+  "glm-5.3": {
+   "ok": true,
+   "s": 7.272,
+   "usage": 22,
+   "ledger": 22,
+   "ceiling_refused": true
+  },
+  "glm-5.3-flash": {
+   "ok": true,
+   "s": 2.169,
+   "usage": 52,
+   "ledger": 52,
+   "ceiling_refused": true
+  },
+  "kimi-k3": {
+   "ok": true,
+   "s": 1.161,
+   "usage": 158,
+   "ledger": 158,
+   "ceiling_refused": true
+  },
+  "qwen3.8-27b": {
+   "ok": true,
+   "s": 0.735,
+   "usage": 42,
+   "ledger": 42,
+   "ceiling_refused": true
+  }
+ }
+}

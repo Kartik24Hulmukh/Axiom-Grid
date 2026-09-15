@@ -1,0 +1,57 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_____________ test_worker_inherits_request_context_without_leaking _____________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7d952ac54770>
+
+    @pytest.mark.asyncio
+    async def test_worker_inherits_request_context_without_leaking(monkeypatch):
+        from contextvars import ContextVar
+        from opentelemetry import trace
+        from opentelemetry.sdk.trace import TracerProvider
+
+        request_id = ContextVar("test_request_id", default=None)
+        original = server.OrchestratorImpl.run
+        observed = []
+        def observe(self, doc):
+            observed.append((request_id.get(), trace.get_current_span().get_span_context().trace_id))
+            return original(self, doc)
+        monkeypatch.setattr(server.OrchestratorImpl, "run", observe)
+        provider = TracerProvider()
+        try:
+            async with server.app.router.lifespan_context(server.app):
+                with provider.get_tracer(__name__).start_as_current_span("request") as span:
+                    token = request_id.set("request-123")
+                    try:
+                        await server.extract_document(server.ExtractDocumentRequest(file="sample_memo_01.txt"))
+                    finally:
+                        request_id.reset(token)
+                await server.extract_document(server.ExtractDocumentRequest(file="sample_memo_01.txt"))
+>           assert observed == [("request-123", span.get_span_context().trace_id), (None, 0)]
+E           AssertionError: assert [(None, 0), (None, 0)] == [('request-12...1), (None, 0)]
+E
+E             At index 0 diff: (None, 0) != ('request-123', 301001352196845902672162195367759470181)
+E             Use -v to get more diff
+
+overlay/tests/test_extraction_parallel.py:63: AssertionError
+----------------------------- Captured stdout call -----------------------------
+{"ts":"2026-09-15T13:28:32.071Z","level":"INFO","logger":"kernel.sidecar.memory_store","msg":"MemoryStore initialized: :memory:","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:28:32.072Z","level":"INFO","logger":"kernel.sidecar.ingestor","msg":"Ingested sample_memo_01.txt: 13 chunks, 1 pages, sha256=2cee63241b4f234c","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:28:32.076Z","level":"WARNING","logger":"kairo.context.compressor","msg":"Compression engine unavailable (No module named 'headroom'), using passthrough fallback","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:28:32.077Z","level":"INFO","logger":"kairo.context.compressor","msg":"Compressed 13 chunks -> 13 (206 -> 206 tokens, 0.0% reduction)","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:28:32.653Z","level":"INFO","logger":"kernel.sidecar.memory_store","msg":"MemoryStore initialized: :memory:","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:28:32.654Z","level":"INFO","logger":"kernel.sidecar.ingestor","msg":"Ingested sample_memo_01.txt: 13 chunks, 1 pages, sha256=2cee63241b4f234c","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:28:32.656Z","level":"WARNING","logger":"kairo.context.compressor","msg":"Compression engine unavailable (No module named 'headroom'), using passthrough fallback","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:28:32.658Z","level":"INFO","logger":"kairo.context.compressor","msg":"Compressed 13 chunks -> 13 (206 -> 206 tokens, 0.0% reduction)","service":"axiom-grid-overlay"}
+------------------------------ Captured log call -------------------------------
+INFO     kernel.sidecar.memory_store:memory_store.py:165 MemoryStore initialized: :memory:
+INFO     kernel.sidecar.ingestor:ingestor.py:91 Ingested sample_memo_01.txt: 13 chunks, 1 pages, sha256=2cee63241b4f234c
+WARNING  kairo.context.compressor:compressor.py:196 Compression engine unavailable (No module named 'headroom'), using passthrough fallback
+INFO     kairo.context.compressor:compressor.py:229 Compressed 13 chunks -> 13 (206 -> 206 tokens, 0.0% reduction)
+INFO     kernel.sidecar.memory_store:memory_store.py:165 MemoryStore initialized: :memory:
+INFO     kernel.sidecar.ingestor:ingestor.py:91 Ingested sample_memo_01.txt: 13 chunks, 1 pages, sha256=2cee63241b4f234c
+WARNING  kairo.context.compressor:compressor.py:196 Compression engine unavailable (No module named 'headroom'), using passthrough fallback
+INFO     kairo.context.compressor:compressor.py:229 Compressed 13 chunks -> 13 (206 -> 206 tokens, 0.0% reduction)
+=========================== short test summary info ============================
+FAILED overlay/tests/test_extraction_parallel.py::test_worker_inherits_request_context_without_leaking
+1 failed in 1.08s

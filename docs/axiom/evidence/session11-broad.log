@@ -1,0 +1,858 @@
+{"ts":"2026-09-15T13:31:38.975Z","level":"INFO","logger":"kernel.sidecar.memory_store","msg":"MemoryStore initialized: /home/daytona/axiom-grid/.kairo/overlay_store.db","service":"axiom-grid-overlay"}
+........................................................................ [  2%]
+........................................................................ [  4%]
+.............................................................{"ts":"2026-09-15T13:32:07.024Z","level":"INFO","logger":"kairo.personalization","msg":"Trained adapter 4a7d2e6126af6e3f for user 'local': 51 contexts, 8 samples","service":"axiom-grid-overlay"}
+........... [  6%]
+{"ts":"2026-09-15T13:32:07.035Z","level":"INFO","logger":"kairo.personalization","msg":"Trained adapter b15817c4df7752ab for user 'local': 51 contexts, 8 samples","service":"axiom-grid-overlay"}
+....{"ts":"2026-09-15T13:32:07.038Z","level":"INFO","logger":"kairo.personalization","msg":"Trained adapter 4a7d2e6126af6e3f for user 'local': 51 contexts, 8 samples","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:07.039Z","level":"INFO","logger":"kairo.personalization","msg":"Trained adapter 4a7d2e6126af6e3f for user 'local': 51 contexts, 8 samples","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:07.041Z","level":"INFO","logger":"kairo.personalization","msg":"Trained adapter 4a7d2e6126af6e3f for user 'local': 51 contexts, 8 samples","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:07.042Z","level":"INFO","logger":"kairo.personalization","msg":"Trained adapter 4a7d2e6126af6e3f for user 'local': 51 contexts, 8 samples","service":"axiom-grid-overlay"}
+...........{"ts":"2026-09-15T13:32:07.091Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'reveal\\s+your\\s+system\\s+prompt' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:07.092Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'output\\s+your\\s+prompt' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:07.092Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'show\\s+me\\s+your\\s+rules' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:07.092Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'repeat\\s+your\\s+system' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:07.092Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'print\\s+your\\s+instructions' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:07.092Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'what\\s+are\\s+your\\s+instructions' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:07.092Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'you\\s+are\\s+now' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:07.092Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'forget\\s+all\\s+previous\\s+instructions' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:07.092Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'reveal\\s+your\\s+system\\s+prompt' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:07.092Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'show\\s+me\\s+your\\s+rules' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:07.092Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'override\\s+(?:all\\s+|your\\s+)?(?:system\\s+|safety\\s+)?(?:rules|guidelines|instructions)' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:07.092Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'disregard\\s+all\\s+previous' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:07.092Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'new\\s+instructions' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:07.275Z","level":"INFO","logger":"kairo-sidecar.semantic_memory_store","msg":"SemanticMemoryStore initialized (embedding dim=256, nonzero=256)","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:07.275Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'reveal\\s+your\\s+system\\s+prompt' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:07.275Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'output\\s+your\\s+prompt' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:07.275Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'show\\s+me\\s+your\\s+rules' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:07.275Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'repeat\\s+your\\s+system' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:07.275Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'print\\s+your\\s+instructions' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:07.276Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'what\\s+are\\s+your\\s+instructions' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:07.276Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'you\\s+are\\s+now' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:07.276Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'forget\\s+all\\s+previous\\s+instructions' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:07.276Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'reveal\\s+your\\s+system\\s+prompt' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:07.276Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'show\\s+me\\s+your\\s+rules' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:07.276Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'override\\s+(?:all\\s+|your\\s+)?(?:system\\s+|safety\\s+)?(?:rules|guidelines|instructions)' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:07.276Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'disregard\\s+all\\s+previous' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:07.276Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'new\\s+instructions' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:07.276Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'act\\s+as\\s+if' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:07.277Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'ignore\\s+all\\s+previous\\s+instructions' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:07.277Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'override\\s+(?:all\\s+|your\\s+)?(?:system\\s+|safety\\s+)?(?:rules|guidelines|instructions)' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:07.283Z","level":"INFO","logger":"kairo-sidecar.semantic_memory_store","msg":"Memory 8 added for user sql_test (len=41)","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:07.284Z","level":"INFO","logger":"kairo-sidecar.semantic_memory_store","msg":"Memory 0 added for user pii_test (len=100)","service":"axiom-grid-overlay"}
+..........{"ts":"2026-09-15T13:32:07.298Z","level":"INFO","logger":"kairo-sidecar.semantic_memory_store","msg":"Memory 1 added for user multi_test (len=33)","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:07.298Z","level":"INFO","logger":"kairo-sidecar.semantic_memory_store","msg":"Memory 2 added for user multi_test (len=29)","service":"axiom-grid-overlay"}
+.................................{"ts":"2026-09-15T13:32:07.465Z","level":"INFO","logger":"kairo-sidecar.kami_kpx","msg":"KAMI: Added document 'Cooking Recipe' (id=ca404fb2fc7872bf)","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:07.515Z","level":"INFO","logger":"kairo-sidecar.kami_kpx","msg":"KAMI: Added document 'Cooking Recipe' (id=ca404fb2fc7872bf)","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:07.564Z","level":"INFO","logger":"kairo-sidecar.kami_kpx","msg":"KAMI: Added document 'Cooking Recipe' (id=ca404fb2fc7872bf)","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:07.617Z","level":"INFO","logger":"kairo-sidecar.kami_kpx","msg":"KAMI: Added document 'Cooking Recipe' (id=ca404fb2fc7872bf)","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:07.670Z","level":"INFO","logger":"kairo-sidecar.kami_kpx","msg":"KAMI: Added document 'Cooking Recipe' (id=ca404fb2fc7872bf)","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:07.721Z","level":"INFO","logger":"kairo-sidecar.kami_kpx","msg":"KAMI: Added document 'Cooking Recipe' (id=ca404fb2fc7872bf)","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:07.780Z","level":"INFO","logger":"kairo-sidecar.kami_kpx","msg":"KAMI: Added document 'Cooking Recipe' (id=ca404fb2fc7872bf)","service":"axiom-grid-overlay"}
+. [  8%]
+{"ts":"2026-09-15T13:32:07.834Z","level":"INFO","logger":"kairo-sidecar.kami_kpx","msg":"KAMI: Added document 'Cooking Recipe' (id=ca404fb2fc7872bf)","service":"axiom-grid-overlay"}
+...{"ts":"2026-09-15T13:32:07.845Z","level":"INFO","logger":"kairo-sidecar.kami_kpx","msg":"Markdown round-trip: imported 'risk-assessment.md'","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:07.847Z","level":"INFO","logger":"kairo-sidecar.kami_kpx","msg":"Markdown round-trip: imported 'risk-assessment.md'","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:07.850Z","level":"INFO","logger":"kairo-sidecar.kami_kpx","msg":"Markdown round-trip: imported 'risk-assessment.md'","service":"axiom-grid-overlay"}
+..{"ts":"2026-09-15T13:32:07.855Z","level":"INFO","logger":"kairo-sidecar.kami_kpx","msg":"Markdown round-trip: imported 'risk-assessment.md'","service":"axiom-grid-overlay"}
+.........................{"ts":"2026-09-15T13:32:07.898Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"detect_cuad_clauses: 9 clauses detected (HIGH=5, MEDIUM=4)","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:07.899Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"detect_cuad_clauses: 9 clauses detected (HIGH=5, MEDIUM=4)","service":"axiom-grid-overlay"}
+...{"ts":"2026-09-15T13:32:07.902Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"detect_cuad_clauses: 9 clauses detected (HIGH=5, MEDIUM=4)","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:07.903Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"detect_cuad_clauses: 9 clauses detected (HIGH=5, MEDIUM=4)","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:07.904Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"detect_cuad_clauses: 9 clauses detected (HIGH=5, MEDIUM=4)","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:07.905Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"detect_cuad_clauses: 9 clauses detected (HIGH=5, MEDIUM=4)","service":"axiom-grid-overlay"}
+..{"ts":"2026-09-15T13:32:07.907Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"detect_cuad_clauses: 9 clauses detected (HIGH=5, MEDIUM=4)","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:07.908Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"detect_cuad_clauses: 9 clauses detected (HIGH=5, MEDIUM=4)","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:07.909Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"detect_cuad_clauses: 9 clauses detected (HIGH=5, MEDIUM=4)","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:07.910Z","level":"ERROR","logger":"kairo-sidecar.legal_redline","msg":"LegalRedline error: document_text is empty","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:07.911Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"detect_cuad_clauses: 9 clauses detected (HIGH=5, MEDIUM=4)","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:07.912Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"detect_cuad_clauses: 9 clauses detected (HIGH=5, MEDIUM=4)","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:07.913Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"detect_cuad_clauses: 0 clauses detected (HIGH=0, MEDIUM=0)","service":"axiom-grid-overlay"}
+......{"ts":"2026-09-15T13:32:07.918Z","level":"ERROR","logger":"kairo-sidecar.legal_redline","msg":"LegalRedline error: clause_text is empty","service":"axiom-grid-overlay"}
+..{"ts":"2026-09-15T13:32:07.920Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"detect_cuad_clauses: 9 clauses detected (HIGH=5, MEDIUM=4)","service":"axiom-grid-overlay"}
+..{"ts":"2026-09-15T13:32:07.922Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"detect_cuad_clauses: 9 clauses detected (HIGH=5, MEDIUM=4)","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:07.923Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"detect_cuad_clauses: 9 clauses detected (HIGH=5, MEDIUM=4)","service":"axiom-grid-overlay"}
+..{"ts":"2026-09-15T13:32:07.928Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"detect_cuad_clauses: 9 clauses detected (HIGH=5, MEDIUM=4)","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:07.929Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"analyze_contract: 9 clauses, 5 redlines generated","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:07.930Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"detect_cuad_clauses: 9 clauses detected (HIGH=5, MEDIUM=4)","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:07.930Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"analyze_contract: 9 clauses, 5 redlines generated","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:07.932Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"analyze_contract: 9 clauses, 5 redlines generated","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:07.933Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"analyze_contract: 9 clauses, 5 redlines generated","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:07.934Z","level":"ERROR","logger":"kairo-sidecar.legal_redline","msg":"LegalRedline error: file_text is empty","service":"axiom-grid-overlay"}
+......{"ts":"2026-09-15T13:32:07.938Z","level":"ERROR","logger":"kairo-sidecar.adeu_bridge","msg":"AdeuBridge error: test error message","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:07.939Z","level":"WARNING","logger":"kairo-sidecar.adeu_bridge","msg":"AdeuBridge unavailable: adeu not installed","service":"axiom-grid-overlay"}
+. [ 10%]
+...{"ts":"2026-09-15T13:32:07.975Z","level":"ERROR","logger":"kairo-sidecar.safedocx_bridge","msg":"SafeDocxBridge error: test error message","service":"axiom-grid-overlay"}
+...{"ts":"2026-09-15T13:32:07.978Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"detect_cuad_clauses: 9 clauses detected (HIGH=5, MEDIUM=4)","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:07.978Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"analyze_contract: 9 clauses, 5 redlines generated","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:07.980Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"detect_cuad_clauses: 9 clauses detected (HIGH=5, MEDIUM=4)","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:07.981Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"detect_cuad_clauses: 9 clauses detected (HIGH=5, MEDIUM=4)","service":"axiom-grid-overlay"}
+............................................{"ts":"2026-09-15T13:32:08.863Z","level":"ERROR","logger":"kairo-sidecar.excelmcp_bridge","msg":"ExcelMcpBridge error: Traceback (most recent call last):\n  File \"/home/daytona/axiom-grid/kairo-sidecar/sidecar/parsers/excelmcp_bridge.py\", line 894, in _openpyxl_write_cell\n    wb = openpyxl.load_workbook(str(file_path),","service":"axiom-grid-overlay"}
+.....{"ts":"2026-09-15T13:32:08.922Z","level":"INFO","logger":"kairo-sidecar.excelmcp_bridge","msg":"excelmcp_create_chart OK: column 'Price Chart' at C1","service":"axiom-grid-overlay"}
+.............. [ 13%]
+............sssssssssssss..................{"ts":"2026-09-15T13:32:09.168Z","level":"INFO","logger":"kairo-sidecar.excelmcp_bridge","msg":"excelmcp_create_chart OK: column 'Empty Chart' at B1","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:09.182Z","level":"INFO","logger":"kairo-sidecar.excelmcp_bridge","msg":"excelmcp_create_chart OK: column 'Bad Chart' at B1","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:09.192Z","level":"INFO","logger":"kairo-sidecar.excelmcp_bridge","msg":"excelmcp_create_pivot_table OK \u2192 sheet 'Sheet_Pivot'","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:09.206Z","level":"INFO","logger":"kairo-sidecar.excelmcp_bridge","msg":"excelmcp_create_pivot_table OK \u2192 sheet 'Empty_Pivot'","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:09.208Z","level":"ERROR","logger":"kairo-sidecar.excelmcp_bridge","msg":"ExcelMcpBridge error: Traceback (most recent call last):\n  File \"/home/daytona/axiom-grid/kairo-sidecar/sidecar/parsers/excelmcp_bridge.py\", line 894, in _openpyxl_write_cell\n    wb = openpyxl.load_workbook(str(file_path),","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:09.216Z","level":"ERROR","logger":"kairo-sidecar.excelmcp_bridge","msg":"ExcelMcpBridge error: Traceback (most recent call last):\n  File \"/home/daytona/axiom-grid/kairo-sidecar/sidecar/parsers/excelmcp_bridge.py\", line 317, in excelmcp_read_range\n    raw_range = ws[cell_range]\n                ~","service":"axiom-grid-overlay"}
+........................ [ 15%]
+...........{"ts":"2026-09-15T13:32:10.361Z","level":"WARNING","logger":"kairo-sidecar.slide_image_gen","msg":"LOUD WARNING: Slide image mock is active! KAIRO_IMAGE_GENERATION=mock or KAIRO_SLIDE_IMAGE_MOCK=1 is set. This should NEVER be used in production.","service":"axiom-grid-overlay"}
+...............................{"ts":"2026-09-15T13:32:11.076Z","level":"INFO","logger":"kairo-sidecar.llm_caller","msg":"LLM Structured Call Attempt 1/2 with timeout=30.0s","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:11.076Z","level":"ERROR","logger":"kairo-sidecar.llm_caller","msg":"LiteLLM endpoint connection failed on attempt 1: <urlopen error [Errno 111] Connection refused>","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:11.076Z","level":"ERROR","logger":"kairo-sidecar.deeppresenter_bridge","msg":"Failed to generate LLM slide outline: LiteLLM proxy connection failed: <urlopen error [Errno 111] Connection refused>.","service":"axiom-grid-overlay"}
+....{"ts":"2026-09-15T13:32:11.083Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'ignore\\s+previous\\s+instructions' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:11.084Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'you\\s+are\\s+now' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:11.085Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'override\\s+(?:all\\s+|your\\s+)?(?:system\\s+|safety\\s+)?(?:rules|guidelines|instructions)' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:11.086Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'forget\\s+(?:all\\s+|your\\s+)?(?:previous\\s+|prior\\s+)?(?:instructions?|rules|guidelines)' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:11.087Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'new\\s+instructions' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:11.088Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern '\\[ADMIN\\]' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:11.089Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'reveal\\s+your\\s+system\\s+prompt' matched","service":"axiom-grid-overlay"}
+..{"ts":"2026-09-15T13:32:11.091Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'you\\s+are\\s+now' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:11.092Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'ignore\\s+all\\s+previous\\s+instructions' matched","service":"axiom-grid-overlay"}
+..{"ts":"2026-09-15T13:32:11.097Z","level":"WARNING","logger":"kairo-sidecar.figma_design_bridge","msg":"LOUD WARNING: Figma/tldraw mock canvas is active!","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:11.097Z","level":"INFO","logger":"kairo-sidecar.figma_design_bridge","msg":"Figma Frame created: frame-node-1 ('New Container Frame') [mock_canvas=ON]","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:11.099Z","level":"WARNING","logger":"kairo-sidecar.figma_design_bridge","msg":"LOUD WARNING: Figma/tldraw mock canvas is active!","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:11.099Z","level":"INFO","logger":"kairo-sidecar.figma_design_bridge","msg":"Figma Text Node created: text-node-1 ('Hero Banner Text') -> 'Build Premium Design...'","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:11.102Z","level":"INFO","logger":"kairo-sidecar.figma_design_bridge","msg":"Figma Rectangle created: rect-node-1 ('Card Divider')","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:11.104Z","level":"INFO","logger":"kairo-sidecar.figma_design_bridge","msg":"Figma Component created: component-node-1 ('IconButton')","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:11.106Z","level":"WARNING","logger":"kairo-sidecar.figma_design_bridge","msg":"LOUD WARNING: Figma/tldraw mock canvas is active!","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:11.106Z","level":"INFO","logger":"kairo-sidecar.figma_design_bridge","msg":"Figma Section created: section-node-1 ('Layout Metrics Section')","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:11.108Z","level":"WARNING","logger":"kairo-sidecar.figma_design_bridge","msg":"LOUD WARNING: Figma/tldraw mock canvas is active!","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:11.108Z","level":"INFO","logger":"kairo-sidecar.figma_design_bridge","msg":"Figma Frame created: frame-node-1 ('Solid Color Frame') [mock_canvas=ON]","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:11.108Z","level":"INFO","logger":"kairo-sidecar.figma_design_bridge","msg":"Figma Fills set on frame-node-1 -> #ff0080","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:11.111Z","level":"WARNING","logger":"kairo-sidecar.figma_design_bridge","msg":"LOUD WARNING: Figma/tldraw mock canvas is active!","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:11.111Z","level":"WARNING","logger":"kairo-sidecar.figma_design_bridge","msg":"LOUD WARNING: Figma/tldraw mock canvas is active!","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:11.111Z","level":"INFO","logger":"kairo-sidecar.figma_design_bridge","msg":"Figma Frame created: frame-node-1 ('Fallback Frame') [mock_canvas=ON]","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:11.113Z","level":"WARNING","logger":"kairo-sidecar.figma_design_bridge","msg":"LOUD WARNING: Figma/tldraw mock canvas is active!","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:11.113Z","level":"INFO","logger":"kairo-sidecar.figma_design_bridge","msg":"Figma Frame created: frame-node-1 ('Horizontal Layout') [mock_canvas=ON]","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:11.113Z","level":"INFO","logger":"kairo-sidecar.figma_design_bridge","msg":"Figma AutoLayout set on frame-node-1: layout=HORIZONTAL, spacing=16, p_tb=8, p_lr=12","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:11.116Z","level":"WARNING","logger":"kairo-sidecar.figma_design_bridge","msg":"LOUD WARNING: Figma/tldraw mock canvas is active!","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:11.116Z","level":"WARNING","logger":"kairo-sidecar.figma_design_bridge","msg":"LOUD WARNING: Figma/tldraw mock canvas is active!","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:11.116Z","level":"INFO","logger":"kairo-sidecar.figma_design_bridge","msg":"Figma Frame created: frame-node-1 ('Vertical Layout') [mock_canvas=ON]","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:11.116Z","level":"INFO","logger":"kairo-sidecar.figma_design_bridge","msg":"Figma AutoLayout set on frame-node-1: layout=VERTICAL, spacing=24, p_tb=16, p_lr=24","service":"axiom-grid-overlay"}
+....{"ts":"2026-09-15T13:32:11.126Z","level":"WARNING","logger":"kairo-sidecar.figma_design_bridge","msg":"LOUD WARNING: Figma/tldraw mock canvas is active!","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:11.126Z","level":"INFO","logger":"kairo-sidecar.figma_design_bridge","msg":"Figma Component created: component-node-1 ('DashboardCard')","service":"axiom-grid-overlay"}
+..{"ts":"2026-09-15T13:32:11.132Z","level":"INFO","logger":"kairo-sidecar.figma_design_bridge","msg":"Figma Text Node created: text-node-1 ('Subheadline') -> 'Analytics Overview...'","service":"axiom-grid-overlay"}
+. [ 17%]
+.{"ts":"2026-09-15T13:32:11.136Z","level":"WARNING","logger":"kairo-sidecar.figma_design_bridge","msg":"LOUD WARNING: Figma/tldraw mock canvas is active!","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:11.136Z","level":"INFO","logger":"kairo-sidecar.figma_design_bridge","msg":"Figma Text Node created: text-node-1 ('Caption Label') -> 'Active State...'","service":"axiom-grid-overlay"}
+.....{"ts":"2026-09-15T13:32:11.144Z","level":"INFO","logger":"kairo-sidecar.design_bridge","msg":"Penpot rendering SVG element (length: 41)","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:11.145Z","level":"INFO","logger":"kairo-sidecar.design_bridge","msg":"Penpot rendering SVG element (length: 29)","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:11.146Z","level":"INFO","logger":"kairo-sidecar.design_bridge","msg":"Penpot rendering SVG element (length: 0)","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:11.147Z","level":"INFO","logger":"kairo-sidecar.design_bridge","msg":"Penpot rendering SVG element (length: 92)","service":"axiom-grid-overlay"}
+...{"ts":"2026-09-15T13:32:11.150Z","level":"WARNING","logger":"kairo-sidecar.tldraw_bridge","msg":"LOUD WARNING: Figma/tldraw mock canvas is active!","service":"axiom-grid-overlay"}
+..{"ts":"2026-09-15T13:32:11.154Z","level":"WARNING","logger":"kairo-sidecar.tldraw_bridge","msg":"LOUD WARNING: Figma/tldraw mock canvas is active!","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:11.154Z","level":"INFO","logger":"kairo-sidecar.tldraw_bridge","msg":"tldraw Shape created: shape-1 of type 'geo' at (400, 400) [mock=ON]","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:11.157Z","level":"WARNING","logger":"kairo-sidecar.tldraw_bridge","msg":"LOUD WARNING: Figma/tldraw mock canvas is active!","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:11.160Z","level":"WARNING","logger":"kairo-sidecar.tldraw_bridge","msg":"LOUD WARNING: Figma/tldraw mock canvas is active!","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:11.160Z","level":"INFO","logger":"kairo-sidecar.tldraw_bridge","msg":"tldraw Shape updated: node-start","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:11.162Z","level":"WARNING","logger":"kairo-sidecar.tldraw_bridge","msg":"LOUD WARNING: Figma/tldraw mock canvas is active!","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:11.162Z","level":"INFO","logger":"kairo-sidecar.tldraw_bridge","msg":"tldraw Shape updated: node-start","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:11.166Z","level":"INFO","logger":"kairo-sidecar.tldraw_bridge","msg":"tldraw Shape deleted: node-start","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:11.169Z","level":"WARNING","logger":"kairo-sidecar.tldraw_bridge","msg":"LOUD WARNING: Figma/tldraw mock canvas is active!","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:11.171Z","level":"WARNING","logger":"kairo-sidecar.tldraw_bridge","msg":"LOUD WARNING: Figma/tldraw mock canvas is active!","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:11.171Z","level":"INFO","logger":"kairo-sidecar.tldraw_bridge","msg":"tldraw drawing flowchart with 2 nodes and 0 edges.","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:11.173Z","level":"INFO","logger":"kairo-sidecar.tldraw_bridge","msg":"tldraw drawing flowchart with 2 nodes and 1 edges.","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:11.173Z","level":"WARNING","logger":"kairo-sidecar.tldraw_bridge","msg":"LOUD WARNING: Figma/tldraw mock canvas is active!","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:11.173Z","level":"INFO","logger":"kairo-sidecar.tldraw_bridge","msg":"tldraw Shape created: shape-1 of type 'geo' at (100.0, 100.0) [mock=ON]","service":"axiom-grid-overlay"}
+....................{"ts":"2026-09-15T13:32:11.199Z","level":"INFO","logger":"kairo-sidecar.figma_design_bridge","msg":"Figma Frame created: frame-node-1 ('IPC Layout Frame') [mock_canvas=ON]","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:11.200Z","level":"INFO","logger":"kairo-sidecar.figma_design_bridge","msg":"Figma Fills set on frame-node-1 -> #10b981","service":"axiom-grid-overlay"}
+..{"ts":"2026-09-15T13:32:11.205Z","level":"INFO","logger":"kairo-sidecar.tldraw_bridge","msg":"tldraw Shape created: shape-1 of type 'geo' at (100.0, 100.0) [mock=ON]","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:11.205Z","level":"WARNING","logger":"kairo-sidecar.tldraw_bridge","msg":"LOUD WARNING: Figma/tldraw mock canvas is active!","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:11.205Z","level":"INFO","logger":"kairo-sidecar.tldraw_bridge","msg":"tldraw Shape created: shape-2 of type 'geo' at (350.0, 85.0) [mock=ON]","service":"axiom-grid-overlay"}
+.........{"ts":"2026-09-15T13:32:11.463Z","level":"INFO","logger":"kairo-sidecar.excalidraw_bridge","msg":"Excalidraw rectangle created: 644288d2-b07e-4d79-809e-a3a5930a3f7a at (100,100) 200x80","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:11.464Z","level":"INFO","logger":"kairo-sidecar.excalidraw_bridge","msg":"Excalidraw text created: 6c64fde7-9ba6-4119-9fee-58135e2a4691 -> 'Hello World'","service":"axiom-grid-overlay"}
+..{"ts":"2026-09-15T13:32:11.467Z","level":"INFO","logger":"kairo-sidecar.excalidraw_bridge","msg":"Excalidraw rectangle created: 59eda357-37ed-41b6-9397-6beacfac92ae at (10,10) 100x50","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:11.467Z","level":"INFO","logger":"kairo-sidecar.excalidraw_bridge","msg":"Excalidraw text created: ffb37191-1538-46af-8625-cceb06b30ec1 -> 'Label'","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:11.467Z","level":"INFO","logger":"kairo-sidecar.excalidraw_bridge","msg":"Excalidraw arrow created: 38c14fca-7c18-4385-8a6b-7237ab642d9e (50,50)->(150,150)","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:11.468Z","level":"INFO","logger":"kairo-sidecar.excalidraw_bridge","msg":"Excalidraw rectangle created: 0066da02-c466-47c0-9e1e-145bb46556f6 at (0,0) 100x100","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:11.469Z","level":"INFO","logger":"kairo-sidecar.excalidraw_bridge","msg":"Excalidraw text created: 31276b97-720a-45af-a8c0-f41d300908cb -> 'Start'","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:11.469Z","level":"INFO","logger":"kairo-sidecar.excalidraw_bridge","msg":"Excalidraw diamond created: e0302efb-ff38-4f79-a35a-5ab5a0707bce at (350.0,85.0) 120.0x100.0","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:11.469Z","level":"INFO","logger":"kairo-sidecar.excalidraw_bridge","msg":"Excalidraw text created: ea3b912e-1182-407f-8e58-98b274e578a3 -> 'Check?'","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:11.469Z","level":"INFO","logger":"kairo-sidecar.excalidraw_bridge","msg":"Excalidraw ellipse created: 21d5ac2f-e960-44ff-a48b-4c55a022fcac at (600.0,100.0) 160.0x70.0","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:11.469Z","level":"INFO","logger":"kairo-sidecar.excalidraw_bridge","msg":"Excalidraw text created: 210054b0-3b53-448a-b3c7-8d415ed06314 -> 'Done'","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:11.469Z","level":"INFO","logger":"kairo-sidecar.excalidraw_bridge","msg":"Excalidraw arrow created: 0c945099-a72b-4975-a13e-9f9f1cd3d553 (260.0,135.0)->(350.0,135.0)","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:11.469Z","level":"INFO","logger":"kairo-sidecar.excalidraw_bridge","msg":"Excalidraw arrow created: 4c855810-8069-4f1f-971e-5e472b797a7a (470.0,135.0)->(600.0,135.0)","service":"axiom-grid-overlay"}
+...........{"ts":"2026-09-15T13:32:11.771Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"compare_contracts: added=2, removed=0, modified=10, unchanged=111","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:11.963Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"compare_contracts: added=2, removed=0, modified=10, unchanged=111","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:12.159Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"compare_contracts: added=2, removed=0, modified=10, unchanged=111","service":"axiom-grid-overlay"}
+. [ 19%]
+.{"ts":"2026-09-15T13:32:12.572Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"compare_contracts: added=2, removed=0, modified=10, unchanged=111","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:12.762Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"compare_contracts: added=0, removed=0, modified=0, unchanged=121","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.145Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"compare_contracts: added=0, removed=0, modified=0, unchanged=121","service":"axiom-grid-overlay"}
+....{"ts":"2026-09-15T13:32:13.152Z","level":"INFO","logger":"kairo-sidecar.citation_graph","msg":"auto_detect_citations: found 1 citations from NDA_Template.docx","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.154Z","level":"INFO","logger":"kairo-sidecar.citation_graph","msg":"auto_detect_citations: found 3 citations from SOW_2024.docx","service":"axiom-grid-overlay"}
+......{"ts":"2026-09-15T13:32:13.159Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'ignore\\s+all\\s+previous\\s+instructions' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.160Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'disregard\\s+all\\s+previous' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.161Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'reveal\\s+your\\s+system\\s+prompt' matched","service":"axiom-grid-overlay"}
+..{"ts":"2026-09-15T13:32:13.163Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'bypass\\s+your\\s+guidelines' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.164Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'ignore\\s+previous\\s+instructions' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.166Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'you\\s+are\\s+now\\s+dan' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.167Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'enter\\s+developer\\s+mode' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.168Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'pretend\\s+you\\s+are\\s+gpt' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.169Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'ignore\\s+all\\s+prior\\s+instructions' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.170Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'new\\s+instructions' matched","service":"axiom-grid-overlay"}
+..{"ts":"2026-09-15T13:32:13.173Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'jailbreak\\s+mode' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.175Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'repeat\\s+after\\s+me' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.176Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern '\\[ADMIN\\]' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.178Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'bypass\\s+your\\s+guidelines' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.179Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'you\\s+are\\s+now' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.181Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'forget\\s+all\\s+previous\\s+instructions' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.182Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'you\\s+are\\s+(?:no\\s+longer|not\\s+)\\s*(?:bound\\s+by|limited\\s+by|restricted\\s+by)' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.184Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'override\\s+(?:all\\s+|your\\s+)?(?:system\\s+|safety\\s+)?(?:rules|guidelines|instructions)' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.185Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern '(?:base64|btoa|atob)\\s*\\(' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.187Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern '\\\\x[0-9a-f]{2}\\\\x[0-9a-f]{2}' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.188Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern '\\\\u[0-9a-f]{4}\\\\u[0-9a-f]{4}' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.190Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'pretend\\s+you\\s+are\\s+a' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.191Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'in\\s+a\\s+fictional\\s+scenario' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.193Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'role\\s+play\\s+as\\s+a' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.194Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'act\\s+as\\s+if' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.196Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'translate\\s+the\\s+following' matched","service":"axiom-grid-overlay"}
+..{"ts":"2026-09-15T13:32:13.197Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'simulate\\s+being' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.199Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'unlock\\s+mode' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.200Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'for\\s+educational\\s+purposes' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.202Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern '(?:grant|give)\\s+me\\s+(?:admin|root|sudo|elevated)\\s+(?:access|privileges)' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.203Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern '(?:import\\s+os|subprocess|eval\\s*\\(|exec\\s*\\()' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.204Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern '(?:import\\s+os|subprocess|eval\\s*\\(|exec\\s*\\()' matched","service":"axiom-grid-overlay"}
+...{"ts":"2026-09-15T13:32:13.207Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'reveal\\s+your\\s+system\\s+prompt' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.209Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'show\\s+me\\s+your\\s+rules' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.210Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'system\\s+prompt' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.211Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'you\\s+are\\s+now' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.212Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern '(?:send|transmit|exfiltrate)\\s+(?:data|secrets?|info)\\s+to\\s+' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.213Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'you\\s+are\\s+now' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.214Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'pretend\\s+you\\s+are\\s+gpt' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.215Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'override\\s+(?:all\\s+|your\\s+)?(?:system\\s+|safety\\s+)?(?:rules|guidelines|instructions)' matched","service":"axiom-grid-overlay"}
+.....{"ts":"2026-09-15T13:32:13.220Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'enable\\s+unrestricted\\s+mode' matched","service":"axiom-grid-overlay"}
+..{"ts":"2026-09-15T13:32:13.222Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'ignore\\s+all\\s+previous\\s+instructions' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.222Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'disregard\\s+all\\s+previous' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.222Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'reveal\\s+your\\s+system\\s+prompt' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.222Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'override\\s+your\\s+training' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.222Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'bypass\\s+your\\s+guidelines' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.222Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'ignore\\s+previous\\s+instructions' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.222Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'you\\s+are\\s+now\\s+dan' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.222Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'enter\\s+developer\\s+mode' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.222Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'pretend\\s+you\\s+are\\s+gpt' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.222Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'ignore\\s+all\\s+prior\\s+instructions' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.223Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'new\\s+instructions' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.223Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'system\\s+prompt' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.223Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'jailbreak\\s+mode' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.227Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'repeat\\s+after\\s+me' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.227Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern '\\[ADMIN\\]' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.227Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'bypass\\s+your\\s+guidelines' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.227Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'you\\s+are\\s+now' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.227Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'forget\\s+all\\s+previous\\s+instructions' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.228Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'you\\s+are\\s+(?:no\\s+longer|not\\s+)\\s*(?:bound\\s+by|limited\\s+by|restricted\\s+by)' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.228Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'override\\s+(?:all\\s+|your\\s+)?(?:system\\s+|safety\\s+)?(?:rules|guidelines|instructions)' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.228Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern '(?:base64|btoa|atob)\\s*\\(' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.228Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern '\\\\x[0-9a-f]{2}\\\\x[0-9a-f]{2}' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.228Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern '\\\\u[0-9a-f]{4}\\\\u[0-9a-f]{4}' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.228Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'pretend\\s+you\\s+are\\s+a' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.228Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'in\\s+a\\s+fictional\\s+scenario' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.228Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'role\\s+play\\s+as\\s+a' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.228Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'act\\s+as\\s+if' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.228Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'translate\\s+the\\s+following' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.228Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'simulate\\s+being' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.229Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern '(?:import\\s+os|subprocess|eval\\s*\\(|exec\\s*\\()' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.229Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern '(?:import\\s+os|subprocess|eval\\s*\\(|exec\\s*\\()' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.229Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'system\\s+prompt' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.229Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern '(?:import\\s+os|subprocess|eval\\s*\\(|exec\\s*\\()' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.229Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'reveal\\s+your\\s+system\\s+prompt' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.229Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'show\\s+me\\s+your\\s+rules' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.229Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'system\\s+prompt' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.229Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'you\\s+are\\s+now' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.229Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern '(?:send|transmit|exfiltrate)\\s+(?:data|secrets?|info)\\s+to\\s+' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.229Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'you\\s+are\\s+now' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.229Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'you\\s+are\\s+(?:no\\s+longer|not\\s+)\\s*(?:bound\\s+by|limited\\s+by|restricted\\s+by)' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.229Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'act\\s+as\\s+(?:an?\\s+unrestricted|DAN|jailbreak|unfiltered)' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.229Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'what\\s+is\\s+your\\s+sentinel' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.229Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'enable\\s+unrestricted\\s+mode' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.230Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'ignore\\s+above' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.483Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"compare_contracts: added=2, removed=0, modified=10, unchanged=111","service":"axiom-grid-overlay"}
+... [ 21%]
+..................{"ts":"2026-09-15T13:32:13.556Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'reveal\\s+your\\s+system\\s+prompt' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.557Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'you\\s+are\\s+now\\s+dan' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.557Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern '(?:rm\\s+-rf|del\\s+/[fqs]|format\\s+[a-z]:)' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.557Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern '(?:print|show|reveal|exfiltrate)\\s+(?:all\\s+)?(?:secrets?|api\\s+keys?|tokens?|passwords?|credentials?)' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.557Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern '(?:reveal|show|print|display|output)\\s+(?:the\\s+)?(?:system\\s+)?(?:prompt|instructions?|rules|guidelines)' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.557Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'enter\\s+developer\\s+mode' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.557Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'forget\\s+all\\s+previous\\s+instructions' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.557Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern '(?:grant|give)\\s+me\\s+(?:admin|root|sudo|elevated)\\s+(?:access|privileges)' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.557Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern '\\[SYSTEM(?:\\s+OVERRIDE)?\\]' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.557Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'as\\s+an\\s+ai\\s+with\\s+no' matched","service":"axiom-grid-overlay"}
+............{"ts":"2026-09-15T13:32:13.583Z","level":"INFO","logger":"kairo-sidecar.kami_pdf_exporter","msg":"PDF export complete: /tmp/pytest-of-daytona/pytest-8/test_pdf_notification_contains0/Kairo Exports/kairo-export-20260915_133213.pdf","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.589Z","level":"INFO","logger":"kairo-sidecar.kami_pdf_exporter","msg":"PDF export complete: /tmp/pytest-of-daytona/pytest-8/test_pdf_with_theme_arg0/Kairo Exports/kairo-export-20260915_133213.pdf","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.591Z","level":"INFO","logger":"kairo.quarkdown","msg":"\u2705 EPUB 3.2 generated successfully: /tmp/pytest-of-daytona/pytest-8/test_epub_creates_file0/Kairo Exports/kairo-export-20260915_133213.epub","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.593Z","level":"INFO","logger":"kairo.quarkdown","msg":"\u2705 EPUB 3.2 generated successfully: /tmp/pytest-of-daytona/pytest-8/test_epub_extension0/Kairo Exports/kairo-export-20260915_133213.epub","service":"axiom-grid-overlay"}
+....{"ts":"2026-09-15T13:32:13.599Z","level":"INFO","logger":"kairo.sidecar.kami_handlers","msg":"KamiCommandHandler: routing command [book] with args {}","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.599Z","level":"INFO","logger":"kairo.quarkdown","msg":"Quarkdown JVM compiler unavailable. Running high-fidelity local programmatic compiler...","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.599Z","level":"INFO","logger":"kairo.quarkdown","msg":"\u2705 Book-style HTML exported: /tmp/pytest-of-daytona/pytest-8/test_book_creates_html_file0/Kairo Exports/kairo-book-20260915_133213.html","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.604Z","level":"INFO","logger":"kairo.sidecar.kami_handlers","msg":"KamiCommandHandler: routing command [email] with args {}","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.606Z","level":"INFO","logger":"kairo.sidecar.kami_handlers","msg":"KamiCommandHandler: routing command [email] with args {}","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.609Z","level":"INFO","logger":"kairo.sidecar.kami_handlers","msg":"KamiCommandHandler: routing command [linkedin] with args {}","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.612Z","level":"INFO","logger":"kairo.sidecar.kami_handlers","msg":"KamiCommandHandler: routing command [linkedin] with args {}","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.614Z","level":"INFO","logger":"kairo.sidecar.kami_handlers","msg":"KamiCommandHandler: routing command [tweet] with args {}","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.618Z","level":"INFO","logger":"kairo.sidecar.kami_handlers","msg":"KamiCommandHandler: routing command [tweet] with args {}","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:13.620Z","level":"INFO","logger":"kairo.sidecar.kami_handlers","msg":"KamiCommandHandler: routing command [tweet] with args {}","service":"axiom-grid-overlay"}
+.F{"ts":"2026-09-15T13:32:13.642Z","level":"ERROR","logger":"kairo.sidecar.kami_handlers","msg":"Error handling kami command 'podcast': [synthesizer] Audio synthesis engine is not installed. Cannot generate audio.\nInstall/enable: pip install synthesizer  (or install piper-tts for Piper backend)","service":"axiom-grid-overlay","exc_type":"EngineUnavailableError"}
+F...........{"ts":"2026-09-15T13:32:13.704Z","level":"INFO","logger":"kairo-sidecar.kami_pdf_exporter","msg":"PDF export complete: /tmp/pytest-of-daytona/pytest-8/test_parse_unknown_defaults_to0/Kairo Exports/kairo-export-20260915_133213.pdf","service":"axiom-grid-overlay"}
+..{"ts":"2026-09-15T13:32:13.709Z","level":"INFO","logger":"kairo-sidecar.kami_pdf_exporter","msg":"PDF export complete: /tmp/pytest-of-daytona/pytest-8/test_empty_content_doesnt_cras0/Kairo Exports/kairo-export-20260915_133213.pdf","service":"axiom-grid-overlay"}
+........... [ 24%]
+.......F..................{"ts":"2026-09-15T13:32:14.553Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'ignore\\s+all\\s+previous\\s+instructions' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:14.555Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'you\\s+are\\s+now\\s+dan' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:14.556Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'print\\s+your\\s+instructions' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:14.558Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'bypass\\s+your\\s+guidelines' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:14.559Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern '(?:print|show|reveal|exfiltrate)\\s+(?:all\\s+)?(?:secrets?|api\\s+keys?|tokens?|passwords?|credentials?)' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:14.561Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'system\\s+prompt' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:14.562Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern '(?:grant|give)\\s+me\\s+(?:admin|root|sudo|elevated)\\s+(?:access|privileges)' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:14.563Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'ignore\\s+previous' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:14.565Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'role\\s+play\\s+as\\s+a' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:14.566Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'disregard\\s+all\\s+previous' matched","service":"axiom-grid-overlay"}
+..........{"ts":"2026-09-15T13:32:15.047Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"parse_contract: Parsed contract: 180 chars, 5 lines","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.048Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph: executing node 'extract_clauses'","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.048Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"extract_clauses: found 5 clauses","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.049Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph: executing node 'generate_slides'","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:15.049Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"generate_slides: created 7 slides","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.049Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph: executing node 'compose_email'","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.049Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"compose_email: 304 chars","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.050Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph: executing node 'export_results'","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.050Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"export_results: Workflow complete. Clauses: 5, Slides: 7","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.050Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph workflow complete: ['parse_contract', 'extract_clauses', 'generate_slides', 'compose_email', 'export_results']","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.063Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph: executing node 'parse_contract'","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.063Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"parse_contract: Parsed contract: 180 chars, 5 lines","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.064Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph: executing node 'extract_clauses'","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:15.064Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"extract_clauses: found 5 clauses","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.064Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph: executing node 'generate_slides'","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.064Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"generate_slides: created 7 slides","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.065Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph: executing node 'compose_email'","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.065Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"compose_email: 304 chars","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.066Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph: executing node 'export_results'","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.066Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"export_results: Workflow complete. Clauses: 5, Slides: 7","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.066Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph workflow complete: ['parse_contract', 'extract_clauses', 'generate_slides', 'compose_email', 'export_results']","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:15.081Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph: executing node 'parse_contract'","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.081Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"parse_contract: Parsed contract: 180 chars, 5 lines","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.082Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph: executing node 'extract_clauses'","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.082Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"extract_clauses: found 5 clauses","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.083Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph: executing node 'generate_slides'","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.083Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"generate_slides: created 7 slides","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:15.084Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph: executing node 'compose_email'","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.084Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"compose_email: 304 chars","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.084Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph: executing node 'export_results'","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.084Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"export_results: Workflow complete. Clauses: 5, Slides: 7","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.084Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph workflow complete: ['parse_contract', 'extract_clauses', 'generate_slides', 'compose_email', 'export_results']","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.097Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph: executing node 'parse_contract'","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.097Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"parse_contract: Parsed contract: 180 chars, 5 lines","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.097Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph: executing node 'extract_clauses'","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.097Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"extract_clauses: found 5 clauses","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.098Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph: executing node 'generate_slides'","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.098Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"generate_slides: created 7 slides","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.099Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph: executing node 'compose_email'","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.099Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"compose_email: 304 chars","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:15.099Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph: executing node 'export_results'","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.099Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"export_results: Workflow complete. Clauses: 5, Slides: 7","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.100Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph workflow complete: ['parse_contract', 'extract_clauses', 'generate_slides', 'compose_email', 'export_results']","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.111Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph: executing node 'parse_contract'","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.111Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"parse_contract: Parsed contract: 180 chars, 5 lines","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.112Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph: executing node 'extract_clauses'","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.112Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"extract_clauses: found 5 clauses","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:15.113Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph: executing node 'generate_slides'","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.113Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"generate_slides: created 7 slides","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.113Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph: executing node 'compose_email'","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.113Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"compose_email: 304 chars","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.114Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph: executing node 'export_results'","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.114Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"export_results: Workflow complete. Clauses: 5, Slides: 7","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.114Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph workflow complete: ['parse_contract', 'extract_clauses', 'generate_slides', 'compose_email', 'export_results']","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.126Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"parse_contract: Parsed contract: 180 chars, 5 lines","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.126Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph: executing node 'extract_clauses'","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.126Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"extract_clauses: found 5 clauses","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.127Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph: executing node 'generate_slides'","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.127Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"generate_slides: created 7 slides","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.128Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph: executing node 'compose_email'","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.128Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"compose_email: 304 chars","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.128Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph: executing node 'export_results'","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:15.128Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"export_results: Workflow complete. Clauses: 5, Slides: 7","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.129Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph workflow complete: ['parse_contract', 'extract_clauses', 'generate_slides', 'compose_email', 'export_results']","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.140Z","level":"WARNING","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph node 'parse_contract': input blocked by PromptShield \u2014 ['reveal\\\\s+your\\\\s+system\\\\s+prompt', 'ignore\\\\s+all\\\\s+previous\\\\s+instructions', 'system\\\\s+prompt']","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.140Z","level":"WARNING","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph node 'extract_clauses': input blocked by PromptShield \u2014 ['reveal\\\\s+your\\\\s+system\\\\s+prompt', 'ignore\\\\s+all\\\\s+previous\\\\s+instructions', 'system\\\\s+prompt']","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.141Z","level":"WARNING","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph node 'generate_slides': input blocked by PromptShield \u2014 ['reveal\\\\s+your\\\\s+system\\\\s+prompt', 'ignore\\\\s+all\\\\s+previous\\\\s+instructions', 'system\\\\s+prompt']","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.141Z","level":"WARNING","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph node 'compose_email': input blocked by PromptShield \u2014 ['reveal\\\\s+your\\\\s+system\\\\s+prompt', 'ignore\\\\s+all\\\\s+previous\\\\s+instructions', 'system\\\\s+prompt']","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.142Z","level":"WARNING","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph node 'export_results': input blocked by PromptShield \u2014 ['reveal\\\\s+your\\\\s+system\\\\s+prompt', 'ignore\\\\s+all\\\\s+previous\\\\s+instructions', 'system\\\\s+prompt']","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.142Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph workflow complete: []","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:15.154Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph: executing node 'parse_contract'","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.154Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"parse_contract: Parsed contract: 180 chars, 5 lines","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-15T13:32:15.155Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph: executing node 'extract_clauses'","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.155Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"extract_clauses: found 5 clauses","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.155Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph: executing node 'generate_slides'","service":"axiom-grid-overlay"}
+FFF{"ts":"2026-09-15T13:32:15.234Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"analyze_contract: 3 clauses, 1 redlines generated","service":"axiom-grid-overlay"}
+F{"ts":"2026-09-15T13:32:15.289Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"analyze_contract: 2 clauses, 1 redlines generated","service":"axiom-grid-overlay"}
+F.FFFFFFF
+=================================== FAILURES ===================================
+_________________ TestPodcastExport.test_podcast_creates_file __________________
+
+self = <kairo-sidecar.test_domain7_export.TestPodcastExport object at 0x703c8e647750>
+handler = <sidecar.exporters.kami_handlers.KamiCommandHandler object at 0x703a90905490>
+sample_metadata = {'title': 'The Future of AI Collaboration', 'author': 'Test Suite'}
+
+    def test_podcast_creates_file(self, handler, sample_metadata):
+        result = handler.handle("// kami podcast", SAMPLE_DOC, sample_metadata)
+>       assert result["ok"] is True
+E       assert False is True
+
+kairo-sidecar/test_domain7_export.py:215: AssertionError
+----------------------------- Captured stdout call -----------------------------
+{"ts":"2026-09-15T13:32:13.622Z","level":"INFO","logger":"kairo.sidecar.kami_handlers","msg":"KamiCommandHandler: routing command [podcast] with args {}","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.623Z","level":"INFO","logger":"kairo.sidecar.notebooklm_bridge","msg":"Converting document to podcast audio overview at /tmp/pytest-of-daytona/pytest-8/test_podcast_creates_file0/Kairo Exports/kairo-podcast-20260915_133213.mp3","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.623Z","level":"ERROR","logger":"kairo.sidecar.kami_handlers","msg":"Error handling kami command 'podcast': [notebooklm] NotebookLM API key not set. Cannot generate podcast audio.\nInstall/enable: Set NOTEBOOKLM_API_KEY environment variable to enable podcast conversion.","service":"axiom-grid-overlay","exc_type":"EngineUnavailableError"}
+------------------------------ Captured log call -------------------------------
+INFO     kairo.sidecar.kami_handlers:kami_handlers.py:33 KamiCommandHandler: routing command [podcast] with args {}
+INFO     kairo.sidecar.notebooklm_bridge:notebooklm_bridge.py:39 Converting document to podcast audio overview at /tmp/pytest-of-daytona/pytest-8/test_podcast_creates_file0/Kairo Exports/kairo-podcast-20260915_133213.mp3
+ERROR    kairo.sidecar.kami_handlers:kami_handlers.py:61 Error handling kami command 'podcast': [notebooklm] NotebookLM API key not set. Cannot generate podcast audio.
+Install/enable: Set NOTEBOOKLM_API_KEY environment variable to enable podcast conversion.
+Traceback (most recent call last):
+  File "/home/daytona/axiom-grid/kairo-sidecar/sidecar/exporters/kami_handlers.py", line 59, in handle
+    return handler(document_text, args, metadata)
+  File "/home/daytona/axiom-grid/kairo-sidecar/sidecar/exporters/kami_handlers.py", line 266, in _export_podcast
+    written = nlm.convert_to_podcast(text, str(out_path))
+  File "/home/daytona/axiom-grid/kairo-sidecar/sidecar/exporters/notebooklm_bridge.py", line 42, in convert_to_podcast
+    raise EngineUnavailableError(
+    ...<3 lines>...
+    )
+sidecar.bridge_health.EngineUnavailableError: [notebooklm] NotebookLM API key not set. Cannot generate podcast audio.
+Install/enable: Set NOTEBOOKLM_API_KEY environment variable to enable podcast conversion.
+__________________ TestPodcastExport.test_local_podcast_flag ___________________
+
+self = <kairo-sidecar.test_domain7_export.TestPodcastExport object at 0x703c8e647890>
+handler = <sidecar.exporters.kami_handlers.KamiCommandHandler object at 0x703a906e3ee0>
+sample_metadata = {'title': 'The Future of AI Collaboration', 'author': 'Test Suite'}
+
+    def test_local_podcast_flag(self, handler, sample_metadata):
+        result = handler.handle("// kami podcast --local", SAMPLE_DOC, sample_metadata)
+>       assert result["ok"] is True
+E       assert False is True
+
+kairo-sidecar/test_domain7_export.py:222: AssertionError
+----------------------------- Captured stdout call -----------------------------
+{"ts":"2026-09-15T13:32:13.640Z","level":"INFO","logger":"kairo.sidecar.kami_handlers","msg":"KamiCommandHandler: routing command [podcast] with args {'local': 'true'}","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:13.641Z","level":"INFO","logger":"kairo.sidecar.synthesizer_bridge","msg":"Synthesizing offline audio dialogue using local backend [piper]","service":"axiom-grid-overlay"}
+------------------------------ Captured log call -------------------------------
+INFO     kairo.sidecar.kami_handlers:kami_handlers.py:33 KamiCommandHandler: routing command [podcast] with args {'local': 'true'}
+INFO     kairo.sidecar.synthesizer_bridge:synthesizer_bridge.py:44 Synthesizing offline audio dialogue using local backend [piper]
+ERROR    kairo.sidecar.kami_handlers:kami_handlers.py:61 Error handling kami command 'podcast': [synthesizer] Audio synthesis engine is not installed. Cannot generate audio.
+Install/enable: pip install synthesizer  (or install piper-tts for Piper backend)
+Traceback (most recent call last):
+  File "/home/daytona/axiom-grid/kairo-sidecar/sidecar/exporters/kami_handlers.py", line 59, in handle
+    return handler(document_text, args, metadata)
+  File "/home/daytona/axiom-grid/kairo-sidecar/sidecar/exporters/kami_handlers.py", line 261, in _export_podcast
+    written = synth.generate_audio(text, str(out_path))
+  File "/home/daytona/axiom-grid/kairo-sidecar/sidecar/exporters/synthesizer_bridge.py", line 47, in generate_audio
+    raise EngineUnavailableError(
+    ...<3 lines>...
+    )
+sidecar.bridge_health.EngineUnavailableError: [synthesizer] Audio synthesis engine is not installed. Cannot generate audio.
+Install/enable: pip install synthesizer  (or install piper-tts for Piper backend)
+_______ TestMediaTranscribe.test_extract_audio_raises_if_ffmpeg_missing ________
+
+self = <kairo-sidecar.test_domain9_media.TestMediaTranscribe object at 0x703c8e68a8b0>
+tmp_path = PosixPath('/tmp/pytest-of-daytona/pytest-8/test_extract_audio_raises_if_f0')
+
+    def test_extract_audio_raises_if_ffmpeg_missing(self, tmp_path):
+        """If ffmpeg is not on PATH, extract_audio raises RuntimeError."""
+        # Check if ffmpeg is available
+        ffmpeg_available = shutil.which("ffmpeg") is not None
+        if ffmpeg_available:
+            # If ffmpeg IS available, we can't test the missing-ffmpeg path.
+            # Instead verify extract_audio raises on non-existent file.
+>           transcriber = MediaTranscriber()
+                          ^^^^^^^^^^^^^^^^^^
+
+kairo-sidecar/test_domain9_media.py:238:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <sidecar.parsers.media_transcribe.MediaTranscriber object at 0x703a90759090>
+model_size = 'base.en', device = 'cpu', compute_type = 'int8'
+
+    def __init__(
+        self,
+        model_size: str = "base.en",
+        device: str = "cpu",
+        compute_type: str = "int8",
+    ) -> None:
+        if not HAS_FASTER_WHISPER:
+>           raise RuntimeError("faster-whisper not installed. pip install faster-whisper")
+E           RuntimeError: faster-whisper not installed. pip install faster-whisper
+
+kairo-sidecar/sidecar/parsers/media_transcribe.py:74: RuntimeError
+___________ TestEndToEndTraceReceipt.test_word_master_trace_emitted ____________
+
+self = <kairo-sidecar.test_phase0_1_e2e.TestEndToEndTraceReceipt object at 0x703c8e6ded50>
+temp_tracer = <sidecar.observability.opik_tracer.OpikTracer object at 0x703a9012e490>
+sample_docx = '/tmp/pytest-of-daytona/pytest-8/test_word_master_trace_emitted0/test.docx'
+temp_receipts = PosixPath('/tmp/pytest-of-daytona/pytest-8/test_word_master_trace_emitted0/receipts.jsonl')
+
+    def test_word_master_trace_emitted(self, temp_tracer, sample_docx, temp_receipts):
+        """WordMaster.apply_operations emits a real trace."""
+        from sidecar.masters.word_master import WordMaster
+
+        master = WordMaster()
+
+        # Call the real domain master
+        master.apply_operations(sample_docx, [])
+
+        # Verify trace was emitted
+        traces = temp_tracer.read_traces()
+>       assert len(traces) == 1, f"Expected 1 trace, got {len(traces)}"
+E       AssertionError: Expected 1 trace, got 0
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+kairo-sidecar/test_phase0_1_e2e.py:103: AssertionError
+---------------------------- Captured stdout setup -----------------------------
+{"ts":"2026-09-15T13:32:15.155Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"generate_slides: created 7 slides","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.156Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph: executing node 'compose_email'","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.156Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"compose_email: 304 chars","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.156Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph: executing node 'export_results'","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.156Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"export_results: Workflow complete. Clauses: 5, Slides: 7","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.157Z","level":"INFO","logger":"kairo-sidecar.langgraph_router","msg":"LangGraph workflow complete: ['parse_contract', 'extract_clauses', 'generate_slides', 'compose_email', 'export_results']","service":"axiom-grid-overlay"}
+___________ TestEndToEndTraceReceipt.test_excel_master_trace_emitted ___________
+
+self = <kairo-sidecar.test_phase0_1_e2e.TestEndToEndTraceReceipt object at 0x703c8e6defd0>
+temp_tracer = <sidecar.observability.opik_tracer.OpikTracer object at 0x703a9012e710>
+sample_xlsx = '/tmp/pytest-of-daytona/pytest-8/test_excel_master_trace_emitte0/test.xlsx'
+temp_receipts = PosixPath('/tmp/pytest-of-daytona/pytest-8/test_excel_master_trace_emitte0/receipts.jsonl')
+
+    def test_excel_master_trace_emitted(self, temp_tracer, sample_xlsx, temp_receipts):
+        """ExcelMaster.apply_operations emits a real trace."""
+        from sidecar.masters.excel_master import ExcelMaster
+
+        master = ExcelMaster()
+
+        master.apply_operations(sample_xlsx, [])
+
+        traces = temp_tracer.read_traces()
+>       assert len(traces) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+kairo-sidecar/test_phase0_1_e2e.py:156: AssertionError
+____________ TestEndToEndTraceReceipt.test_pdf_master_trace_emitted ____________
+
+self = <kairo-sidecar.test_phase0_1_e2e.TestEndToEndTraceReceipt object at 0x703c8e68bce0>
+temp_tracer = <sidecar.observability.opik_tracer.OpikTracer object at 0x703a90129e00>
+sample_pdf = '/home/daytona/axiom-grid/kairo-sidecar/test.pdf'
+
+    def test_pdf_master_trace_emitted(self, temp_tracer, sample_pdf):
+        """PDFMaster.extract_context emits a real trace."""
+        from sidecar.masters.other_masters import PDFMaster
+
+        master = PDFMaster()
+
+        master.extract_context(sample_pdf, None)
+
+        traces = temp_tracer.read_traces()
+>       assert len(traces) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+kairo-sidecar/test_phase0_1_e2e.py:169: AssertionError
+----------------------------- Captured stdout call -----------------------------
+{"ts":"2026-09-15T13:32:15.224Z","level":"INFO","logger":"kairo-sidecar.pdf_extraction_engine","msg":"PdfExtractionEngine initialised | PyMuPDF=False | OpenDataLoader=False | olmOCR=False | Surya=False","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.225Z","level":"INFO","logger":"kairo-sidecar.pdf_extraction_engine","msg":"Extracting '/home/daytona/axiom-grid/kairo-sidecar/test.pdf' | lang=en | estimated_words\u22489","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.228Z","level":"WARNING","logger":"kairo-sidecar.pdf_extraction_engine","msg":"All tiers failed \u2014 using raw fallback text.","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.228Z","level":"INFO","logger":"kairo-sidecar.pdf_extraction_engine","msg":"Extraction complete | tier=None | words=0 | confidence=0.10 | time=4.0ms","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.228Z","level":"WARNING","logger":"kairo-sidecar.other_masters","msg":"PDFMaster context extraction failed: no such table: pdf_chunks","service":"axiom-grid-overlay"}
+------------------------------ Captured log call -------------------------------
+INFO     kairo-sidecar.pdf_extraction_engine:pdf_extraction_engine.py:104 PdfExtractionEngine initialised | PyMuPDF=False | OpenDataLoader=False | olmOCR=False | Surya=False
+INFO     kairo-sidecar.pdf_extraction_engine:pdf_extraction_engine.py:175 Extracting '/home/daytona/axiom-grid/kairo-sidecar/test.pdf' | lang=en | estimated_words≈9
+WARNING  kairo-sidecar.pdf_extraction_engine:pdf_extraction_engine.py:250 All tiers failed — using raw fallback text.
+INFO     kairo-sidecar.pdf_extraction_engine:pdf_extraction_engine.py:258 Extraction complete | tier=None | words=0 | confidence=0.10 | time=4.0ms
+WARNING  kairo-sidecar.other_masters:other_masters.py:699 PDFMaster context extraction failed: no such table: pdf_chunks
+______ TestEndToEndTraceReceipt.test_legal_analyze_contract_trace_emitted ______
+
+self = <kairo-sidecar.test_phase0_1_e2e.TestEndToEndTraceReceipt object at 0x703c8e68a650>
+temp_tracer = <sidecar.observability.opik_tracer.OpikTracer object at 0x703a9012a3f0>
+
+    def test_legal_analyze_contract_trace_emitted(self, temp_tracer):
+        """legal_redline.analyze_contract emits a real trace."""
+        from sidecar.parsers.legal_redline import analyze_contract
+
+        contract_text = """
+        This Agreement is governed by the laws of the State of California.
+        The liability of either party shall be limited to $100.
+        Either party may terminate this agreement with 30 days notice.
+        This agreement shall automatically renew for successive one-year terms.
+        """
+
+        analyze_contract(contract_text)
+
+        traces = temp_tracer.read_traces()
+>       assert len(traces) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+kairo-sidecar/test_phase0_1_e2e.py:187: AssertionError
+----------------------------- Captured stdout call -----------------------------
+{"ts":"2026-09-15T13:32:15.234Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"detect_cuad_clauses: 3 clauses detected (HIGH=1, MEDIUM=2)","service":"axiom-grid-overlay"}
+------------------------------ Captured log call -------------------------------
+INFO     kairo-sidecar.legal_redline:legal_redline.py:311 detect_cuad_clauses: 3 clauses detected (HIGH=1, MEDIUM=2)
+INFO     kairo-sidecar.legal_redline:legal_redline.py:566 analyze_contract: 3 clauses, 1 redlines generated
+________ TestEndToEndTraceReceipt.test_multi_domain_trace_receipt_chain ________
+
+self = <kairo-sidecar.test_phase0_1_e2e.TestEndToEndTraceReceipt object at 0x703c8e705370>
+temp_tracer = <sidecar.observability.opik_tracer.OpikTracer object at 0x703a900517f0>
+sample_docx = '/tmp/pytest-of-daytona/pytest-8/test_multi_domain_trace_receip0/test.docx'
+sample_xlsx = '/tmp/pytest-of-daytona/pytest-8/test_multi_domain_trace_receip0/test.xlsx'
+temp_receipts = PosixPath('/tmp/pytest-of-daytona/pytest-8/test_multi_domain_trace_receip0/receipts.jsonl')
+
+    def test_multi_domain_trace_receipt_chain(
+        self, temp_tracer, sample_docx, sample_xlsx, temp_receipts
+    ):
+        """FLAGSHIP E2E: 4 real domain master calls → 4 traces → 4 receipts → chain verified.
+
+        This test FAILS if any trace or receipt is empty/faked.
+        """
+        from sidecar.masters.word_master import WordMaster
+        from sidecar.masters.excel_master import ExcelMaster
+        from sidecar.masters.other_masters import PDFMaster
+        from sidecar.parsers.legal_redline import analyze_contract
+
+        import time
+        from sidecar.observability.provenance_bridge import sha256_hex, canonical_receipt_json
+
+        # 1. Call 4 real domain masters
+        word_master = WordMaster()
+        excel_master = ExcelMaster()
+        pdf_master = PDFMaster()
+
+        word_master.apply_operations(sample_docx, [])
+        excel_master.apply_operations(sample_xlsx, [])
+
+        # PDF needs a file — use test.pdf
+        sidecar_pdf = Path(__file__).parent / "test.pdf"
+        if sidecar_pdf.exists():
+            pdf_master.extract_context(str(sidecar_pdf), None)
+
+        analyze_contract("This agreement is governed by California law. Liability is limited.")
+
+        # 2. Verify all traces were emitted
+        traces = temp_tracer.read_traces()
+        # At least 3 traces (PDF might fail if test.pdf missing)
+>       assert len(traces) >= 3, f"Expected >=3 traces, got {len(traces)}"
+E       AssertionError: Expected >=3 traces, got 0
+E       assert 0 >= 3
+E        +  where 0 = len([])
+
+kairo-sidecar/test_phase0_1_e2e.py:224: AssertionError
+----------------------------- Captured stdout call -----------------------------
+{"ts":"2026-09-15T13:32:15.285Z","level":"INFO","logger":"kairo-sidecar.pdf_extraction_engine","msg":"PdfExtractionEngine initialised | PyMuPDF=False | OpenDataLoader=False | olmOCR=False | Surya=False","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.287Z","level":"INFO","logger":"kairo-sidecar.pdf_extraction_engine","msg":"Extracting '/home/daytona/axiom-grid/kairo-sidecar/test.pdf' | lang=en | estimated_words\u22489","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.289Z","level":"WARNING","logger":"kairo-sidecar.pdf_extraction_engine","msg":"All tiers failed \u2014 using raw fallback text.","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.289Z","level":"INFO","logger":"kairo-sidecar.pdf_extraction_engine","msg":"Extraction complete | tier=None | words=0 | confidence=0.10 | time=3.4ms","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.289Z","level":"WARNING","logger":"kairo-sidecar.other_masters","msg":"PDFMaster context extraction failed: no such table: pdf_chunks","service":"axiom-grid-overlay"}
+{"ts":"2026-09-15T13:32:15.289Z","level":"INFO","logger":"kairo-sidecar.legal_redline","msg":"detect_cuad_clauses: 2 clauses detected (HIGH=1, MEDIUM=1)","service":"axiom-grid-overlay"}
+------------------------------ Captured log call -------------------------------
+INFO     kairo-sidecar.pdf_extraction_engine:pdf_extraction_engine.py:104 PdfExtractionEngine initialised | PyMuPDF=False | OpenDataLoader=False | olmOCR=False | Surya=False
+INFO     kairo-sidecar.pdf_extraction_engine:pdf_extraction_engine.py:175 Extracting '/home/daytona/axiom-grid/kairo-sidecar/test.pdf' | lang=en | estimated_words≈9
+WARNING  kairo-sidecar.pdf_extraction_engine:pdf_extraction_engine.py:250 All tiers failed — using raw fallback text.
+INFO     kairo-sidecar.pdf_extraction_engine:pdf_extraction_engine.py:258 Extraction complete | tier=None | words=0 | confidence=0.10 | time=3.4ms
+WARNING  kairo-sidecar.other_masters:other_masters.py:699 PDFMaster context extraction failed: no such table: pdf_chunks
+INFO     kairo-sidecar.legal_redline:legal_redline.py:311 detect_cuad_clauses: 2 clauses detected (HIGH=1, MEDIUM=1)
+INFO     kairo-sidecar.legal_redline:legal_redline.py:566 analyze_contract: 2 clauses, 1 redlines generated
+____________ TestOpikTracerEmission.test_single_trace_has_trace_id _____________
+
+self = <kairo-sidecar.test_phase0_1_opik.TestOpikTracerEmission object at 0x703c8e6df250>
+temp_tracer = <sidecar.observability.opik_tracer.OpikTracer object at 0x703a8ffcd590>
+
+    def test_single_trace_has_trace_id(self, temp_tracer):
+        """A single trace must have a non-empty trace_id."""
+        with temp_tracer.trace("word", "generate_response", input_summary="test prompt") as ctx:
+            ctx.add_span("llm_call", input_data="prompt", output_data="response")
+
+        traces = temp_tracer.read_traces()
+>       assert len(traces) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+kairo-sidecar/test_phase0_1_opik.py:51: AssertionError
+______ TestOpikTracerEmission.test_five_domain_calls_produce_five_traces _______
+
+self = <kairo-sidecar.test_phase0_1_opik.TestOpikTracerEmission object at 0x703c8e6df610>
+temp_tracer = <sidecar.observability.opik_tracer.OpikTracer object at 0x703a8ffd1650>
+
+    def test_five_domain_calls_produce_five_traces(self, temp_tracer):
+        """FLAGSHIP TEST: 5 domain master calls must produce 5 traces with non-empty trace_ids."""
+        domains = ["word", "excel", "pptx", "pdf", "legal"]
+        trace_ids = []
+
+        for domain in domains:
+            with temp_tracer.trace(
+                domain, "domain_master_call", input_summary=f"test_{domain}"
+            ) as ctx:
+                ctx.add_span("llm_call", input_data="prompt", output_data="response")
+                ctx.add_span("grounding_check", output_data="grounded=True")
+            trace_ids.append(ctx.trace_id)
+
+        traces = temp_tracer.read_traces()
+>       assert len(traces) == 5
+E       assert 0 == 5
+E        +  where 0 = len([])
+
+kairo-sidecar/test_phase0_1_opik.py:71: AssertionError
+____________ TestOpikTracerEmission.test_trace_writes_to_jsonl_file ____________
+
+self = <kairo-sidecar.test_phase0_1_opik.TestOpikTracerEmission object at 0x703c8e68be10>
+temp_tracer = <sidecar.observability.opik_tracer.OpikTracer object at 0x703a8ffd2150>
+tmp_path = PosixPath('/tmp/pytest-of-daytona/pytest-8/test_trace_writes_to_jsonl_fil0')
+
+    def test_trace_writes_to_jsonl_file(self, temp_tracer, tmp_path):
+        """Trace must be written to the JSONL file, not just kept in memory."""
+        trace_path = tmp_path / "opik_traces.jsonl"
+
+        with temp_tracer.trace("excel", "recompute_formulas") as ctx:
+            ctx.add_span("libreoffice_call", output_data="computed=True")
+
+        # File must exist and contain valid JSON
+>       assert trace_path.exists(), "Trace JSONL file was not created"
+E       AssertionError: Trace JSONL file was not created
+E       assert False
+E        +  where False = exists()
+E        +    where exists = PosixPath('/tmp/pytest-of-daytona/pytest-8/test_trace_writes_to_jsonl_fil0/opik_traces.jsonl').exists
+
+kairo-sidecar/test_phase0_1_opik.py:94: AssertionError
+__ TestOpikTracerEmission.test_trace_emission_errors_loudly_on_write_failure ___
+
+self = <kairo-sidecar.test_phase0_1_opik.TestOpikTracerEmission object at 0x703c8e574050>
+tmp_path = PosixPath('/tmp/pytest-of-daytona/pytest-8/test_trace_emission_errors_lou0')
+
+    def test_trace_emission_errors_loudly_on_write_failure(self, tmp_path):
+        """If the trace file can't be written, the tracer must error loudly."""
+        # Create a file and try to use it as a directory path
+        blocking_file = tmp_path / "blocking_file"
+        blocking_file.write_text("blocking")
+        # Try to write to a path under this file (impossible — it's a file, not a dir)
+        tracer = OpikTracer(trace_path=blocking_file / "opik_traces.jsonl")
+        ctx = TraceContext("test_trace", "word", "test")
+
+>       with pytest.raises((RuntimeError, NotADirectoryError, OSError)):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE any of (RuntimeError, NotADirectoryError, OSError)
+
+kairo-sidecar/test_phase0_1_opik.py:110: Failed
+_______________ TestPiiGuardOnTraces.test_ssn_redacted_in_trace ________________
+
+self = <kairo-sidecar.test_phase0_1_opik.TestPiiGuardOnTraces object at 0x703c8e6df750>
+temp_tracer = <sidecar.observability.opik_tracer.OpikTracer object at 0x703a8ffd89b0>
+
+    def test_ssn_redacted_in_trace(self, temp_tracer):
+        """SSN must be redacted in trace data."""
+        ssn_text = "My SSN is 123-45-6789 and I need help"
+        with temp_tracer.trace("legal", "contract_analysis", input_summary=ssn_text) as ctx:
+            ctx.add_span("llm_call", input_data=ssn_text, output_data="Response about 123-45-6789")
+
+        traces = temp_tracer.read_traces()
+>       trace_json = json.dumps(traces[0])
+                                ^^^^^^^^^
+E       IndexError: list index out of range
+
+kairo-sidecar/test_phase0_1_opik.py:124: IndexError
+______________ TestPiiGuardOnTraces.test_email_redacted_in_trace _______________
+
+self = <kairo-sidecar.test_phase0_1_opik.TestPiiGuardOnTraces object at 0x703c8e6df890>
+temp_tracer = <sidecar.observability.opik_tracer.OpikTracer object at 0x703b6f6aa6d0>
+
+    def test_email_redacted_in_trace(self, temp_tracer):
+        """Email addresses must be redacted in trace data."""
+        email_text = "Contact me at john.doe@example.com for details"
+        with temp_tracer.trace("word", "draft_email", input_summary=email_text) as ctx:
+            ctx.add_span("llm_call", input_data=email_text)
+
+        traces = temp_tracer.read_traces()
+>       trace_json = json.dumps(traces[0])
+                                ^^^^^^^^^
+E       IndexError: list index out of range
+
+kairo-sidecar/test_phase0_1_opik.py:135: IndexError
+______________ TestPiiGuardOnTraces.test_phone_redacted_in_trace _______________
+
+self = <kairo-sidecar.test_phase0_1_opik.TestPiiGuardOnTraces object at 0x703c8e574180>
+temp_tracer = <sidecar.observability.opik_tracer.OpikTracer object at 0x703b7055d7f0>
+
+    def test_phone_redacted_in_trace(self, temp_tracer):
+        """Phone numbers must be redacted in trace data."""
+        phone_text = "Call me at 555-123-4567"
+        with temp_tracer.trace("word", "draft_memo", input_summary=phone_text) as ctx:
+            ctx.add_span("llm_call", input_data=phone_text)
+
+        traces = temp_tracer.read_traces()
+>       trace_json = json.dumps(traces[0])
+                                ^^^^^^^^^
+E       IndexError: list index out of range
+
+kairo-sidecar/test_phase0_1_opik.py:146: IndexError
+=============================== warnings summary ===============================
+kairo-sidecar/sidecar/test_fix_loop.py:87
+  /home/daytona/axiom-grid/kairo-sidecar/sidecar/test_fix_loop.py:87: PytestCollectionWarning: cannot collect test class 'TestFixLoop' because it has a __init__ constructor (from: kairo-sidecar/sidecar/test_fix_loop.py)
+    class TestFixLoop:
+
+kairo-sidecar/sidecar/test_generator.py:14
+  /home/daytona/axiom-grid/kairo-sidecar/sidecar/test_generator.py:14: PytestCollectionWarning: cannot collect test class 'TestGenerator' because it has a __init__ constructor (from: kairo-sidecar/sidecar/test_generator.py)
+    class TestGenerator:
+
+kairo-sidecar/tests/test_kairoreal_gauntlet.py:124
+  /home/daytona/axiom-grid/kairo-sidecar/tests/test_kairoreal_gauntlet.py:124: PytestUnknownMarkWarning: Unknown pytest.mark.slow - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.slow
+
+kairo-sidecar/sidecar/test_fix_loop.py:87
+  /home/daytona/axiom-grid/kairo-sidecar/sidecar/test_fix_loop.py:87: PytestCollectionWarning: cannot collect test class 'TestFixLoop' because it has a __init__ constructor (from: kairo-sidecar/tests/test_oracle_hardening_challenger.py)
+    class TestFixLoop:
+
+kairo-sidecar/sidecar/test_fix_loop.py:87
+  /home/daytona/axiom-grid/kairo-sidecar/sidecar/test_fix_loop.py:87: PytestCollectionWarning: cannot collect test class 'TestFixLoop' because it has a __init__ constructor (from: kairo-sidecar/tests/test_phase10_loop.py)
+    class TestFixLoop:
+
+kairo-sidecar/sidecar/test_fix_loop.py:87
+  /home/daytona/axiom-grid/kairo-sidecar/sidecar/test_fix_loop.py:87: PytestCollectionWarning: cannot collect test class 'TestFixLoop' because it has a __init__ constructor (from: kairo-sidecar/tests/test_sprints_new.py)
+    class TestFixLoop:
+
+kairo-sidecar/sidecar/test_generator.py:14
+  /home/daytona/axiom-grid/kairo-sidecar/sidecar/test_generator.py:14: PytestCollectionWarning: cannot collect test class 'TestGenerator' because it has a __init__ constructor (from: kairo-sidecar/tests/test_sprints_new.py)
+    class TestGenerator:
+
+kairo-sidecar/sidecar/test_generator.py:14
+  /home/daytona/axiom-grid/kairo-sidecar/sidecar/test_generator.py:14: PytestCollectionWarning: cannot collect test class 'TestGenerator' because it has a __init__ constructor (from: kairo-sidecar/tests/test_test_generator.py)
+    class TestGenerator:
+
+kairo-sidecar/test_phase0_1_e2e.py::TestEndToEndTraceReceipt::test_excel_master_trace_emitted
+kairo-sidecar/test_phase0_1_e2e.py::TestEndToEndTraceReceipt::test_multi_domain_trace_receipt_chain
+  /home/daytona/.local/lib/python3.14/site-packages/_pytest/unraisableexception.py:67: PytestUnraisableExceptionWarning: Exception ignored while calling deallocator <function ZipFile.__del__ at 0x703d45b5fe20>: None
+
+  Traceback (most recent call last):
+    File "/usr/local/lib/python3.14/zipfile/__init__.py", line 2078, in __del__
+      self.close()
+      ~~~~~~~~~~^^
+    File "/usr/local/lib/python3.14/zipfile/__init__.py", line 2095, in close
+      self.fp.seek(self.start_dir)
+      ~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  ValueError: I/O operation on closed file.
+
+
+    warnings.warn(pytest.PytestUnraisableExceptionWarning(msg))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED kairo-sidecar/test_domain7_export.py::TestPodcastExport::test_podcast_creates_file
+FAILED kairo-sidecar/test_domain7_export.py::TestPodcastExport::test_local_podcast_flag
+FAILED kairo-sidecar/test_domain9_media.py::TestMediaTranscribe::test_extract_audio_raises_if_ffmpeg_missing
+FAILED kairo-sidecar/test_phase0_1_e2e.py::TestEndToEndTraceReceipt::test_word_master_trace_emitted
+FAILED kairo-sidecar/test_phase0_1_e2e.py::TestEndToEndTraceReceipt::test_excel_master_trace_emitted
+FAILED kairo-sidecar/test_phase0_1_e2e.py::TestEndToEndTraceReceipt::test_pdf_master_trace_emitted
+FAILED kairo-sidecar/test_phase0_1_e2e.py::TestEndToEndTraceReceipt::test_legal_analyze_contract_trace_emitted
+FAILED kairo-sidecar/test_phase0_1_e2e.py::TestEndToEndTraceReceipt::test_multi_domain_trace_receipt_chain
+FAILED kairo-sidecar/test_phase0_1_opik.py::TestOpikTracerEmission::test_single_trace_has_trace_id
+FAILED kairo-sidecar/test_phase0_1_opik.py::TestOpikTracerEmission::test_five_domain_calls_produce_five_traces
+FAILED kairo-sidecar/test_phase0_1_opik.py::TestOpikTracerEmission::test_trace_writes_to_jsonl_file
+FAILED kairo-sidecar/test_phase0_1_opik.py::TestOpikTracerEmission::test_trace_emission_errors_loudly_on_write_failure
+FAILED kairo-sidecar/test_phase0_1_opik.py::TestPiiGuardOnTraces::test_ssn_redacted_in_trace
+FAILED kairo-sidecar/test_phase0_1_opik.py::TestPiiGuardOnTraces::test_email_redacted_in_trace
+FAILED kairo-sidecar/test_phase0_1_opik.py::TestPiiGuardOnTraces::test_phone_redacted_in_trace
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 15 failures !!!!!!!!!!!!!!!!!!!!!!!!!!
+15 failed, 831 passed, 17 skipped, 10 warnings in 41.27s

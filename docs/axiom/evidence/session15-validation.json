@@ -1,0 +1,16 @@
+{
+  "code_head": "3d140226503c9b9389f8e6e91d04260adf8d4c3b",
+  "focused": "237 passed",
+  "root": "1116 passed, 4 skipped",
+  "whole_repository": "5 failed, 829 passed, 17 skipped; bounded --maxfail=5",
+  "whole_repository_failures": [
+    "FAILED kairo/domains/data_analytics/tests/test_data_analytics_oracles.py::TestGauntletScenarios::test_scenario_b_two_file_join",
+    "FAILED kairo-sidecar/test_domain7_export.py::TestPodcastExport::test_podcast_creates_file",
+    "FAILED kairo-sidecar/test_domain7_export.py::TestPodcastExport::test_local_podcast_flag",
+    "FAILED kairo-sidecar/test_domain9_media.py::TestMediaTranscribe::test_extract_audio_raises_if_ffmpeg_missing",
+    "FAILED kairo-sidecar/test_phase0_1_e2e.py::TestEndToEndTraceReceipt::test_word_master_trace_emitted"
+  ],
+  "legacy_strict": "41 passed",
+  "node": "17 passed",
+  "ci_code_head": "5/5 success"
+}

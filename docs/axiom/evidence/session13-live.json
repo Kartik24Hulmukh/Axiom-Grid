@@ -1,0 +1,113 @@
+{
+  "method": "four live logical requests; one primary per configured model, up to 4 attempts each, 256 completion tokens per attempt, 5s route timeout/12s logical budget; no bulk external stress; timeout attempts may be billed",
+  "results": [
+    {
+      "primary": "glm-5.3",
+      "success": true,
+      "wall_s": 0.809,
+      "router": {
+        "selected_model": "glm-5.3",
+        "fallback_chain": [
+          {
+            "model": "glm-5.3",
+            "result": "success"
+          }
+        ]
+      },
+      "usage": {
+        "prompt_tokens": 17,
+        "completion_tokens": 23,
+        "total_tokens": 40,
+        "cached_tokens": 0,
+        "reasoning_tokens": 21,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 21
+        }
+      }
+    },
+    {
+      "primary": "glm-5.3-flash",
+      "success": true,
+      "wall_s": 1.005,
+      "router": {
+        "selected_model": "glm-5.3-flash",
+        "fallback_chain": [
+          {
+            "model": "glm-5.3-flash",
+            "result": "success"
+          }
+        ]
+      },
+      "usage": {
+        "prompt_tokens": 21,
+        "completion_tokens": 12,
+        "total_tokens": 33,
+        "cached_tokens": 0,
+        "reasoning_tokens": 10,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 10
+        }
+      }
+    },
+    {
+      "primary": "kimi-k3",
+      "success": true,
+      "wall_s": 1.367,
+      "router": {
+        "selected_model": "kimi-k3",
+        "fallback_chain": [
+          {
+            "model": "kimi-k3",
+            "result": "success"
+          }
+        ]
+      },
+      "usage": {
+        "prompt_tokens": 129,
+        "completion_tokens": 41,
+        "total_tokens": 170,
+        "cached_tokens": 0,
+        "reasoning_tokens": 30,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 30
+        }
+      }
+    },
+    {
+      "primary": "qwen3.8-27b",
+      "success": true,
+      "wall_s": 0.732,
+      "router": {
+        "selected_model": "qwen3.8-27b",
+        "fallback_chain": [
+          {
+            "model": "qwen3.8-27b",
+            "result": "success"
+          }
+        ]
+      },
+      "usage": {
+        "prompt_tokens": 15,
+        "completion_tokens": 22,
+        "total_tokens": 37,
+        "cached_tokens": 0,
+        "reasoning_tokens": 19,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 19
+        }
+      }
+    }
+  ]
+}

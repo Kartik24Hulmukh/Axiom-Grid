@@ -2,6 +2,7 @@ import os
 import sqlite3
 import logging
 import time
+from contextlib import closing
 from typing import Optional, List, Dict, Any
 from sidecar.observability.opik_tracer import track
 
@@ -105,10 +106,14 @@ class MemMachineClient:
         # check_same_thread=False: sidecar uses threads; SQLite is safe if we use
         # per-call connections (open → query → close) rather than shared connections.
         conn = sqlite3.connect(self.db_path, timeout=10, check_same_thread=False)
-        conn.row_factory = sqlite3.Row
-        # Ensure WAL is active on every new connection (in case of DB recreation)
-        conn.execute("PRAGMA journal_mode=WAL")
-        return conn
+        try:
+            conn.row_factory = sqlite3.Row
+            # Setup still owns the handle until it is returned to the caller.
+            conn.execute("PRAGMA journal_mode=WAL")
+            return conn
+        except BaseException:
+            conn.close()
+            raise
 
     def recall_contextualized(self, query_text: str, domain: str = "", limit: int = 5) -> str:
         """
@@ -129,11 +134,12 @@ class MemMachineClient:
         query_emb = np.array(embed_text(query_text))
 
         # Get all interactions from the database
-        conn = self._connect()
-        rows = conn.execute(
-            "SELECT domain, task_type, user_prompt, style_notes FROM interactions ORDER BY created_at DESC LIMIT 1000"
-        ).fetchall()
-        conn.close()
+        # sqlite3.Connection's context manager commits/rolls back; it does not
+        # close. Explicit ownership also releases the handle on SQL failure.
+        with closing(self._connect()) as conn:
+            rows = conn.execute(
+                "SELECT domain, task_type, user_prompt, style_notes FROM interactions ORDER BY created_at DESC LIMIT 1000"
+            ).fetchall()
 
         if not rows:
             return ""

@@ -12,6 +12,8 @@ chunks as messages, compress, then reconstruct with original metadata.
 from __future__ import annotations
 
 import logging
+import threading
+from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -156,7 +158,6 @@ def compress_document_chunks(
     # Step 1: Bbox-aware dedup — merge overlapping chunks
     merged = merge_overlapping_chunks(chunks)
     chunks_before = len(chunks)
-    chunks_after_dedup = len(merged)
 
     # Step 2: Count tokens before compression
     tokens_before = sum(_count_tokens(c.text) for c in merged)
@@ -232,33 +233,54 @@ def compress_document_chunks(
     return compressed_chunks, stats
 
 
-# Module-level stats accumulator for the /api/compression/stats endpoint
-_global_stats: list[CompressionStats] = []
+class _CompressionTotals:
+    """Constant-retention, atomic lifetime counters; never keep request objects.
+
+    A single copied last-run snapshot preserves the public endpoint contract.
+    The lock covers counters and snapshots together, not pipeline execution.
+    """
+
+    def __init__(self) -> None:
+        self._lock = threading.Lock()
+        self.clear()
+
+    def clear(self) -> None:
+        with self._lock:
+            self._runs = self._before = self._after = self._saved = 0
+            self._last = None
+
+    def append(self, stats: CompressionStats) -> None:
+        last = deepcopy(stats.to_dict())
+        with self._lock:
+            self._runs += 1
+            self._before += last["tokens_before"]
+            self._after += last["tokens_after"]
+            self._saved += last["tokens_saved"]
+            self._last = last
+
+    def snapshot(self) -> dict[str, Any]:
+        with self._lock:
+            result = {
+                "total_runs": self._runs,
+                "total_tokens_before": self._before,
+                "total_tokens_after": self._after,
+                "total_tokens_saved": self._saved,
+                "avg_reduction_pct": round(self._saved / self._before * 100, 2)
+                if self._before > 0 else 0.0,
+            }
+            if self._last is not None:
+                result["last_run"] = deepcopy(self._last)
+            return result
+
+
+_global_stats = _CompressionTotals()
 
 
 def record_compression(stats: CompressionStats) -> None:
-    """Record compression stats for the stats endpoint."""
+    """Record lifetime counters without an unbounded per-document history."""
     _global_stats.append(stats)
 
 
 def get_compression_stats() -> dict[str, Any]:
-    """Get aggregate compression stats for the /api/compression/stats endpoint."""
-    if not _global_stats:
-        return {
-            "total_runs": 0,
-            "total_tokens_before": 0,
-            "total_tokens_after": 0,
-            "total_tokens_saved": 0,
-            "avg_reduction_pct": 0.0,
-        }
-    total_before = sum(s.tokens_before for s in _global_stats)
-    total_after = sum(s.tokens_after for s in _global_stats)
-    total_saved = sum(s.tokens_saved for s in _global_stats)
-    return {
-        "total_runs": len(_global_stats),
-        "total_tokens_before": total_before,
-        "total_tokens_after": total_after,
-        "total_tokens_saved": total_saved,
-        "avg_reduction_pct": round(total_saved / total_before * 100, 2) if total_before > 0 else 0.0,
-        "last_run": _global_stats[-1].to_dict() if _global_stats else None,
-    }
+    """Return one consistent snapshot in constant time with respect to runs."""
+    return _global_stats.snapshot()
