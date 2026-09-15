@@ -95,7 +95,7 @@ class SpendGovernor:
         clamped; it may be 0 when the request produced no billable usage."""
         with self._lock:
             self.reserved -= reservation
-            if self.reserved < 0: self.reserved = 0
+            self.reserved = max(self.reserved, 0)
             self.committed += max(0, int(actual))
     def release(self, reservation: int) -> None:
         self.settle(reservation, 0)
