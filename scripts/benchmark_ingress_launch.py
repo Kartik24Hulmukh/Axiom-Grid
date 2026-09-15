@@ -1,4 +1,5 @@
 """Bounded loopback capacity comparison; no external model traffic."""
+import argparse
 import concurrent.futures
 import json
 import math
@@ -21,6 +22,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--output", default="docs/axiom/evidence/session10-ingress-benchmark.json")
+    args = parser.parse_args()
     with socket.socket() as sock:
         sock.bind(("127.0.0.1", 0))
         port = sock.getsockname()[1]
@@ -107,7 +111,7 @@ uvicorn.run(app, host="127.0.0.1", port=int(sys.argv[1]), access_log=False)
     report["shutdown_completed"] = "AXIOM_BENCHMARK_LIFESPAN_COMPLETE" in shutdown_log
     report["shutdown_note"] = "Uvicorn 0.51 re-raises SIGTERM after graceful lifespan shutdown; -15 is expected on POSIX. Require explicit lifespan-complete marker as independent evidence."
     print(json.dumps(report, indent=2))
-    (ROOT / "docs/axiom/evidence/session10-ingress-benchmark.json").write_text(json.dumps(report, indent=2) + "\n")
+    (ROOT / args.output).write_text(json.dumps(report, indent=2) + "\n")
     assert proc.returncode in (0, -signal.SIGTERM)
     assert report["shutdown_completed"], "lifespan shutdown did not complete"
 

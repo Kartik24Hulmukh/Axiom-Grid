@@ -83,7 +83,7 @@ def main():
               "before": [measure(old, s) for s in (429, 503)],
               "after": [measure(current, s) for s in (429, 503)]}
     print(json.dumps(report, indent=2))
-    (ROOT / "docs/axiom/evidence/session10-router-benchmark.json").write_text(json.dumps(report, indent=2) + "\n")
+    (ROOT / (sys.argv[2] if len(sys.argv) > 2 else "docs/axiom/evidence/session10-router-benchmark.json")).write_text(json.dumps(report, indent=2) + "\n")
     assert all(row["latency_ms"]["p99"] < 200 for row in report["after"])
 
 
