@@ -54,3 +54,27 @@ Hardening posture (all regression-tested in `overlay/tests/test_server.py` and
 the 100x/600-request stress gauntlets): SEC-001 sandboxed path resolution,
 SEC-002 origin gate, SEC-003 defense-in-depth response headers, SEC-004 bounded
 extraction pool + payload-size governor, OPS-001 liveness/readiness/metrics.
+
+## Scope Boundaries (Kairo Phantom contract)
+
+Axiom-Grid ships the Kairo Phantom document-intelligence core. The scope
+contract below is enforced by `tests/test_scope_discipline.py` and mirrored in
+`CONTRIBUTING.md` and `docs/PUBLIC_ROADMAP.md` — change all three together.
+
+**Kairo DOES**
+
+- READ documents (Word, Excel, PowerPoint, PDF, code, email, design) through the
+  extraction pipeline behind admission control and bounded execution.
+- SUGGEST grounded answers with page/line-level citations and a provenance
+  receipt chain (`opik_trace_id` ↔ `receipts.jsonl`).
+- Route model calls through the Melious gateway with per-route circuit
+  breakers, reasoning-token budgets and dynamic fallbacks.
+
+**Kairo Does NOT**
+
+- Write, edit, send or execute anything on the user's behalf — the product is
+  **READ + SUGGEST ONLY**. Every mutation stays a human decision.
+- Answer without evidence. **No source → no answer**: if grounding cannot bind a
+  claim to an extracted span, the response is a refusal, never a guess.
+- Persist BYO API keys anywhere except the OS keychain abstraction
+  (`scripts/keychain_store.py`); config files and logs are scanned for leaks.
