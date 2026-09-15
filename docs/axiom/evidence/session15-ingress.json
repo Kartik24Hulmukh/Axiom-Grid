@@ -1,0 +1,38 @@
+{
+  "scope": "Same text fixture, one local uvicorn worker, fresh private state; 100 clients vs 1 is not 100x production load",
+  "batches": [
+    {
+      "clients": 1,
+      "requests": 60,
+      "statuses": {
+        "200": 60
+      },
+      "wall_s": 22.471,
+      "p50_ms": 367.675,
+      "p95_ms": 420.481,
+      "p99_ms": 630.987,
+      "throughput_rps": 2.67,
+      "useful_rps": 2.67,
+      "rss_floor_bytes": 80769024,
+      "rss_ceiling_bytes": 91443200
+    },
+    {
+      "clients": 100,
+      "requests": 100,
+      "statuses": {
+        "503": 80,
+        "200": 20
+      },
+      "wall_s": 7.694,
+      "p50_ms": 680.277,
+      "p95_ms": 6244.429,
+      "p99_ms": 7664.682,
+      "throughput_rps": 12.997,
+      "useful_rps": 2.599,
+      "rss_floor_bytes": 91443200,
+      "rss_ceiling_bytes": 106385408
+    }
+  ],
+  "shutdown_s": 0.169,
+  "exit_code": -15
+}

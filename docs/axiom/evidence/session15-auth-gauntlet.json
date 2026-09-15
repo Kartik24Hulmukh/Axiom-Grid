@@ -1,0 +1,44 @@
+{
+  "requests": 1000,
+  "threads": 100,
+  "wall_s": 3.011,
+  "rps": 332.1,
+  "p50_ms": 304.16,
+  "p99_ms": 677.9,
+  "transport_errors": 0,
+  "by_scenario": {
+    "anon_metrics": {
+      "401": 40,
+      "429": 60
+    },
+    "bruteforce": {
+      "401": 40,
+      "429": 60
+    },
+    "anon_demo": {
+      "401": 40,
+      "429": 60
+    },
+    "probe_healthz": {
+      "200": 100
+    },
+    "tenant1_metrics": {
+      "200": 100
+    },
+    "bad_origin": {
+      "403": 100
+    },
+    "probe_readyz": {
+      "200": 100
+    },
+    "tenant2_metrics": {
+      "200": 100
+    },
+    "tenant1_traversal": {
+      "404": 100
+    },
+    "tenant1_bad_schema": {
+      "422": 100
+    }
+  }
+}
