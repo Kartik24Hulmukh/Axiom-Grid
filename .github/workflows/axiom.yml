@@ -33,7 +33,7 @@ jobs:
       - name: Python lint gate (ruff E9/F - syntax errors, undefined names, unused imports)
         run: |
           python3 -m pip install --quiet ruff
-          python3 -m ruff check --select E9,F overlay kernel scripts/stress_sec006_gauntlet.py stress_test.py
+          python3 -m ruff check --select E9,F overlay kernel kairo/context/compressor.py scripts/stress_sec006_gauntlet.py stress_test.py
       - name: Overlay server gate (real provenance digest, strict input schema)
         run: |
           python3 -m pip install --quiet pytest pytest-asyncio hypothesis fastapi httpx uvicorn ruff psutil opentelemetry-sdk==1.44.0

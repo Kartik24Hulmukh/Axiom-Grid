@@ -10,6 +10,7 @@ from __future__ import annotations
 import asyncio
 import concurrent.futures
 import contextlib
+import contextvars
 import hashlib
 import hmac
 import json
@@ -900,7 +901,7 @@ async def extract_document(req: ExtractDocumentRequest):
         return trace, doc_type, doc
 
     try:
-        work = _extraction_pool.submit(_run_admitted)
+        work = _extraction_pool.submit(contextvars.copy_context().run, _run_admitted)
     except BaseException:
         slots.release()
         raise
