@@ -190,8 +190,8 @@ class MeliousModelRouter:
                     for choice in data["choices"]:
                         if not isinstance(choice, dict) or not isinstance(choice.get("message"), dict):
                             raise RouterError("malformed upstream choice")
-                        if not isinstance(choice["message"].get("content"), str):
-                            raise RouterError("upstream text completion content must be a string")
+                        if not isinstance(choice["message"].get("content"), str) or not choice["message"]["content"].strip():
+                            raise RouterError("upstream text completion content must be a non-empty string")
                     if len(data["choices"]) != 1:
                         raise RouterError("unexpected multiple completions")
                     counts = self._usage_counts(data)
