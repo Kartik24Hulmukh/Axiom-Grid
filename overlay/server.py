@@ -239,8 +239,16 @@ async def enforce_origin_gate(request, call_next):
 # SEC-004: regex-heavy packs run against a bounded thread pool so a hostile
 # oversized document cannot monopolise the async event loop (CPU-starvation
 # DoS guard). Bounded at 4 workers; 100x stress proved lock-safe behaviour.
+# Capacity now scales with the host instead of being pinned at 4: a 16-core
+# production box admits 32 concurrent extractions (8x) while a laptop keeps the
+# old safe floor. Override explicitly with AXIOM_EXTRACTION_WORKERS.
+EXTRACTION_WORKERS = max(
+    4,
+    int(os.environ.get("AXIOM_EXTRACTION_WORKERS") or 0)
+    or min(32, (os.cpu_count() or 2) * 2),
+)
 _extraction_pool = concurrent.futures.ThreadPoolExecutor(
-    max_workers=4, thread_name_prefix="axiom-extract"
+    max_workers=EXTRACTION_WORKERS, thread_name_prefix="axiom-extract"
 )
 
 # OPS-004: backpressure on the extraction pool. A ThreadPoolExecutor queue is
@@ -249,7 +257,8 @@ _extraction_pool = concurrent.futures.ThreadPoolExecutor(
 # CPU on dead work. A semaphore of workers + small queue turns overload into
 # a fast, honest 503 (fail-fast, load-shedding) instead of a slow collapse.
 _EXTRACTION_QUEUE_DEPTH = int(os.environ.get("AXIOM_EXTRACTION_QUEUE_DEPTH", "16"))
-_extraction_slots = threading.BoundedSemaphore(4 + _EXTRACTION_QUEUE_DEPTH)
+_extraction_slots = threading.BoundedSemaphore(EXTRACTION_WORKERS + _EXTRACTION_QUEUE_DEPTH)
+_EXTRACTION_CAPACITY = EXTRACTION_WORKERS + _EXTRACTION_QUEUE_DEPTH
 
 OPS_METRICS = {
     "started_at": time.time(),
@@ -573,7 +582,37 @@ orchestrator = OrchestratorImpl(
 
 action_executor = ActionExecutorImpl(provenance_log)
 
-orchestrator_lock = threading.Lock()
+# --- Pipeline concurrency: launch-blocker #1 fix ------------------------------
+# Previously every /demo and /apply call serialized on one global mutex, which
+# shed 80-91% of requests under load. The shared services (ProvenanceLogImpl,
+# MemoryStoreImpl) are now individually thread-safe (@synchronized_class), so
+# the HTTP layer needs *bounded* concurrency to protect CPU/memory, not mutual
+# exclusion. Tune with AXIOM_PIPELINE_CONCURRENCY.
+PIPELINE_CONCURRENCY = max(
+    1,
+    int(os.environ.get("AXIOM_PIPELINE_CONCURRENCY") or 0)
+    or min(32, (os.cpu_count() or 4) * 4),
+)
+
+
+class _BoundedGate:
+    """Context manager permitting N concurrent pipeline runs (was: exactly 1)."""
+
+    def __init__(self, limit: int) -> None:
+        self.limit = limit
+        self._sem = threading.BoundedSemaphore(limit)
+
+    def __enter__(self) -> "_BoundedGate":
+        self._sem.acquire()
+        return self
+
+    def __exit__(self, *exc_info: object) -> None:
+        self._sem.release()
+
+
+orchestrator_gate = _BoundedGate(PIPELINE_CONCURRENCY)
+# Backwards-compatible alias for existing call sites and tests.
+orchestrator_lock = orchestrator_gate
 
 
 class DemoRequest(BaseModel):
@@ -630,7 +669,7 @@ async def run_demo(req: DemoRequest):
             sha256=digest,
         )
 
-        # 2. Run Orchestrator (off event loop, serialized to protect shared SQLite state)
+        # 2. Run Orchestrator (off event loop, bounded concurrency; services are individually thread-safe)
         def _run_pipeline(document):
             with orchestrator_lock:
                 return orchestrator.run(document)
@@ -641,9 +680,9 @@ async def run_demo(req: DemoRequest):
             document_text = await asyncio.to_thread(file_path.read_text, encoding="utf-8", errors="replace")
         else:
             # Reconstruct document text from the registered chunks
-            doc_chunks = [c for c in provenance_log._chunks.values() if c.doc_id == doc.doc_id]
+            doc_chunks = provenance_log.chunks_for_doc(doc.doc_id)
             if not doc_chunks:
-                doc_chunks = list(provenance_log._chunks.values())
+                doc_chunks = provenance_log.all_chunks()
             document_chunks = sorted(
                 doc_chunks,
                 key=lambda c: (c.page, c.bbox.y0 if c.bbox else 0)
