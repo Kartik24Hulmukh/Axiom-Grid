@@ -47,6 +47,7 @@ from kernel.sidecar.memory_store import MemoryStoreImpl
 from kernel.sidecar.orchestrator import OrchestratorImpl
 from kernel.sidecar.quality_gate import LocalQualityGate
 from kernel.sidecar.security_filter import LocalSecurityFilter
+from overlay.body_limit import BodyLimitMiddleware
 from overlay.telemetry import install_tracing, log_context
 from packs.contract.pack import ContractPack
 from packs.generic.pack import GenericPack
@@ -1266,5 +1267,4 @@ install_tracing(app)
 
 
 # Outer ASGI boundary counts actual bytes before any endpoint parses JSON.
-from overlay.body_limit import BodyLimitMiddleware  # noqa: E402
 app.add_middleware(BodyLimitMiddleware, limit=lambda: MAX_UPLOAD_BYTES)

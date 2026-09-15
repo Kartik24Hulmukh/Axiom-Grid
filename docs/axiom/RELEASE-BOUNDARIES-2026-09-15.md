@@ -96,3 +96,5 @@ All modules stayed below five remediation cycles. No production merge authorized
 
 ### CI follow-up, remediation cycle 2 (deployment)
 The new GitHub container gate built the real image successfully, then correctly failed read-only startup: `TieredInferenceGateway` still wrote inference logs to `/app/.kairo/inference_logs`. Fixed the remaining log directory to honor `AXIOM_STATE_DIR` at construction time; explicit caller log directories still take precedence. Added regression coverage. This is why local writable-directory smoke is not container certification. Container rerun pending; previous failing run remains visible in GitHub Actions.
+
+Final local focused suite after inference-log fix: **182 passed in 12.30s**. CI also caught two import-style lint findings in the newly added middleware import; moved it to the normal import block and verified the exact CI lint command, not just E9/F. No lint rules disabled.
