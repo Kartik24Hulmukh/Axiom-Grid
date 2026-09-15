@@ -5,6 +5,7 @@ import concurrent.futures
 import json
 import os
 import socket
+import signal
 import subprocess
 import sys
 import threading
@@ -34,7 +35,9 @@ def main():
         process = psutil.Process(proc.pid)
         while not stop.is_set():
             try:
-                rss.append(process.memory_info().rss)
+                value = process.memory_info().rss
+                if value > 0:  # exited/zombie processes report zero, not a RAM floor
+                    rss.append(value)
             except psutil.NoSuchProcess:
                 return
             stop.wait(0.02)
@@ -106,7 +109,7 @@ def main():
         "latency_shed":percentiles([s[1] for s in samples if s[3]]),
         "rss_sample_floor_mib":round(min(rss)/2**20,2),"rss_sample_peak_mib":round(max(rss)/2**20,2),"rss_sample_interval_ms":20}
     print(json.dumps(result,indent=2))
-    return int(unexpected != 0 or not healthy or exit_code != 0 or statuses.get(200,0) == 0)
+    return int(unexpected != 0 or not healthy or exit_code not in (0, -signal.SIGTERM) or shutdown_timed_out or statuses.get(200,0) == 0)
 
 
 if __name__ == "__main__":
