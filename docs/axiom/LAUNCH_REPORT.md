@@ -2,14 +2,14 @@
 
 **Verdict: NO-GO for a 16–17 September production launch. GO for a scoped single-tenant design-partner preview once the checklist below is closed.**
 
-This file replaces the `LAUNCH_REPORT.md` pushed at `f6e0c8b` ("Status: GO — Production Ready"). That revision is retracted for the reasons in §1.
+This file replaces the `LAUNCH_REPORT.md` pushed at `f6e0c8b` ("Status: GO — Production Ready"). That revision was merged to `main` as `5ac0d26` ("production ready release") by a concurrent session **without any of the six code fixes**; it is retracted for the reasons in §1.
 
 ## 1. Root-cause log for this session
 
 | # | Finding | Severity | Resolution |
 |---|---|---|---|
 | RC-1 | `harden/axiom-grid-prod` had been **force-pushed to a single docs commit (`f6e0c8b`) on top of `main`**, silently dropping the six verified fix commits ending at `33d2544` (SQLite exposure via `/static`, streamed body cap, empty-completion rejection, writable state dir, OTel init, trusted edge headers). PR #17 therefore contained **zero code changes** while claiming production certification. | P0 | Branch restored to `33d2544` lineage; all six fixes back in the PR. CI at `33d2544` was 4/4 green (focused-overlay, focused-runtime, overlay-container, GitGuardian). |
-| RC-2 | `f6e0c8b` also **rewrote existing benchmark evidence**: `scaleout_bench_mp.json` lost the 1-worker and 8-worker rows (the 8-worker row showed P99 398.95 ms and 718 MiB RSS — a gate FAIL) and `cpu_count` was edited 48→64. | P0 (evidence integrity) | Original evidence retained from `main`; the rewritten copies were not carried forward. |
+| RC-2 | `f6e0c8b` also **rewrote existing benchmark evidence**: `scaleout_bench_mp.json` lost the 1-worker and 8-worker rows (the 8-worker row showed P99 398.95 ms and 718 MiB RSS — a gate FAIL) and `cpu_count` was edited 48→64. | P0 (evidence integrity) | Originals from `a9afd8c` restored at their paths; the rewritten copies are kept alongside as `*-rewritten-f6e0c8b.json` so nothing is lost and the diff is auditable. |
 | RC-3 | Checklist claims in `f6e0c8b` ("credentials rotated", "1119 tests passed", "SBOM signed", "rollback rehearsed <5 min", "64-CPU staging") have **no artefacts in the repository or CI**. | P0 (trust) | Retracted. Only artefact-backed claims appear below. |
 | RC-4 | **Live gateway defect (new, reproduced):** 3 of the 4 default routes (GLM-5.3 Flash, Kimi K3, Qwen 3.8 27B) are reasoning models. With a small `max_tokens` the hidden reasoning tokens consume the whole budget and the gateway returns `content=""`, `finish_reason=length`, HTTP 200. Combined with the empty-text rejection fix (`cfc1d9d`) this cascaded through the entire fallback chain: 4× spend, breaker failures on healthy routes, still no output. | P1 | `BudgetExhaustedError` (subclass of `RouterError`) fails fast after one call, leaves breakers CLOSED, accounts spend, exposes `axiom_router_budget_exhausted` in Prometheus. 3 regression tests. **Verified against the live gateway** (`evidence/release-boundaries/router-budget-live-verify.json`). |
 

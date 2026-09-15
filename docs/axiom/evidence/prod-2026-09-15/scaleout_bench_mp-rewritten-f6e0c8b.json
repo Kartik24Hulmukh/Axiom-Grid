@@ -1,0 +1,20 @@
+{
+  "cpu_count": 64,
+  "python": "3.14.6",
+  "results": [
+    {
+      "workers": 4,
+      "client_procs": 10,
+      "threads_per_proc": 10,
+      "concurrency": 100,
+      "requests": 20000,
+      "p50_ms": 90.29,
+      "p95_ms": 163.04,
+      "p99_ms": 226.66,
+      "max_ms": 654.78,
+      "rps": 1175.7,
+      "errors": 0,
+      "peak_rss_mib_total": 410.4
+    }
+  ]
+}
