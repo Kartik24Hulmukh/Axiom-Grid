@@ -1,48 +1,20 @@
 {
-  "cpu_count": 48,
+  "cpu_count": 64,
   "python": "3.14.6",
   "results": [
-    {
-      "workers": 1,
-      "client_procs": 10,
-      "threads_per_proc": 10,
-      "concurrency": 100,
-      "requests": 6000,
-      "p50_ms": 115.45,
-      "p95_ms": 186.16,
-      "p99_ms": 292.92,
-      "max_ms": 543.55,
-      "rps": 731.9,
-      "errors": 0,
-      "peak_rss_mib_total": 102.7
-    },
     {
       "workers": 4,
       "client_procs": 10,
       "threads_per_proc": 10,
       "concurrency": 100,
-      "requests": 6000,
-      "p50_ms": 92.68,
-      "p95_ms": 185.36,
-      "p99_ms": 301.12,
-      "max_ms": 503.96,
-      "rps": 1047.8,
+      "requests": 20000,
+      "p50_ms": 90.29,
+      "p95_ms": 163.04,
+      "p99_ms": 226.66,
+      "max_ms": 654.78,
+      "rps": 1175.7,
       "errors": 0,
-      "peak_rss_mib_total": 404.8
-    },
-    {
-      "workers": 8,
-      "client_procs": 10,
-      "threads_per_proc": 10,
-      "concurrency": 100,
-      "requests": 6000,
-      "p50_ms": 99.29,
-      "p95_ms": 196.88,
-      "p99_ms": 398.95,
-      "max_ms": 602.82,
-      "rps": 882.6,
-      "errors": 0,
-      "peak_rss_mib_total": 718.3
+      "peak_rss_mib_total": 410.4
     }
   ]
 }

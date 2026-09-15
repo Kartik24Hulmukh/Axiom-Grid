@@ -1,30 +1,30 @@
 {
-  "cpu_count": 48,
+  "cpu_count": 64,
   "python": "3.14.6",
   "results": [
     {
       "workers": 1,
       "requests": 2000,
       "threads": 100,
-      "p50_ms": 121.49,
-      "p95_ms": 209.88,
-      "p99_ms": 216.34,
-      "max_ms": 219.98,
-      "rps": 781.6,
+      "p50_ms": 124.52,
+      "p95_ms": 201.58,
+      "p99_ms": 212.25,
+      "max_ms": 216.75,
+      "rps": 724.1,
       "errors": 0,
-      "peak_rss_mib_total": 103.4
+      "peak_rss_mib_total": 101.6
     },
     {
       "workers": 4,
       "requests": 2000,
       "threads": 100,
-      "p50_ms": 96.07,
-      "p95_ms": 187.67,
-      "p99_ms": 212.22,
-      "max_ms": 295.23,
-      "rps": 995.7,
+      "p50_ms": 96.29,
+      "p95_ms": 190.57,
+      "p99_ms": 300.63,
+      "max_ms": 355.99,
+      "rps": 981.9,
       "errors": 0,
-      "peak_rss_mib_total": 385.8
+      "peak_rss_mib_total": 388.0
     }
   ]
 }
