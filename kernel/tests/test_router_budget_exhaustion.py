@@ -53,3 +53,25 @@ def test_empty_content_with_stop_still_falls_back():
     router = MeliousModelRouter(models=["empty", "working"], transport=transport, max_retries=0)
     assert router.complete([{"role": "user", "content": "hi"}], max_tokens=32)["choices"][0]["message"]["content"] == "OK"
     assert calls == ["empty", "working"]
+
+
+def test_budget_exhaustion_releases_half_open_probe_for_next_request():
+    import time
+
+    calls = []
+    def transport(model, payload, timeout):
+        calls.append(model)
+        if len(calls) == 1:
+            return LENGTH_EMPTY
+        return {"choices": [{"message": {"content": "ready"}}]}
+
+    router = MeliousModelRouter(models=["r1"], transport=transport, max_retries=0)
+    breaker = router.breakers["r1"]
+    breaker.failures = breaker.failure_threshold
+    breaker.opened_at = time.monotonic() - breaker.recovery_seconds - 1
+    with pytest.raises(BudgetExhaustedError):
+        router.complete([{"role": "user", "content": "hi"}], max_tokens=16)
+    assert not breaker.probing, "a budget error must release the sole recovery probe"
+    assert breaker.state == "CLOSED", "a valid budget-limited response proves recovery"
+    assert router.complete([{"role": "user", "content": "hi"}], max_tokens=512)["choices"][0]["message"]["content"] == "ready"
+    assert calls == ["r1", "r1"]

@@ -223,6 +223,11 @@ class MeliousModelRouter:
                     trace.append({"model":model,"result":"budget_exhausted","error":"BudgetExhaustedError","detail":"completion budget consumed by reasoning tokens","status":None})
                     if self._lock.acquire(timeout=self.acquire_timeout):
                         try:
+                            # A budget-limited response proves the upstream is reachable.
+                            # Release HALF_OPEN's exclusive probe as well as resetting
+                            # CLOSED failure history; otherwise this route stays stuck
+                            # probing forever after a reasoning-only recovery response.
+                            self.breakers[model].success()
                             self.metrics["failures"]+=1; self.metrics["budget_exhausted"]+=1
                             for key, value in (exc.usage or {}).items():
                                 self.metrics[key] += value
