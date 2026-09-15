@@ -276,7 +276,16 @@ class MeliousModelRouter:
                                         self._cooldown_until[model], time.monotonic() + self._retry_after(getattr(exc, "retry_after", 0)))
                             finally: self._lock.release()
                         status = getattr(exc, "status", None)
-                        if is_probe or (status is not None and status != 429 and not 500 <= status < 600):
+                        # Retry-After is route cooldown, not a worker sleep.
+                        # Waiting here parks scarce inflight permits and delays
+                        # healthy fallbacks even though the route is inadmissible.
+                        # Prefer another route on 5xx too; retain bounded retries
+                        # only at the end of the chain (no fallback remains).
+                        if status == 429 or (
+                                type(status) is int and 500 <= status < 600
+                                and index + 1 < len(self.models)):
+                            break
+                        if is_probe or (status is not None and not 500 <= status < 600):
                             break
                         with self._lock:
                             if self.breakers[model].opened_at is not None:
