@@ -8,7 +8,12 @@ import psutil
 import docx
 import openpyxl
 import pptx
-import fitz
+import pytest as _pytest_gate
+fitz = _pytest_gate.importorskip(
+    "fitz",
+    reason="PyMuPDF (AGPL) is excluded by the repo permissive-licence dependency policy; "
+    "these legacy sidecar oracle tests require it and skip when it is not installed",
+)
 
 from sidecar.oracles import (
     verify_docx,
