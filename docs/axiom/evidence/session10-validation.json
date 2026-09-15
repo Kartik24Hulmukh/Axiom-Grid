@@ -1,0 +1,81 @@
+{
+  "baseline_commit": "cb9cd579c52fc30647bf12e3f2f99b4148bfd43a",
+  "branch": "harden/axiom-grid-prod",
+  "focused_tests": {
+    "before": 204,
+    "after": 214,
+    "strict_resource_warnings": true
+  },
+  "node_tests": 17,
+  "restored_fixture_domain_tests": 57,
+  "isolated_legacy_tracing_tests": {
+    "passed": 23,
+    "warning": "ZipFile deallocator unraisable ValueError; not strict-warning certified"
+  },
+  "full_suite": {
+    "command": "python3 -m pytest --import-mode=importlib -q --maxfail=15",
+    "passed": 831,
+    "failed": 15,
+    "skipped": 17,
+    "stopped_early": true,
+    "failure_nodes": [
+      "kairo-sidecar/test_domain7_export.py::TestPodcastExport::test_podcast_creates_file",
+      "kairo-sidecar/test_domain7_export.py::TestPodcastExport::test_local_podcast_flag",
+      "kairo-sidecar/test_domain9_media.py::TestMediaTranscribe::test_extract_audio_raises_if_ffmpeg_missing",
+      "kairo-sidecar/test_phase0_1_e2e.py::TestEndToEndTraceReceipt::test_word_master_trace_emitted",
+      "kairo-sidecar/test_phase0_1_e2e.py::TestEndToEndTraceReceipt::test_excel_master_trace_emitted",
+      "kairo-sidecar/test_phase0_1_e2e.py::TestEndToEndTraceReceipt::test_pdf_master_trace_emitted",
+      "kairo-sidecar/test_phase0_1_e2e.py::TestEndToEndTraceReceipt::test_legal_analyze_contract_trace_emitted",
+      "kairo-sidecar/test_phase0_1_e2e.py::TestEndToEndTraceReceipt::test_multi_domain_trace_receipt_chain",
+      "kairo-sidecar/test_phase0_1_opik.py::TestOpikTracerEmission::test_single_trace_has_trace_id",
+      "kairo-sidecar/test_phase0_1_opik.py::TestOpikTracerEmission::test_five_domain_calls_produce_five_traces",
+      "kairo-sidecar/test_phase0_1_opik.py::TestOpikTracerEmission::test_trace_writes_to_jsonl_file",
+      "kairo-sidecar/test_phase0_1_opik.py::TestOpikTracerEmission::test_trace_emission_errors_loudly_on_write_failure",
+      "kairo-sidecar/test_phase0_1_opik.py::TestPiiGuardOnTraces::test_ssn_redacted_in_trace",
+      "kairo-sidecar/test_phase0_1_opik.py::TestPiiGuardOnTraces::test_email_redacted_in_trace",
+      "kairo-sidecar/test_phase0_1_opik.py::TestPiiGuardOnTraces::test_phone_redacted_in_trace"
+    ]
+  },
+  "collection": {
+    "initial_errors": 39,
+    "after_install_and_importlib_errors": 0,
+    "tests_collected_at_checkpoint": 3294
+  },
+  "gate_results": {
+    "wedge_f1": 0.996,
+    "adversarial_f1": 0.977,
+    "auth_socket_requests": 1000,
+    "auth_workers": 100,
+    "auth_transport_errors": 0,
+    "auth_rps": 663.6,
+    "auth_p50_ms": 152.28,
+    "auth_p99_ms": 309.45
+  },
+  "local_unavailable": [
+    "cargo",
+    "docker"
+  ],
+  "launch_decision": "NO-GO: full-suite definition of done not met; no new merge authorized by checks",
+  "premortem": [
+    {
+      "vector": "Worker starvation",
+      "finding": "429 cooldown parked permits; corrected. Extraction remains globally serialized around orchestrator.run despite request-local stores; bounded admission prevents runaway queue, not 100x useful throughput."
+    },
+    {
+      "vector": "Async exception and cancellation loss",
+      "finding": "214 focused tests green with strict resource/unraisable warning handling; legacy ZipFile unraisable warning persists. No universal zero-panic claim."
+    },
+    {
+      "vector": "Memory and logging pressure",
+      "finding": "Bounded log queue sheds rather than blocks; 1715 drops in health spike. Short RSS envelope measured; not sustained leak certification."
+    },
+    {
+      "vector": "Model outage and spend amplification",
+      "finding": "429 and non-terminal 5xx now fast-fallback; real-sleep P99 <8ms in bounded local synthetic scenario. Completion token ceiling is per attempt, not verified as an aggregate dollar budget. 3 live timeouts needed fallback."
+    },
+    {
+      "vector": "Dependency and release gate drift",
+      "finding": "Focused CI is green on prior merged main, not full-repository certification. Missing optional engines/credentials, test import collisions, collection-time sealed mode pollution; broad run still red."
+    }
+  ]
+}

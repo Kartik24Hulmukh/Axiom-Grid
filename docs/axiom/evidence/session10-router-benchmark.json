@@ -1,0 +1,76 @@
+{
+  "method": "100-worker barrier, real sleeps, synthetic 429/503 then healthy fallback; nearest-rank percentiles; process RSS sampled every 5ms; thread startup included in throughput",
+  "baseline_revision": "cb9cd579",
+  "before": [
+    {
+      "status": 429,
+      "requests": 100,
+      "workers": 100,
+      "throughput_rps": 97.43,
+      "wall_s": 1.0264,
+      "latency_ms": {
+        "p50": 1003.683,
+        "p95": 1005.891,
+        "p99": 1006.571
+      },
+      "rss_min_mib": 26.52,
+      "rss_max_mib": 29.58,
+      "attempts": 201,
+      "max_latency_ms": 1007.126,
+      "errors": 0
+    },
+    {
+      "status": 503,
+      "requests": 100,
+      "workers": 100,
+      "throughput_rps": 97.68,
+      "wall_s": 1.0238,
+      "latency_ms": {
+        "p50": 1004.228,
+        "p95": 1006.614,
+        "p99": 1007.736
+      },
+      "rss_min_mib": 28.11,
+      "rss_max_mib": 30.76,
+      "attempts": 300,
+      "max_latency_ms": 1007.794,
+      "errors": 0
+    }
+  ],
+  "after": [
+    {
+      "status": 429,
+      "requests": 100,
+      "workers": 100,
+      "throughput_rps": 3598.81,
+      "wall_s": 0.0278,
+      "latency_ms": {
+        "p50": 5.743,
+        "p95": 6.953,
+        "p99": 7.127
+      },
+      "rss_min_mib": 29.24,
+      "rss_max_mib": 30.8,
+      "attempts": 200,
+      "max_latency_ms": 7.615,
+      "errors": 0
+    },
+    {
+      "status": 503,
+      "requests": 100,
+      "workers": 100,
+      "throughput_rps": 3928.69,
+      "wall_s": 0.0255,
+      "latency_ms": {
+        "p50": 3.843,
+        "p95": 6.387,
+        "p99": 6.756
+      },
+      "rss_min_mib": 29.27,
+      "rss_max_mib": 30.8,
+      "attempts": 200,
+      "max_latency_ms": 6.769,
+      "errors": 0
+    }
+  ]
+}
