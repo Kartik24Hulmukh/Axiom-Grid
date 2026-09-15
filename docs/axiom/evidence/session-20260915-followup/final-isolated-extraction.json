@@ -1,0 +1,36 @@
+{
+  "scope": "co-located real HTTP/extraction, one uvicorn worker; not a 100x certification",
+  "requests": 1000,
+  "concurrency": 100,
+  "statuses": {
+    "200": 48,
+    "422": 100,
+    "404": 2,
+    "503": 850
+  },
+  "unexpected": 0,
+  "healthy_after": true,
+  "shutdown_timed_out": false,
+  "server_exit": -15,
+  "shutdown_seconds": 0.164,
+  "throughput_rps": 61.71,
+  "successful_extractions_rps": 2.96,
+  "latency_all": {
+    "p50_ms": 938.59,
+    "p95_ms": 1376.34,
+    "p99_ms": 7626.58
+  },
+  "latency_success": {
+    "p50_ms": 6841.28,
+    "p95_ms": 8614.24,
+    "p99_ms": 8668.92
+  },
+  "latency_shed": {
+    "p50_ms": 920.62,
+    "p95_ms": 1183.83,
+    "p99_ms": 1333.53
+  },
+  "rss_sample_floor_mib": 79.73,
+  "rss_sample_peak_mib": 116.43,
+  "rss_sample_interval_ms": 20
+}

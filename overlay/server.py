@@ -18,6 +18,7 @@ import logging.handlers
 import os
 import pathlib
 import queue
+import sys
 import tempfile
 import threading
 import time
@@ -132,7 +133,7 @@ def configure_structured_logging(level: str | None = None) -> None:
         return
     root = logging.getLogger()
     if not any(isinstance(h, _NonBlockingQueueHandler) for h in root.handlers):
-        sink = logging.StreamHandler()
+        sink = logging.StreamHandler(sys.stdout)
         sink.setFormatter(logging.Formatter("%(message)s"))
         log_queue: queue.Queue = queue.Queue(
             maxsize=int(os.environ.get("AXIOM_LOG_QUEUE_MAX", "4096"))
@@ -847,90 +848,72 @@ async def extract_document(req: ExtractDocumentRequest):
     Returns fields with value, grounded status, bbox, cascade method,
     confidence, and source_link for each extracted field.
     """
-    file_path = resolve_sandbox_path(req.file)
-    filepath = str(file_path)
+    # Admission covers all document I/O, classification and pipeline work.
+    # Acquiring only at submit time let rejected requests fill the default
+    # executor and retain full document strings before the capacity check.
+    slots = _extraction_slots
+    if not slots.acquire(blocking=False):
+        OPS_METRICS["extraction_shed_total"] = OPS_METRICS.get("extraction_shed_total", 0) + 1
+        raise HTTPException(
+            status_code=503,
+            detail="Extraction capacity saturated; retry shortly",
+            headers={"Retry-After": "1"},
+        )
 
-    # Read and classify (blocking I/O off the event loop)
-    def _read(fp):
-        with open(fp, "r", errors="ignore") as f:
-            return f.read()
-    try:
-        text = await asyncio.to_thread(_read, filepath)
-    except OSError as exc:
-        logger.exception("unable to read document for extraction")
-        # SEC-009: log the cause, but do not echo the resolved server path or
-        # raw exception text to the client (information disclosure).
-        raise HTTPException(status_code=422, detail="Unable to read document") from exc
-
-    from kairo.core.classifier import build_source_link, classify_document
-    doc_type = classify_document(text)
-
-    # Select pack based on type
-    pack_map = {
-        "invoice": InvoicePack,
-        "contract": ContractPack,
-        "paper": PaperPack,
-        "memo": ClassifiedMemoPack,
-        "generic": GenericPack,
-    }
-    pack_class = pack_map.get(doc_type, GenericPack)
-
-    # Run extraction pipeline
-    from kernel.core.data_model import Document
-    from kernel.core.provenance import ProvenanceLogImpl
-    from kernel.sidecar.inference_gateway import TieredInferenceGateway
-    from kernel.sidecar.ingestor import IngestorImpl
-    from kernel.sidecar.memory_store import MemoryStoreImpl
-    from kernel.sidecar.quality_gate import LocalQualityGate
-    from kernel.sidecar.security_filter import LocalSecurityFilter
-
-    doc = Document(source_path=filepath)
-    try:
-        # SEC-004: run the CPU-bound regex pipeline on the bounded thread pool
-        # (never directly on the event loop thread).
-        loop = asyncio.get_running_loop()
-
-        def _run_locked():
-            # OPS-007: the request-scoped SQLite store lives and dies inside the
-            # worker that uses it, so the handle is closed deterministically
-            # even when the awaiting coroutine is cancelled mid-flight.
-            with MemoryStoreImpl(":memory:") as request_store:
-                orchestrator = OrchestratorImpl(
-                    ingestor=IngestorImpl(),
-                    security_filter=LocalSecurityFilter(enable_pii_scan=False),
-                    inference_gateway=TieredInferenceGateway(tier3_enabled=False),
-                    quality_gate=LocalQualityGate(request_store),
-                    provenance_log=ProvenanceLogImpl(),
-                    pack=pack_class(),
-                    memory_store=request_store,
-                )
-                with orchestrator_lock:
-                    return orchestrator.run(doc)
-
-        slots = _extraction_slots
-        if not slots.acquire(blocking=False):
-            # Fail fast under overload rather than queueing unboundedly.
-            OPS_METRICS["extraction_shed_total"] = OPS_METRICS.get("extraction_shed_total", 0) + 1
-            raise HTTPException(
-                status_code=503,
-                detail="Extraction capacity saturated; retry shortly",
-                headers={"Retry-After": "1"},
-            )
+    def _run_admitted():
+        file_path = resolve_sandbox_path(req.file)
+        filepath = str(file_path)
         try:
-            work = _extraction_pool.submit(_run_locked)
-        except BaseException:
-            slots.release()
-            raise
-        # Capacity belongs to the actual worker, not the requesting coroutine.
-        # Cancellation of a running thread is impossible; release only when the
-        # concurrent future completes (or queued work is successfully cancelled).
-        work.add_done_callback(lambda _future: slots.release())
-        trace = await asyncio.wrap_future(work, loop=loop)
+            with open(filepath, "rb") as source:
+                content = source.read(MAX_UPLOAD_BYTES + 1)
+            if len(content) > MAX_UPLOAD_BYTES:
+                raise HTTPException(status_code=413, detail="Document exceeds byte budget")
+            text = content.decode("utf-8", errors="ignore")
+        except OSError as exc:
+            logger.exception("unable to read document for extraction")
+            raise HTTPException(status_code=422, detail="Unable to read document") from exc
+
+        from kairo.core.classifier import classify_document
+        doc_type = classify_document(text)
+        pack_class = {
+            "invoice": InvoicePack,
+            "contract": ContractPack,
+            "paper": PaperPack,
+            "memo": ClassifiedMemoPack,
+            "generic": GenericPack,
+        }.get(doc_type, GenericPack)
+        doc = Document(source_path=filepath)
+        # The store and capacity belong to the actual worker, not its waiter.
+        # Cancelling an HTTP request cannot stop a running Python thread.
+        with MemoryStoreImpl(":memory:") as request_store:
+            request_orchestrator = OrchestratorImpl(
+                ingestor=IngestorImpl(),
+                security_filter=LocalSecurityFilter(enable_pii_scan=False),
+                inference_gateway=TieredInferenceGateway(tier3_enabled=False),
+                quality_gate=LocalQualityGate(request_store),
+                provenance_log=ProvenanceLogImpl(),
+                pack=pack_class(),
+                memory_store=request_store,
+            )
+            with orchestrator_lock:
+                trace = request_orchestrator.run(doc)
+        return trace, doc_type, doc
+
+    try:
+        work = _extraction_pool.submit(_run_admitted)
+    except BaseException:
+        slots.release()
+        raise
+    work.add_done_callback(lambda _future: slots.release())
+    try:
+        trace, doc_type, doc = await asyncio.wrap_future(work)
     except HTTPException:
         raise
     except Exception as exc:
         logger.exception("unhandled error in /api/extract-document pipeline")
         raise HTTPException(status_code=500, detail="Extraction pipeline failed") from exc
+
+    from kairo.core.classifier import build_source_link
 
     # Build response with grounding metadata
     fields = {}

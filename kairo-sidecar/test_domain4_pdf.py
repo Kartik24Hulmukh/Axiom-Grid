@@ -46,7 +46,12 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent.resolve()))
 
 # ── Availability sentinels (checked once at import time) ─────────────────────
-import fitz  # PyMuPDF (hard dependency)
+import pytest as _pytest_gate
+fitz = _pytest_gate.importorskip(
+    "fitz",
+    reason="PyMuPDF (AGPL) is excluded by the repo permissive-licence dependency policy; "
+    "these legacy sidecar oracle tests require it and skip when it is not installed",
+)
 
 _OPENDATALOADER_AVAILABLE: Optional[bool] = None  # lazily resolved inside tests
 _OLMOCR_AVAILABLE: Optional[bool] = None  # lazily resolved inside tests

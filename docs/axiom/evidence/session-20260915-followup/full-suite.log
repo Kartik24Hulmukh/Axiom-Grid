@@ -1,0 +1,146 @@
+{"ts":"2026-09-15T10:34:25.586Z","level":"INFO","logger":"kernel.sidecar.memory_store","msg":"MemoryStore initialized: /home/daytona/axiom-grid/.kairo/overlay_store.db","service":"axiom-grid-overlay"}
+.............FFFFFF
+==================================== ERRORS ====================================
+______________ ERROR collecting kairo-sidecar/test_domain4_pdf.py ______________
+ImportError while importing test module '/home/daytona/axiom-grid/kairo-sidecar/test_domain4_pdf.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+kairo-sidecar/test_domain4_pdf.py:49: in <module>
+    import fitz  # PyMuPDF (hard dependency)
+    ^^^^^^^^^^^
+E   ModuleNotFoundError: No module named 'fitz'
+__ ERROR collecting kairo-sidecar/tests/test_oracle_hardening_adversarial.py ___
+ImportError while importing test module '/home/daytona/axiom-grid/kairo-sidecar/tests/test_oracle_hardening_adversarial.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+kairo-sidecar/tests/test_oracle_hardening_adversarial.py:7: in <module>
+    import fitz
+E   ModuleNotFoundError: No module named 'fitz'
+_____________ ERROR collecting kairo-sidecar/tests/test_oracles.py _____________
+ImportError while importing test module '/home/daytona/axiom-grid/kairo-sidecar/tests/test_oracles.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+kairo-sidecar/tests/test_oracles.py:11: in <module>
+    import fitz
+E   ModuleNotFoundError: No module named 'fitz'
+_______________ ERROR collecting legacy/wedge/test_wedge_pack.py _______________
+ImportError while importing test module '/home/daytona/axiom-grid/legacy/wedge/test_wedge_pack.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+legacy/wedge/test_wedge_pack.py:11: in <module>
+    from packs.wedge.pack import WedgePack
+E   ModuleNotFoundError: No module named 'packs.wedge'
+=================================== FAILURES ===================================
+________________ TestCompileTestPass.test_clean_project_passes _________________
+
+self = <kairo.domains.code.tests.test_code_oracles.TestCompileTestPass object at 0x780636465450>
+
+    def test_clean_project_passes(self):
+        """A clean fixture project passes all checks."""
+        if not _HAS_TOOLCHAIN:
+>           pytest.fail("code toolchain not available — cannot test compile_test_pass")
+E           Failed: code toolchain not available — cannot test compile_test_pass
+
+kairo/domains/code/tests/test_code_oracles.py:92: Failed
+____________ TestCompileTestPass.test_kill_proof_syntax_error_fails ____________
+
+self = <kairo.domains.code.tests.test_code_oracles.TestCompileTestPass object at 0x780636465590>
+
+    def test_kill_proof_syntax_error_fails(self):
+        """Kill-proof: introduce a syntax error → oracle FAILS."""
+        if not _HAS_TOOLCHAIN:
+>           pytest.fail("code toolchain not available")
+E           Failed: code toolchain not available
+
+kairo/domains/code/tests/test_code_oracles.py:102: Failed
+____________ TestCompileTestPass.test_kill_proof_broken_test_fails _____________
+
+self = <kairo.domains.code.tests.test_code_oracles.TestCompileTestPass object at 0x780636af0770>
+
+    def test_kill_proof_broken_test_fails(self):
+        """Kill-proof: break a test assertion → oracle FAILS."""
+        if not _HAS_TOOLCHAIN:
+>           pytest.fail("code toolchain not available")
+E           Failed: code toolchain not available
+
+kairo/domains/code/tests/test_code_oracles.py:118: Failed
+___________________ TestParseValidity.test_valid_file_passes ___________________
+
+self = <kairo.domains.code.tests.test_code_oracles.TestParseValidity object at 0x7806364656d0>
+
+    def test_valid_file_passes(self):
+        """A valid .py file parses with zero ERROR nodes."""
+        if not _HAS_TOOLCHAIN:
+>           pytest.fail("code toolchain not available")
+E           Failed: code toolchain not available
+
+kairo/domains/code/tests/test_code_oracles.py:146: Failed
+___________ TestParseValidity.test_kill_proof_malformed_syntax_fails ___________
+
+self = <kairo.domains.code.tests.test_code_oracles.TestParseValidity object at 0x780636465810>
+
+    def test_kill_proof_malformed_syntax_fails(self):
+        """Kill-proof: inject malformed syntax → oracle FAILS."""
+        if not _HAS_TOOLCHAIN:
+>           pytest.fail("code toolchain not available")
+E           Failed: code toolchain not available
+
+kairo/domains/code/tests/test_code_oracles.py:157: Failed
+____________ TestParseValidity.test_kill_proof_missing_colon_fails _____________
+
+self = <kairo.domains.code.tests.test_code_oracles.TestParseValidity object at 0x780636af08a0>
+
+    def test_kill_proof_missing_colon_fails(self):
+        """Kill-proof: missing colon after def → oracle FAILS."""
+        if not _HAS_TOOLCHAIN:
+>           pytest.fail("code toolchain not available")
+E           Failed: code toolchain not available
+
+kairo/domains/code/tests/test_code_oracles.py:170: Failed
+=============================== warnings summary ===============================
+kairo-sidecar/sidecar/test_fix_loop.py:87
+  /home/daytona/axiom-grid/kairo-sidecar/sidecar/test_fix_loop.py:87: PytestCollectionWarning: cannot collect test class 'TestFixLoop' because it has a __init__ constructor (from: kairo-sidecar/sidecar/test_fix_loop.py)
+    class TestFixLoop:
+
+kairo-sidecar/sidecar/test_generator.py:14
+  /home/daytona/axiom-grid/kairo-sidecar/sidecar/test_generator.py:14: PytestCollectionWarning: cannot collect test class 'TestGenerator' because it has a __init__ constructor (from: kairo-sidecar/sidecar/test_generator.py)
+    class TestGenerator:
+
+kairo-sidecar/tests/test_kairoreal_gauntlet.py:124
+  /home/daytona/axiom-grid/kairo-sidecar/tests/test_kairoreal_gauntlet.py:124: PytestUnknownMarkWarning: Unknown pytest.mark.slow - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.slow
+
+kairo-sidecar/sidecar/test_fix_loop.py:87
+  /home/daytona/axiom-grid/kairo-sidecar/sidecar/test_fix_loop.py:87: PytestCollectionWarning: cannot collect test class 'TestFixLoop' because it has a __init__ constructor (from: kairo-sidecar/tests/test_oracle_hardening_challenger.py)
+    class TestFixLoop:
+
+kairo-sidecar/sidecar/test_fix_loop.py:87
+  /home/daytona/axiom-grid/kairo-sidecar/sidecar/test_fix_loop.py:87: PytestCollectionWarning: cannot collect test class 'TestFixLoop' because it has a __init__ constructor (from: kairo-sidecar/tests/test_phase10_loop.py)
+    class TestFixLoop:
+
+kairo-sidecar/sidecar/test_fix_loop.py:87
+  /home/daytona/axiom-grid/kairo-sidecar/sidecar/test_fix_loop.py:87: PytestCollectionWarning: cannot collect test class 'TestFixLoop' because it has a __init__ constructor (from: kairo-sidecar/tests/test_sprints_new.py)
+    class TestFixLoop:
+
+kairo-sidecar/sidecar/test_generator.py:14
+  /home/daytona/axiom-grid/kairo-sidecar/sidecar/test_generator.py:14: PytestCollectionWarning: cannot collect test class 'TestGenerator' because it has a __init__ constructor (from: kairo-sidecar/tests/test_sprints_new.py)
+    class TestGenerator:
+
+kairo-sidecar/sidecar/test_generator.py:14
+  /home/daytona/axiom-grid/kairo-sidecar/sidecar/test_generator.py:14: PytestCollectionWarning: cannot collect test class 'TestGenerator' because it has a __init__ constructor (from: kairo-sidecar/tests/test_test_generator.py)
+    class TestGenerator:
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED kairo/domains/code/tests/test_code_oracles.py::TestCompileTestPass::test_clean_project_passes
+FAILED kairo/domains/code/tests/test_code_oracles.py::TestCompileTestPass::test_kill_proof_syntax_error_fails
+FAILED kairo/domains/code/tests/test_code_oracles.py::TestCompileTestPass::test_kill_proof_broken_test_fails
+FAILED kairo/domains/code/tests/test_code_oracles.py::TestParseValidity::test_valid_file_passes
+FAILED kairo/domains/code/tests/test_code_oracles.py::TestParseValidity::test_kill_proof_malformed_syntax_fails
+FAILED kairo/domains/code/tests/test_code_oracles.py::TestParseValidity::test_kill_proof_missing_colon_fails
+ERROR kairo-sidecar/test_domain4_pdf.py
+ERROR kairo-sidecar/tests/test_oracle_hardening_adversarial.py
+ERROR kairo-sidecar/tests/test_oracles.py
+ERROR legacy/wedge/test_wedge_pack.py
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 10 failures !!!!!!!!!!!!!!!!!!!!!!!!!!
+6 failed, 13 passed, 1 skipped, 8 warnings, 4 errors in 3.50s

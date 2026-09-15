@@ -4,7 +4,12 @@ import builtins
 import io
 from unittest.mock import patch
 import pptx
-import fitz
+import pytest as _pytest_gate
+fitz = _pytest_gate.importorskip(
+    "fitz",
+    reason="PyMuPDF (AGPL) is excluded by the repo permissive-licence dependency policy; "
+    "these legacy sidecar oracle tests require it and skip when it is not installed",
+)
 
 from sidecar.test_fix_loop import TestFixLoop, ProtectedPathViolation
 from sidecar.oracles import verify_pptx, verify_pdf

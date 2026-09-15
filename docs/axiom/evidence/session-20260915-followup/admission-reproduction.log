@@ -1,0 +1,645 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_________ test_saturated_extraction_does_not_resolve_or_read_document __________
+  + Exception Group Traceback (most recent call last):
+  |   File "/usr/local/lib/python3.14/site-packages/starlette/_utils.py", line 85, in create_collapsing_task_group
+  |     async with anyio.create_task_group() as tg:
+  |                ~~~~~~~~~~~~~~~~~~~~~~~^^
+  |   File "/usr/local/lib/python3.14/site-packages/anyio/_backends/_asyncio.py", line 815, in __aexit__
+  |     raise BaseExceptionGroup(
+  |         "unhandled errors in a TaskGroup", self._exceptions
+  |     ) from None
+  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "/home/daytona/.local/lib/python3.14/site-packages/_pytest/runner.py", line 361, in from_call
+    |     result: TResult | None = func()
+    |                              ~~~~^^
+    |   File "/home/daytona/.local/lib/python3.14/site-packages/_pytest/runner.py", line 250, in <lambda>
+    |     lambda: runtest_hook(item=item, **kwds),
+    |             ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+    |   File "/usr/local/lib/python3.14/site-packages/pluggy/_hooks.py", line 512, in __call__
+    |     return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+    |            ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/usr/local/lib/python3.14/site-packages/pluggy/_manager.py", line 120, in _hookexec
+    |     return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+    |            ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/usr/local/lib/python3.14/site-packages/pluggy/_callers.py", line 167, in _multicall
+    |     raise exception
+    |   File "/usr/local/lib/python3.14/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |     ~~~~~~~~~~~~~~^^^^^^^^^^^
+    |   File "/home/daytona/.local/lib/python3.14/site-packages/_pytest/logging.py", line 865, in pytest_runtest_call
+    |     yield
+    |   File "/usr/local/lib/python3.14/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |     ~~~~~~~~~~~~~~^^^^^^^^^^^
+    |   File "/home/daytona/.local/lib/python3.14/site-packages/_pytest/capture.py", line 900, in pytest_runtest_call
+    |     return (yield)
+    |             ^^^^^
+    |   File "/usr/local/lib/python3.14/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |     ~~~~~~~~~~~~~~^^^^^^^^^^^
+    |   File "/usr/local/lib/python3.14/site-packages/pluggy/_callers.py", line 53, in run_old_style_hookwrapper
+    |     return result.get_result()
+    |            ~~~~~~~~~~~~~~~~~^^
+    |   File "/usr/local/lib/python3.14/site-packages/pluggy/_result.py", line 103, in get_result
+    |     raise exc.with_traceback(tb)
+    |   File "/usr/local/lib/python3.14/site-packages/pluggy/_callers.py", line 38, in run_old_style_hookwrapper
+    |     res = yield
+    |           ^^^^^
+    |   File "/usr/local/lib/python3.14/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |     ~~~~~~~~~~~~~~^^^^^^^^^^^
+    |   File "/usr/local/lib/python3.14/site-packages/pluggy/_callers.py", line 53, in run_old_style_hookwrapper
+    |     return result.get_result()
+    |            ~~~~~~~~~~~~~~~~~^^
+    |   File "/usr/local/lib/python3.14/site-packages/pluggy/_result.py", line 103, in get_result
+    |     raise exc.with_traceback(tb)
+    |   File "/usr/local/lib/python3.14/site-packages/pluggy/_callers.py", line 38, in run_old_style_hookwrapper
+    |     res = yield
+    |           ^^^^^
+    |   File "/usr/local/lib/python3.14/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |     ~~~~~~~~~~~~~~^^^^^^^^^^^
+    |   File "/usr/local/lib/python3.14/site-packages/pluggy/_callers.py", line 53, in run_old_style_hookwrapper
+    |     return result.get_result()
+    |            ~~~~~~~~~~~~~~~~~^^
+    |   File "/usr/local/lib/python3.14/site-packages/pluggy/_result.py", line 103, in get_result
+    |     raise exc.with_traceback(tb)
+    |   File "/usr/local/lib/python3.14/site-packages/pluggy/_callers.py", line 38, in run_old_style_hookwrapper
+    |     res = yield
+    |           ^^^^^
+    |   File "/usr/local/lib/python3.14/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |     ~~~~~~~~~~~~~~^^^^^^^^^^^
+    |   File "/home/daytona/.local/lib/python3.14/site-packages/_pytest/skipping.py", line 268, in pytest_runtest_call
+    |     return (yield)
+    |             ^^^^^
+    |   File "/usr/local/lib/python3.14/site-packages/pluggy/_callers.py", line 121, in _multicall
+    |     res = hook_impl.function(*args)
+    |   File "/home/daytona/.local/lib/python3.14/site-packages/_pytest/runner.py", line 184, in pytest_runtest_call
+    |     item.runtest()
+    |     ~~~~~~~~~~~~^^
+    |   File "/home/daytona/.local/lib/python3.14/site-packages/_pytest/python.py", line 1707, in runtest
+    |     self.ihook.pytest_pyfunc_call(pyfuncitem=self)
+    |     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+    |   File "/usr/local/lib/python3.14/site-packages/pluggy/_hooks.py", line 512, in __call__
+    |     return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+    |            ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/usr/local/lib/python3.14/site-packages/pluggy/_manager.py", line 120, in _hookexec
+    |     return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+    |            ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/usr/local/lib/python3.14/site-packages/pluggy/_callers.py", line 167, in _multicall
+    |     raise exception
+    |   File "/usr/local/lib/python3.14/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |     ~~~~~~~~~~~~~~^^^^^^^^^^^
+    |   File "/usr/local/lib/python3.14/site-packages/pluggy/_callers.py", line 53, in run_old_style_hookwrapper
+    |     return result.get_result()
+    |            ~~~~~~~~~~~~~~~~~^^
+    |   File "/usr/local/lib/python3.14/site-packages/pluggy/_result.py", line 103, in get_result
+    |     raise exc.with_traceback(tb)
+    |   File "/usr/local/lib/python3.14/site-packages/pluggy/_callers.py", line 38, in run_old_style_hookwrapper
+    |     res = yield
+    |           ^^^^^
+    |   File "/usr/local/lib/python3.14/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |     ~~~~~~~~~~~~~~^^^^^^^^^^^
+    |   File "/usr/local/lib/python3.14/site-packages/pluggy/_callers.py", line 53, in run_old_style_hookwrapper
+    |     return result.get_result()
+    |            ~~~~~~~~~~~~~~~~~^^
+    |   File "/usr/local/lib/python3.14/site-packages/pluggy/_result.py", line 103, in get_result
+    |     raise exc.with_traceback(tb)
+    |   File "/usr/local/lib/python3.14/site-packages/pluggy/_callers.py", line 38, in run_old_style_hookwrapper
+    |     res = yield
+    |           ^^^^^
+    |   File "/usr/local/lib/python3.14/site-packages/pluggy/_callers.py", line 121, in _multicall
+    |     res = hook_impl.function(*args)
+    |   File "/home/daytona/.local/lib/python3.14/site-packages/_pytest/python.py", line 167, in pytest_pyfunc_call
+    |     result = testfunction(**testargs)
+    |   File "/home/daytona/axiom-grid/overlay/tests/test_extraction_admission.py", line 17, in test_saturated_extraction_does_not_resolve_or_read_document
+    |     response = client.post("/api/extract-document", json={"file": "sample_memo_01.txt"})
+    |   File "/usr/local/lib/python3.14/site-packages/starlette/testclient.py", line 555, in post
+    |     return super().post(
+    |            ~~~~~~~~~~~~^
+    |         url,
+    |         ^^^^
+    |     ...<10 lines>...
+    |         extensions=extensions,
+    |         ^^^^^^^^^^^^^^^^^^^^^^
+    |     )
+    |     ^
+    |   File "/usr/local/lib/python3.14/site-packages/httpx2/_client.py", line 1209, in post
+    |     return self.request(
+    |            ~~~~~~~~~~~~^
+    |         "POST",
+    |         ^^^^^^^
+    |     ...<11 lines>...
+    |         extensions=extensions,
+    |         ^^^^^^^^^^^^^^^^^^^^^^
+    |     )
+    |     ^
+    |   File "/usr/local/lib/python3.14/site-packages/starlette/testclient.py", line 454, in request
+    |     return super().request(
+    |            ~~~~~~~~~~~~~~~^
+    |         method,
+    |         ^^^^^^^
+    |     ...<11 lines>...
+    |         extensions=extensions,
+    |         ^^^^^^^^^^^^^^^^^^^^^^
+    |     )
+    |     ^
+    |   File "/usr/local/lib/python3.14/site-packages/httpx2/_client.py", line 803, in request
+    |     return self.send(request, auth=auth, follow_redirects=follow_redirects)
+    |            ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/usr/local/lib/python3.14/site-packages/httpx2/_client.py", line 985, in send
+    |     response = self._send_handling_auth(
+    |         request,
+    |     ...<2 lines>...
+    |         history=[],
+    |     )
+    |   File "/usr/local/lib/python3.14/site-packages/httpx2/_client.py", line 1013, in _send_handling_auth
+    |     response = self._send_handling_redirects(
+    |         request,
+    |         follow_redirects=follow_redirects,
+    |         history=history,
+    |     )
+    |   File "/usr/local/lib/python3.14/site-packages/httpx2/_client.py", line 1048, in _send_handling_redirects
+    |     response = self._send_single_request(request)
+    |   File "/usr/local/lib/python3.14/site-packages/httpx2/_client.py", line 1081, in _send_single_request
+    |     response = transport.handle_request(request)
+    |   File "/usr/local/lib/python3.14/site-packages/starlette/testclient.py", line 356, in handle_request
+    |     raise exc
+    |   File "/usr/local/lib/python3.14/site-packages/starlette/testclient.py", line 353, in handle_request
+    |     portal.call(self.app, scope, receive, send)
+    |     ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/usr/local/lib/python3.14/site-packages/anyio/from_thread.py", line 338, in call
+    |     return cast(T_Retval, self.start_task_soon(func, *args).result())
+    |                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+    |   File "/usr/local/lib/python3.14/concurrent/futures/_base.py", line 454, in result
+    |     return self.__get_result()
+    |            ~~~~~~~~~~~~~~~~~^^
+    |   File "/usr/local/lib/python3.14/concurrent/futures/_base.py", line 396, in __get_result
+    |     raise self._exception
+    |   File "/usr/local/lib/python3.14/site-packages/anyio/from_thread.py", line 263, in _call_func
+    |     retval = await retval_or_awaitable
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/home/daytona/.local/lib/python3.14/site-packages/fastapi/applications.py", line 1163, in __call__
+    |     await super().__call__(scope, receive, send)
+    |   File "/usr/local/lib/python3.14/site-packages/starlette/applications.py", line 90, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "/usr/local/lib/python3.14/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    |     raise exc
+    |   File "/usr/local/lib/python3.14/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    |     await self.app(scope, receive, _send)
+    |   File "/home/daytona/axiom-grid/overlay/body_limit.py", line 42, in __call__
+    |     await self.app(scope, replay, send)
+    |   File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 193, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/home/daytona/axiom-grid/overlay/server.py", line 520, in rate_limit_middleware
+    |     return await call_next(request)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 168, in call_next
+    |     raise app_exc from app_exc.__cause__ or app_exc.__context__
+    |   File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 144, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 193, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/home/daytona/axiom-grid/overlay/server.py", line 423, in api_key_auth_middleware
+    |     return await call_next(request)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 168, in call_next
+    |     raise app_exc from app_exc.__cause__ or app_exc.__context__
+    |   File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 144, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 193, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/home/daytona/axiom-grid/overlay/server.py", line 321, in request_governor_middleware
+    |     response = await call_next(request)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 168, in call_next
+    |     raise app_exc from app_exc.__cause__ or app_exc.__context__
+    |   File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 144, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 193, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/home/daytona/axiom-grid/overlay/server.py", line 291, in security_headers_middleware
+    |     response = await call_next(request)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 168, in call_next
+    |     raise app_exc from app_exc.__cause__ or app_exc.__context__
+    |   File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 144, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 193, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/home/daytona/axiom-grid/overlay/server.py", line 283, in request_id_middleware
+    |     response = await call_next(request)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 168, in call_next
+    |     raise app_exc from app_exc.__cause__ or app_exc.__context__
+    |   File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 144, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 193, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/home/daytona/axiom-grid/overlay/server.py", line 231, in enforce_origin_gate
+    |     return await call_next(request)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 168, in call_next
+    |     raise app_exc from app_exc.__cause__ or app_exc.__context__
+    |   File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 144, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "/usr/local/lib/python3.14/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+    |   File "/usr/local/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    |     raise exc
+    |   File "/usr/local/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "/home/daytona/.local/lib/python3.14/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "/usr/local/lib/python3.14/site-packages/starlette/routing.py", line 660, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "/home/daytona/.local/lib/python3.14/site-packages/fastapi/routing.py", line 2734, in app
+    |     await route.handle(scope, receive, send)
+    |   File "/home/daytona/.local/lib/python3.14/site-packages/fastapi/routing.py", line 1281, in handle
+    |     await super().handle(scope, receive, send)
+    |   File "/usr/local/lib/python3.14/site-packages/starlette/routing.py", line 276, in handle
+    |     await self.app(scope, receive, send)
+    |   File "/home/daytona/.local/lib/python3.14/site-packages/fastapi/routing.py", line 158, in app
+    |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+    |   File "/usr/local/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    |     raise exc
+    |   File "/usr/local/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "/home/daytona/.local/lib/python3.14/site-packages/fastapi/routing.py", line 144, in app
+    |     response = await f(request)
+    |                ^^^^^^^^^^^^^^^^
+    |   File "/home/daytona/.local/lib/python3.14/site-packages/fastapi/routing.py", line 706, in app
+    |     raw_response = await run_endpoint_function(
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     ...<3 lines>...
+    |     )
+    |     ^
+    |   File "/home/daytona/.local/lib/python3.14/site-packages/fastapi/routing.py", line 352, in run_endpoint_function
+    |     return await dependant.call(**values)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/home/daytona/axiom-grid/overlay/server.py", line 850, in extract_document
+    |     file_path = resolve_sandbox_path(req.file)
+    |   File "/home/daytona/axiom-grid/overlay/tests/test_extraction_admission.py", line 13, in forbidden_resolve
+    |     raise AssertionError("document I/O happened before admission")
+    | AssertionError: document I/O happened before admission
+    +------------------------------------
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/daytona/axiom-grid/overlay/tests/test_extraction_admission.py", line 17, in test_saturated_extraction_does_not_resolve_or_read_document
+    response = client.post("/api/extract-document", json={"file": "sample_memo_01.txt"})
+  File "/usr/local/lib/python3.14/site-packages/starlette/testclient.py", line 555, in post
+    return super().post(
+           ~~~~~~~~~~~~^
+        url,
+        ^^^^
+    ...<10 lines>...
+        extensions=extensions,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/local/lib/python3.14/site-packages/httpx2/_client.py", line 1209, in post
+    return self.request(
+           ~~~~~~~~~~~~^
+        "POST",
+        ^^^^^^^
+    ...<11 lines>...
+        extensions=extensions,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/local/lib/python3.14/site-packages/starlette/testclient.py", line 454, in request
+    return super().request(
+           ~~~~~~~~~~~~~~~^
+        method,
+        ^^^^^^^
+    ...<11 lines>...
+        extensions=extensions,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/local/lib/python3.14/site-packages/httpx2/_client.py", line 803, in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/site-packages/httpx2/_client.py", line 985, in send
+    response = self._send_handling_auth(
+        request,
+    ...<2 lines>...
+        history=[],
+    )
+  File "/usr/local/lib/python3.14/site-packages/httpx2/_client.py", line 1013, in _send_handling_auth
+    response = self._send_handling_redirects(
+        request,
+        follow_redirects=follow_redirects,
+        history=history,
+    )
+  File "/usr/local/lib/python3.14/site-packages/httpx2/_client.py", line 1048, in _send_handling_redirects
+    response = self._send_single_request(request)
+  File "/usr/local/lib/python3.14/site-packages/httpx2/_client.py", line 1081, in _send_single_request
+    response = transport.handle_request(request)
+  File "/usr/local/lib/python3.14/site-packages/starlette/testclient.py", line 356, in handle_request
+    raise exc
+  File "/usr/local/lib/python3.14/site-packages/starlette/testclient.py", line 353, in handle_request
+    portal.call(self.app, scope, receive, send)
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/site-packages/anyio/from_thread.py", line 338, in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.14/concurrent/futures/_base.py", line 454, in result
+    return self.__get_result()
+           ~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.14/concurrent/futures/_base.py", line 396, in __get_result
+    raise self._exception
+  File "/usr/local/lib/python3.14/site-packages/anyio/from_thread.py", line 263, in _call_func
+    retval = await retval_or_awaitable
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/daytona/.local/lib/python3.14/site-packages/fastapi/applications.py", line 1163, in __call__
+    await super().__call__(scope, receive, send)
+  File "/usr/local/lib/python3.14/site-packages/starlette/applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/usr/local/lib/python3.14/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/usr/local/lib/python3.14/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/home/daytona/axiom-grid/overlay/body_limit.py", line 42, in __call__
+    await self.app(scope, replay, send)
+  File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/daytona/axiom-grid/overlay/server.py", line 520, in rate_limit_middleware
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/daytona/axiom-grid/overlay/server.py", line 423, in api_key_auth_middleware
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/daytona/axiom-grid/overlay/server.py", line 321, in request_governor_middleware
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/daytona/axiom-grid/overlay/server.py", line 291, in security_headers_middleware
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/daytona/axiom-grid/overlay/server.py", line 283, in request_id_middleware
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/daytona/axiom-grid/overlay/server.py", line 231, in enforce_origin_gate
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/usr/local/lib/python3.14/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/usr/local/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/usr/local/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/daytona/.local/lib/python3.14/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/usr/local/lib/python3.14/site-packages/starlette/routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/daytona/.local/lib/python3.14/site-packages/fastapi/routing.py", line 2734, in app
+    await route.handle(scope, receive, send)
+  File "/home/daytona/.local/lib/python3.14/site-packages/fastapi/routing.py", line 1281, in handle
+    await super().handle(scope, receive, send)
+  File "/usr/local/lib/python3.14/site-packages/starlette/routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "/home/daytona/.local/lib/python3.14/site-packages/fastapi/routing.py", line 158, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/usr/local/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/usr/local/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/daytona/.local/lib/python3.14/site-packages/fastapi/routing.py", line 144, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/home/daytona/.local/lib/python3.14/site-packages/fastapi/routing.py", line 706, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/home/daytona/.local/lib/python3.14/site-packages/fastapi/routing.py", line 352, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/daytona/axiom-grid/overlay/server.py", line 850, in extract_document
+    file_path = resolve_sandbox_path(req.file)
+  File "/home/daytona/axiom-grid/overlay/tests/test_extraction_admission.py", line 13, in forbidden_resolve
+    raise AssertionError("document I/O happened before admission")
+AssertionError: document I/O happened before admission
+
+The above exception was the direct cause of the following exception:
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7a43503f8050>
+
+    def test_saturated_extraction_does_not_resolve_or_read_document(monkeypatch):
+        slots = threading.BoundedSemaphore(1)
+        assert slots.acquire(blocking=False)
+        monkeypatch.setattr(server, "_extraction_slots", slots)
+        def forbidden_resolve(_path):
+            raise AssertionError("document I/O happened before admission")
+        monkeypatch.setattr(server, "resolve_sandbox_path", forbidden_resolve)
+        try:
+            with TestClient(server.app) as client:
+>               response = client.post("/api/extract-document", json={"file": "sample_memo_01.txt"})
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+overlay/tests/test_extraction_admission.py:17: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.14/site-packages/starlette/testclient.py:555: in post
+    return super().post(
+/usr/local/lib/python3.14/site-packages/httpx2/_client.py:1209: in post
+    return self.request(
+/usr/local/lib/python3.14/site-packages/starlette/testclient.py:454: in request
+    return super().request(
+/usr/local/lib/python3.14/site-packages/httpx2/_client.py:803: in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.14/site-packages/httpx2/_client.py:985: in send
+    response = self._send_handling_auth(
+/usr/local/lib/python3.14/site-packages/httpx2/_client.py:1013: in _send_handling_auth
+    response = self._send_handling_redirects(
+/usr/local/lib/python3.14/site-packages/httpx2/_client.py:1048: in _send_handling_redirects
+    response = self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.14/site-packages/httpx2/_client.py:1081: in _send_single_request
+    response = transport.handle_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.14/site-packages/starlette/testclient.py:356: in handle_request
+    raise exc
+/usr/local/lib/python3.14/site-packages/starlette/testclient.py:353: in handle_request
+    portal.call(self.app, scope, receive, send)
+/usr/local/lib/python3.14/site-packages/anyio/from_thread.py:338: in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.14/concurrent/futures/_base.py:454: in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.14/concurrent/futures/_base.py:396: in __get_result
+    raise self._exception
+/usr/local/lib/python3.14/site-packages/anyio/from_thread.py:263: in _call_func
+    retval = await retval_or_awaitable
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+../.local/lib/python3.14/site-packages/fastapi/applications.py:1163: in __call__
+    await super().__call__(scope, receive, send)
+/usr/local/lib/python3.14/site-packages/starlette/applications.py:90: in __call__
+    await self.middleware_stack(scope, receive, send)
+/usr/local/lib/python3.14/site-packages/starlette/middleware/errors.py:186: in __call__
+    raise exc
+/usr/local/lib/python3.14/site-packages/starlette/middleware/errors.py:164: in __call__
+    await self.app(scope, receive, _send)
+overlay/body_limit.py:42: in __call__
+    await self.app(scope, replay, send)
+/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py:193: in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+overlay/server.py:520: in rate_limit_middleware
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py:168: in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py:144: in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py:193: in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+overlay/server.py:423: in api_key_auth_middleware
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py:168: in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py:144: in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py:193: in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+overlay/server.py:321: in request_governor_middleware
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py:168: in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py:144: in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py:193: in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+overlay/server.py:291: in security_headers_middleware
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py:168: in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py:144: in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py:193: in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+overlay/server.py:283: in request_id_middleware
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py:168: in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py:144: in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py:193: in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+overlay/server.py:231: in enforce_origin_gate
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py:168: in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+/usr/local/lib/python3.14/site-packages/starlette/middleware/base.py:144: in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+/usr/local/lib/python3.14/site-packages/starlette/middleware/exceptions.py:63: in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+/usr/local/lib/python3.14/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    raise exc
+/usr/local/lib/python3.14/site-packages/starlette/_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+../.local/lib/python3.14/site-packages/fastapi/middleware/asyncexitstack.py:18: in __call__
+    await self.app(scope, receive, send)
+/usr/local/lib/python3.14/site-packages/starlette/routing.py:660: in __call__
+    await self.middleware_stack(scope, receive, send)
+../.local/lib/python3.14/site-packages/fastapi/routing.py:2734: in app
+    await route.handle(scope, receive, send)
+../.local/lib/python3.14/site-packages/fastapi/routing.py:1281: in handle
+    await super().handle(scope, receive, send)
+/usr/local/lib/python3.14/site-packages/starlette/routing.py:276: in handle
+    await self.app(scope, receive, send)
+../.local/lib/python3.14/site-packages/fastapi/routing.py:158: in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+/usr/local/lib/python3.14/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    raise exc
+/usr/local/lib/python3.14/site-packages/starlette/_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+../.local/lib/python3.14/site-packages/fastapi/routing.py:144: in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+../.local/lib/python3.14/site-packages/fastapi/routing.py:706: in app
+    raw_response = await run_endpoint_function(
+../.local/lib/python3.14/site-packages/fastapi/routing.py:352: in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+overlay/server.py:850: in extract_document
+    file_path = resolve_sandbox_path(req.file)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+_path = 'sample_memo_01.txt'
+
+    def forbidden_resolve(_path):
+>       raise AssertionError("document I/O happened before admission")
+E       AssertionError: document I/O happened before admission
+
+overlay/tests/test_extraction_admission.py:13: AssertionError
+=========================== short test summary info ============================
+FAILED overlay/tests/test_extraction_admission.py::test_saturated_extraction_does_not_resolve_or_read_document
+1 failed in 0.57s

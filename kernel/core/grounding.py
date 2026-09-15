@@ -66,25 +66,31 @@ def levenshtein_ratio(s1: str, s2: str) -> float:
     if len(s2) > _LEVENSHTEIN_MAX_LEN:
         s2 = s2[:_LEVENSHTEIN_MAX_LEN]
 
-    rows = len(s1) + 1
-    cols = len(s2) + 1
-    # Use two rolling rows instead of full matrix to save memory
-    prev_row = list(range(cols))
-    curr_row = [0] * cols
-
-    for row in range(1, rows):
-        curr_row[0] = row
-        for col in range(1, cols):
-            if s1[row-1] == s2[col-1]:
-                cost = 0
-            else:
-                cost = 1
-            curr_row[col] = min(prev_row[col] + 1,
-                                curr_row[col-1] + 1,
-                                prev_row[col-1] + cost)
-        prev_row, curr_row = curr_row, prev_row
-
-    return 1.0 - (prev_row[cols-1] / max(len(s1), len(s2)))
+    # Myers bit-vector Levenshtein: exact unit-cost edit distance, with
+    # Python integers evaluating an entire DP column in parallel. No optional
+    # native dependency, heuristic pruning or changed similarity semantics.
+    masks: dict[str, int] = {}
+    for index, char in enumerate(s1):
+        masks[char] = masks.get(char, 0) | (1 << index)
+    positive = (1 << len(s1)) - 1
+    negative = 0
+    distance = len(s1)
+    high_bit = 1 << (len(s1) - 1)
+    for char in s2:
+        equal = masks.get(char, 0)
+        vertical = equal | negative
+        horizontal = (((equal & positive) + positive) ^ positive) | equal
+        plus = negative | ~(horizontal | positive)
+        minus = positive & horizontal
+        if plus & high_bit:
+            distance += 1
+        elif minus & high_bit:
+            distance -= 1
+        plus = (plus << 1) | 1
+        minus <<= 1
+        positive = minus | ~(vertical | plus)
+        negative = plus & vertical
+    return 1.0 - distance / max(len(s1), len(s2))
 
 def best_fuzzy_match(value: str, text: str) -> tuple[float, tuple[int, int]]:
     """Scan windows of words in text to find best fuzzy substring match.

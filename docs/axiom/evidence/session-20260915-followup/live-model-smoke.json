@@ -1,0 +1,85 @@
+{
+  "scope": "one sequential bounded request per default route, max_tokens=512, no retry, synthetic input only; not a load test",
+  "results": [
+    {
+      "model": "glm-5.3",
+      "ok": true,
+      "nonempty": true,
+      "finish_reason": "stop",
+      "usage": {
+        "prompt_tokens": 19,
+        "completion_tokens": 3,
+        "total_tokens": 22,
+        "cached_tokens": 0,
+        "reasoning_tokens": 1,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 1
+        }
+      },
+      "latency_ms": 517.81
+    },
+    {
+      "model": "glm-5.3-flash",
+      "ok": true,
+      "nonempty": true,
+      "finish_reason": "stop",
+      "usage": {
+        "prompt_tokens": 23,
+        "completion_tokens": 129,
+        "total_tokens": 152,
+        "cached_tokens": 0,
+        "reasoning_tokens": 127,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 127
+        }
+      },
+      "latency_ms": 1961.99
+    },
+    {
+      "model": "kimi-k3",
+      "ok": true,
+      "nonempty": true,
+      "finish_reason": "stop",
+      "usage": {
+        "prompt_tokens": 131,
+        "completion_tokens": 39,
+        "total_tokens": 170,
+        "cached_tokens": 0,
+        "reasoning_tokens": 28,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 28
+        }
+      },
+      "latency_ms": 2134.52
+    },
+    {
+      "model": "qwen3.8-27b",
+      "ok": true,
+      "nonempty": true,
+      "finish_reason": "stop",
+      "usage": {
+        "prompt_tokens": 17,
+        "completion_tokens": 34,
+        "total_tokens": 51,
+        "cached_tokens": 0,
+        "reasoning_tokens": 31,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 31
+        }
+      },
+      "latency_ms": 1201.75
+    }
+  ]
+}

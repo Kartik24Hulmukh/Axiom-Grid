@@ -575,79 +575,44 @@ def test_comfyui_has_pil():
 
 
 def test_comfyui_offline_generation_temp_path():
-    """Test 41: Asset generation with empty path automatically creates temp asset file."""
+    """Test 41: Offline generation with no output path raises and creates NO temp asset.
+
+    Honest degradation: the bridge must never fabricate a placeholder image and
+    report success. Assert the exception AND that no `kairo_asset_` file leaked.
+    """
+    import glob
+    from sidecar.bridge_health import EngineUnavailableError
+    before = set(glob.glob(os.path.join(tempfile.gettempdir(), "kairo_asset_*")))
     bridge = ComfyUIBridge(offline_mode=True)
-    res = bridge.generate_asset("Dark Cyberpunk Dashboard Banner")
-    assert res["ok"]
-    assert res["offline"]
-    assert os.path.exists(res["image_path"])
-    os.unlink(res["image_path"])
+    with pytest.raises(EngineUnavailableError) as excinfo:
+        bridge.generate_asset("Dark Cyberpunk Dashboard Banner")
+    assert "comfyui" in str(excinfo.value).lower()
+    after = set(glob.glob(os.path.join(tempfile.gettempdir(), "kairo_asset_*")))
+    assert after == before, "offline bridge must not create placeholder assets"
 
 
-def test_comfyui_offline_generation_style_hero():
-    """Test 42: Style 'hero' uses Kairo premium brand purple (97, 64, 240)."""
-    bridge = ComfyUIBridge(offline_mode=True)
-    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tf:
-        out_path = tf.name
-    res = bridge.generate_asset("Hero banner", style="hero", output_path=out_path)
-    assert res["ok"]
-    assert os.path.exists(out_path)
-    os.unlink(out_path)
-
-
-def test_comfyui_offline_generation_style_success():
-    """Test 43: Style 'success' maps to vibrant green theme colors."""
-    bridge = ComfyUIBridge(offline_mode=True)
-    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tf:
-        out_path = tf.name
-    res = bridge.generate_asset("Success card", style="success", output_path=out_path)
-    assert res["ok"]
-    assert os.path.exists(out_path)
-    os.unlink(out_path)
-
-
-def test_comfyui_offline_generation_style_dark():
-    """Test 44: Style 'dark' maps to premium glassmorphic dark theme backings."""
+@pytest.mark.parametrize("style", ["hero", "success", "dark", "light", "vintage-retro"])
+def test_comfyui_offline_generation_styles_fail_loud(style):
+    """Tests 42-46: every style path (incl. unknown fallback style) fails loud offline
+    and leaves the caller-supplied output path untouched (no fake bytes written)."""
+    from sidecar.bridge_health import EngineUnavailableError
     bridge = ComfyUIBridge(offline_mode=True)
     with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tf:
         out_path = tf.name
-    res = bridge.generate_asset("Dark card", style="dark", output_path=out_path)
-    assert res["ok"]
-    assert os.path.exists(out_path)
-    os.unlink(out_path)
+    try:
+        with pytest.raises(EngineUnavailableError):
+            bridge.generate_asset(f"{style} card", style=style, output_path=out_path)
+        assert os.path.getsize(out_path) == 0, "no placeholder bytes may be written"
+    finally:
+        os.unlink(out_path)
 
 
-def test_comfyui_offline_generation_style_light():
-    """Test 45: Style 'light' maps to light clean neutral palettes."""
+def test_comfyui_no_placeholder_writer():
+    """Test 47: the legacy raw-BMP placeholder writer must not exist on the bridge."""
     bridge = ComfyUIBridge(offline_mode=True)
-    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tf:
-        out_path = tf.name
-    res = bridge.generate_asset("Light card", style="light", output_path=out_path)
-    assert res["ok"]
-    assert os.path.exists(out_path)
-    os.unlink(out_path)
+    assert not hasattr(bridge, "_write_raw_bmp")
+    assert not hasattr(bridge, "_generate_offline")
 
-
-def test_comfyui_offline_generation_style_fallback():
-    """Test 46: Unrecognized style keyword correctly defaults to slate gray color backing."""
-    bridge = ComfyUIBridge(offline_mode=True)
-    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tf:
-        out_path = tf.name
-    res = bridge.generate_asset("Fallback theme card", style="vintage-retro", output_path=out_path)
-    assert res["ok"]
-    assert os.path.exists(out_path)
-    os.unlink(out_path)
-
-
-def test_comfyui_raw_bmp_generation():
-    """Test 47: Generating asset in absolute PIL absence falls back to raw structured BMP files."""
-    bridge = ComfyUIBridge(offline_mode=True)
-    with tempfile.NamedTemporaryFile(suffix=".bmp", delete=False) as tf:
-        out_path = tf.name
-    bridge._write_raw_bmp(out_path, color=(97, 64, 240))
-    assert os.path.exists(out_path)
-    assert os.path.getsize(out_path) > 54  # BMP header size
-    os.unlink(out_path)
 
 
 def test_comfyui_raw_bmp_padding():

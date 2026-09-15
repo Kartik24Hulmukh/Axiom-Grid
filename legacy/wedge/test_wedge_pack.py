@@ -8,7 +8,7 @@ import pytest
 from pathlib import Path
 
 from kernel.core.data_model import Chunk, BBox
-from packs.wedge.pack import WedgePack
+from legacy.wedge.pack import WedgePack  # wedge pack relocated to legacy/ (obsolete packs.wedge path)
 
 
 def test_wedge_pack_fields():

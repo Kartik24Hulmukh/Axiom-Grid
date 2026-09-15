@@ -1,0 +1,7 @@
+{
+  "python": "3.14.6",
+  "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.41",
+  "cpu_count": 48,
+  "cpu_max": "200000 100000\n",
+  "scope": "co-located client and server; one run per point; probes only; not a capacity certification"
+}

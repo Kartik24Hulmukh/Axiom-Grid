@@ -1,0 +1,29 @@
+...F                                                                     [100%]
+=================================== FAILURES ===================================
+_______ test_budget_exhaustion_releases_half_open_probe_for_next_request _______
+
+    def test_budget_exhaustion_releases_half_open_probe_for_next_request():
+        import time
+    
+        calls = []
+        def transport(model, payload, timeout):
+            calls.append(model)
+            if len(calls) == 1:
+                return LENGTH_EMPTY
+            return {"choices": [{"message": {"content": "ready"}}]}
+    
+        router = MeliousModelRouter(models=["r1"], transport=transport, max_retries=0)
+        breaker = router.breakers["r1"]
+        breaker.failures = breaker.failure_threshold
+        breaker.opened_at = time.monotonic() - breaker.recovery_seconds - 1
+        with pytest.raises(BudgetExhaustedError):
+            router.complete([{"role": "user", "content": "hi"}], max_tokens=16)
+>       assert not breaker.probing, "a budget error must release the sole recovery probe"
+E       AssertionError: a budget error must release the sole recovery probe
+E       assert not True
+E        +  where True = CircuitBreaker(failure_threshold=3, recovery_seconds=15.0, failures=3, opened_at=3987291.889473719, probing=True).probing
+
+kernel/tests/test_router_budget_exhaustion.py:74: AssertionError
+=========================== short test summary info ============================
+FAILED kernel/tests/test_router_budget_exhaustion.py::test_budget_exhaustion_releases_half_open_probe_for_next_request
+1 failed, 3 passed in 0.17s

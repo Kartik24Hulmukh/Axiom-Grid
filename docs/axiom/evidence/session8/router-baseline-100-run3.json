@@ -1,0 +1,34 @@
+{
+  "scope": "in-process deterministic transport; bookkeeping only; no network or model inference",
+  "python": "3.14.6",
+  "requests": 20000,
+  "concurrency": 100,
+  "outcomes": {
+    "success": 20000
+  },
+  "throughput_rps": 17744.86,
+  "latency_ms": {
+    "p50": 0.0236,
+    "p95": 9.4764,
+    "p99": 10.6031
+  },
+  "rss_sample_floor_mib": 24.52,
+  "rss_sample_peak_mib": 61.02,
+  "rss_sample_interval_ms": 5,
+  "fd_before": 4,
+  "fd_after": 4,
+  "metrics": {
+    "requests": 20000,
+    "successes": 20000,
+    "failures": 0,
+    "fallbacks": 0,
+    "prompt_tokens": 20000,
+    "completion_tokens": 20000,
+    "reasoning_tokens": 0,
+    "total_tokens": 40000,
+    "budget_exhausted": 0,
+    "circuits": {
+      "local": "CLOSED"
+    }
+  }
+}

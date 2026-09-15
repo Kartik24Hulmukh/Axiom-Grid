@@ -20,6 +20,7 @@ class CircuitBreaker:
     failures: int = 0
     opened_at: float | None = None
     probing: bool = False
+    generation: int = 0
     def allow(self, now: float) -> bool:
         """CLOSED -> True. OPEN -> False. HALF_OPEN -> exactly one caller is
         admitted as the probe; concurrent callers keep failing fast so a
@@ -27,11 +28,23 @@ class CircuitBreaker:
         if self.opened_at is None: return True
         if now - self.opened_at < self.recovery_seconds or self.probing: return False
         self.probing = True; return True
-    def success(self) -> None:
+    def success(self, generation: int | None = None) -> None:
+        # Only responses admitted in this circuit epoch may change its state.
+        # In particular, pre-outage successes cannot close OPEN/HALF_OPEN.
+        if generation is not None and generation != self.generation:
+            return
+        if self.opened_at is not None:
+            self.generation += 1
         self.failures, self.opened_at, self.probing = 0, None, False
-    def failure(self, now: float) -> None:
-        self.failures += 1; self.probing = False
-        if self.failures >= self.failure_threshold: self.opened_at = now
+
+    def failure(self, now: float, generation: int | None = None) -> None:
+        if generation is not None and generation != self.generation:
+            return
+        self.failures += 1
+        self.probing = False
+        if self.failures >= self.failure_threshold:
+            self.opened_at = now
+            self.generation += 1
     @property
     def state(self) -> str:
         if self.opened_at is None: return "CLOSED"
@@ -180,76 +193,109 @@ class MeliousModelRouter:
             try:
                 allowed=now >= self._cooldown_until[model] and self.breakers[model].allow(now)
                 is_probe = allowed and self.breakers[model].probing
+                generation = self.breakers[model].generation
             finally: self._lock.release()
             if not allowed: trace.append({"model":model,"result":"circuit_open"}); continue
             if index and self._lock.acquire(timeout=self.acquire_timeout):
                 try: self.metrics["fallbacks"]+=1
                 finally: self._lock.release()
-            for attempt in range(self.max_retries+1):
-                try:
-                    # Half-open probe gets the shorter probe_timeout deadline.
-                    remaining = deadline - time.monotonic()
-                    if remaining <= 0:
-                        raise RouterError("router total deadline exhausted")
-                    data=self._transport(model,payload,min(remaining, self.probe_timeout if is_probe else self.timeout))
-                    if not isinstance(data, dict) or not isinstance(data.get("choices"), list) or not data["choices"]:
-                        raise RouterError("malformed upstream response")
-                    for choice in data["choices"]:
-                        if not isinstance(choice, dict) or not isinstance(choice.get("message"), dict):
-                            raise RouterError("malformed upstream choice")
-                        if not isinstance(choice["message"].get("content"), str) or not choice["message"]["content"].strip():
-                            if choice.get("finish_reason") == "length":
-                                exhausted = BudgetExhaustedError("completion budget consumed before any output text (reasoning tokens); raise max_tokens")
-                                try: exhausted.usage = self._usage_counts(data)
-                                except RouterError: exhausted.usage = None
-                                raise exhausted
-                            raise RouterError("upstream text completion content must be a non-empty string")
-                    if len(data["choices"]) != 1:
-                        raise RouterError("unexpected multiple completions")
-                    counts = self._usage_counts(data)
-                    if counts["completion_tokens"] > budget:
-                        raise RouterError("upstream exceeded completion budget")
-                    if not self._lock.acquire(timeout=self.acquire_timeout):
-                        raise RouterError(f"router saturated: lock not acquired within {self.acquire_timeout}s")
-                    try:
-                        self.breakers[model].success(); self.metrics["successes"]+=1
-                        for key, value in counts.items():
-                            self.metrics[key] += value
-                    finally: self._lock.release()
-                    data["router"]={"selected_model":model,"fallback_chain":trace+[ {"model":model,"result":"success"} ]}
-                    return data
-                except BudgetExhaustedError as exc:
-                    # Fail fast: healthy upstream, wrong budget. Account spend, leave breaker CLOSED.
-                    trace.append({"model":model,"result":"budget_exhausted","error":"BudgetExhaustedError","detail":"completion budget consumed by reasoning tokens","status":None})
-                    if self._lock.acquire(timeout=self.acquire_timeout):
+            try:
+                for attempt in range(self.max_retries+1):
+                    if attempt:
+                        # Backoff is not a lease: another request may have
+                        # opened the circuit or extended Retry-After meanwhile.
+                        remaining = deadline - time.monotonic()
+                        if remaining <= 0:
+                            break
+                        if not self._lock.acquire(timeout=min(self.acquire_timeout, remaining)):
+                            raise RouterError("router saturated during retry admission")
                         try:
-                            self.metrics["failures"]+=1; self.metrics["budget_exhausted"]+=1
-                            for key, value in (exc.usage or {}).items():
+                            breaker = self.breakers[model]
+                            if (breaker.generation != generation
+                                    or breaker.opened_at is not None
+                                    or time.monotonic() < self._cooldown_until[model]):
+                                trace.append({"model": model, "result": "circuit_open"})
+                                break
+                        finally:
+                            self._lock.release()
+                    try:
+                        # Half-open probe gets the shorter probe_timeout deadline.
+                        remaining = deadline - time.monotonic()
+                        if remaining <= 0:
+                            raise RouterError("router total deadline exhausted")
+                        data=self._transport(model,payload,min(remaining, self.probe_timeout if is_probe else self.timeout))
+                        if not isinstance(data, dict) or not isinstance(data.get("choices"), list) or not data["choices"]:
+                            raise RouterError("malformed upstream response")
+                        for choice in data["choices"]:
+                            if not isinstance(choice, dict) or not isinstance(choice.get("message"), dict):
+                                raise RouterError("malformed upstream choice")
+                            if not isinstance(choice["message"].get("content"), str) or not choice["message"]["content"].strip():
+                                if choice.get("finish_reason") == "length":
+                                    exhausted = BudgetExhaustedError("completion budget consumed before any output text (reasoning tokens); raise max_tokens")
+                                    try: exhausted.usage = self._usage_counts(data)
+                                    except RouterError: exhausted.usage = None
+                                    raise exhausted
+                                raise RouterError("upstream text completion content must be a non-empty string")
+                        if len(data["choices"]) != 1:
+                            raise RouterError("unexpected multiple completions")
+                        counts = self._usage_counts(data)
+                        if counts["completion_tokens"] > budget:
+                            raise RouterError("upstream exceeded completion budget")
+                        if not self._lock.acquire(timeout=self.acquire_timeout):
+                            raise RouterError(f"router saturated: lock not acquired within {self.acquire_timeout}s")
+                        try:
+                            self.breakers[model].success(generation); self.metrics["successes"]+=1
+                            for key, value in counts.items():
                                 self.metrics[key] += value
                         finally: self._lock.release()
-                    exc.trace = trace; exc.status = None
-                    raise
-                except Exception as exc:  # noqa: BLE001 -- isolate arbitrary injected transport failures
-                    last=exc; trace.append({"model":model,"result":"failure","error":type(exc).__name__,"detail":f"upstream HTTP {exc.status}" if type(getattr(exc,"status",None)) is int else "upstream request failed","status":getattr(exc,"status",None)})
-                    if self._lock.acquire(timeout=self.acquire_timeout):
-                        try:
-                            self.breakers[model].failure(time.monotonic())
-                            if getattr(exc, "status", None) == 429:
-                                self._cooldown_until[model] = max(
-                                    self._cooldown_until[model], time.monotonic() + self._retry_after(getattr(exc, "retry_after", 0)))
-                        finally: self._lock.release()
-                    status = getattr(exc, "status", None)
-                    if is_probe or (status is not None and status != 429 and not 500 <= status < 600):
-                        break
+                        data["router"]={"selected_model":model,"fallback_chain":trace+[ {"model":model,"result":"success"} ]}
+                        return data
+                    except BudgetExhaustedError as exc:
+                        # Fail fast: healthy upstream, wrong budget. Account spend, leave breaker CLOSED.
+                        trace.append({"model":model,"result":"budget_exhausted","error":"BudgetExhaustedError","detail":"completion budget consumed by reasoning tokens","status":None})
+                        if self._lock.acquire(timeout=self.acquire_timeout):
+                            try:
+                                # A budget-limited response proves the upstream is reachable.
+                                # Release HALF_OPEN's exclusive probe as well as resetting
+                                # CLOSED failure history; otherwise this route stays stuck
+                                # probing forever after a reasoning-only recovery response.
+                                self.breakers[model].success(generation)
+                                self.metrics["failures"]+=1; self.metrics["budget_exhausted"]+=1
+                                for key, value in (exc.usage or {}).items():
+                                    self.metrics[key] += value
+                            finally: self._lock.release()
+                        exc.trace = trace; exc.status = None
+                        raise
+                    except Exception as exc:  # noqa: BLE001 -- isolate arbitrary injected transport failures
+                        last=exc; trace.append({"model":model,"result":"failure","error":type(exc).__name__,"detail":f"upstream HTTP {exc.status}" if type(getattr(exc,"status",None)) is int else "upstream request failed","status":getattr(exc,"status",None)})
+                        if self._lock.acquire(timeout=self.acquire_timeout):
+                            try:
+                                self.breakers[model].failure(time.monotonic(), generation)
+                                if getattr(exc, "status", None) == 429:
+                                    self._cooldown_until[model] = max(
+                                        self._cooldown_until[model], time.monotonic() + self._retry_after(getattr(exc, "retry_after", 0)))
+                            finally: self._lock.release()
+                        status = getattr(exc, "status", None)
+                        if is_probe or (status is not None and status != 429 and not 500 <= status < 600):
+                            break
+                        with self._lock:
+                            if self.breakers[model].opened_at is not None:
+                                break
+                        if attempt < self.max_retries:
+                            delay = self._retry_after(getattr(exc, "retry_after", 0)) or .1*(2**attempt)+random.random()*.05
+                            # Never shorten Retry-After and hammer the same route.
+                            if delay >= deadline - time.monotonic():
+                                break
+                            self._sleep(delay)
+            finally:
+                # BaseException (including cancellation) bypasses ordinary error
+                # handling. Never strand the exclusive half-open probe lease.
+                # This lock protects only in-memory bookkeeping, never I/O.
+                if is_probe:
                     with self._lock:
-                        if self.breakers[model].opened_at is not None:
-                            break
-                    if attempt < self.max_retries:
-                        delay = self._retry_after(getattr(exc, "retry_after", 0)) or .1*(2**attempt)+random.random()*.05
-                        # Never shorten Retry-After and hammer the same route.
-                        if delay >= deadline - time.monotonic():
-                            break
-                        self._sleep(delay)
+                        breaker = self.breakers[model]
+                        if breaker.generation == generation and breaker.probing:
+                            breaker.failure(time.monotonic(), generation)
         if self._lock.acquire(timeout=self.acquire_timeout):
             try: self.metrics["failures"]+=1
             finally: self._lock.release()

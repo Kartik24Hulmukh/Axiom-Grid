@@ -1,0 +1,5 @@
+{
+  "endpoint": "https://api.github.com/user",
+  "status": 200,
+  "authenticated": true
+}

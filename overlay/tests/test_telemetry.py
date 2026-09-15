@@ -32,13 +32,30 @@ def test_spans_and_logs_do_not_capture_query_or_headers(monkeypatch):
     install_tracing(app)
     try:
         with TestClient(app) as client:
-            assert client.get("/items/PRIVATE?token=SECRET", headers={"Authorization": "Bearer SECRET"}).status_code == 200
+            assert client.get("/items/PRIVATE?token=SECRET", headers={"Authorization": "Bearer SECRET", "traceparent": "00-12345678901234567890123456789012-1234567890123456-01"}).status_code == 200
         spans = exporter.get_finished_spans()
         assert len(spans) == 1
         span = spans[0]
+        assert format(span.context.trace_id, "032x") == "12345678901234567890123456789012"
+        assert span.parent.span_id == int("1234567890123456", 16)
         assert span.name == "GET /items/{item_id}"
         assert span.attributes["http.response.status_code"] == 200
         assert "PRIVATE" not in str(span.attributes) and "SECRET" not in str(span.attributes)
         assert logs[0]["trace_id"] == format(span.context.trace_id, "032x")
     finally:
         provider.shutdown()
+
+
+def test_structured_logging_sink_is_stdout():
+    import subprocess
+    import sys
+
+    code = (
+        "from overlay.server import logger, _NonBlockingQueueHandler; import logging; "
+        "logger.warning('STDOUT_SENTINEL'); "
+        "[h.queue.join() for h in logging.getLogger().handlers if isinstance(h, _NonBlockingQueueHandler)]"
+    )
+    result = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=10)
+    assert result.returncode == 0
+    assert 'STDOUT_SENTINEL' in result.stdout
+    assert 'STDOUT_SENTINEL' not in result.stderr
