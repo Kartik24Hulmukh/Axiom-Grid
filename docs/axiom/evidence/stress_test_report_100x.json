@@ -1,135 +1,136 @@
 {
   "total_requests": 300,
   "concurrency_workers": 30,
-  "wall_time_seconds": 1.2578,
-  "throughput_req_per_sec": 238.51,
+  "wall_time_seconds": 1.7933,
+  "throughput_req_per_sec": 167.29,
   "status_code_distribution": {
     "200": 100,
     "404": 103,
-    "422": 97
+    "422": 81,
+    "429": 16
   },
   "unhandled_crashes": 0,
   "success_rate_pct": 100.0,
   "latency_ms": {
-    "p50": 12.43,
-    "p90": 286.34,
-    "p95": 587.14,
-    "p99": 599.86,
-    "mean": 112.75,
-    "max": 601.92,
-    "min": 2.37
+    "p50": 28.81,
+    "p90": 334.54,
+    "p95": 991.2,
+    "p99": 1012.88,
+    "mean": 164.46,
+    "max": 1016.41,
+    "min": 4.02
   },
   "probe_matrix": [
     {
       "probe": "POST /api/extract-document (body={'file': '/etc/passwd'}, headers=None)",
       "expected": 404,
       "actual": 404,
-      "latency_ms": 7.8,
+      "latency_ms": 9.2,
       "passed": true
     },
     {
       "probe": "POST /api/extract-document (body={'file': '../../../../etc/passwd'}, headers=None)",
       "expected": 404,
       "actual": 404,
-      "latency_ms": 2.37,
+      "latency_ms": 3.69,
       "passed": true
     },
     {
       "probe": "POST /demo (body={'file': '/etc/passwd'}, headers=None)",
       "expected": 404,
       "actual": 404,
-      "latency_ms": 2.27,
+      "latency_ms": 3.16,
       "passed": true
     },
     {
       "probe": "POST /demo (body={'file': '../../../../etc/passwd'}, headers=None)",
       "expected": 404,
       "actual": 404,
-      "latency_ms": 1.56,
+      "latency_ms": 2.56,
       "passed": true
     },
     {
       "probe": "POST /demo (body={'file': 'fixtures/../../../etc/passwd'}, headers=None)",
       "expected": 404,
       "actual": 404,
-      "latency_ms": 2.24,
+      "latency_ms": 2.48,
       "passed": true
     },
     {
       "probe": "POST /demo (body={'file': '/proc/self/environ'}, headers=None)",
       "expected": 404,
       "actual": 404,
-      "latency_ms": 1.66,
+      "latency_ms": 2.71,
       "passed": true
     },
     {
       "probe": "POST /demo (body={'file': 'fixtures/../../../etc/shadow'}, headers=None)",
       "expected": 404,
       "actual": 404,
-      "latency_ms": 1.46,
+      "latency_ms": 2.41,
       "passed": true
     },
     {
       "probe": "GET /api/figures/doc1?file=/etc/passwd (body=None, headers=None)",
       "expected": 404,
       "actual": 404,
-      "latency_ms": 1.33,
+      "latency_ms": 2.16,
       "passed": true
     },
     {
       "probe": "POST /demo (body={'file': 'sample_memo_01.txt'}, headers={'Origin': 'https://evil.example'})",
       "expected": 403,
       "actual": 403,
-      "latency_ms": 1.03,
+      "latency_ms": 1.74,
       "passed": true
     },
     {
       "probe": "POST /demo (body={'file': 'sample_memo_01.txt'}, headers={'Origin': 'https://evil.com'})",
       "expected": 403,
       "actual": 403,
-      "latency_ms": 1.03,
+      "latency_ms": 1.63,
       "passed": true
     },
     {
       "probe": "POST /demo (body={'file': 'sample_memo_01.txt'}, headers={'Origin': 'null'})",
       "expected": 403,
       "actual": 403,
-      "latency_ms": 1.0,
+      "latency_ms": 1.79,
       "passed": true
     },
     {
       "probe": "POST /demo (body={'file': 'sample_memo_01.txt'}, headers={'Origin': 'http://127.0.0.1:8765'})",
       "expected": 200,
       "actual": 200,
-      "latency_ms": 13.22,
+      "latency_ms": 15.8,
       "passed": true
     },
     {
       "probe": "POST /api/extract-document (body={'file': ''}, headers=None)",
       "expected": 422,
       "actual": 422,
-      "latency_ms": 1.58,
+      "latency_ms": 2.54,
       "passed": true
     },
     {
       "probe": "POST /api/extract-document (body={'file': '   '}, headers=None)",
       "expected": 422,
       "actual": 422,
-      "latency_ms": 1.55,
+      "latency_ms": 2.41,
       "passed": true
     },
     {
       "probe": "POST /api/extract-document (body={'file': 'a\\x00b'}, headers=None)",
       "expected": 422,
       "actual": 422,
-      "latency_ms": 2.07,
+      "latency_ms": 2.28,
       "passed": true
     },
     {
       "probe": "POST /api/extract-document (body={'file': 'fixtures/wedge/sample_memo_01.txt'}, headers=None)",
       "expected": 200,
       "actual": 200,
-      "latency_ms": 2545.47,
+      "latency_ms": 522.34,
       "passed": true
     }
   ]
