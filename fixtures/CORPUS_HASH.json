@@ -1,6 +1,6 @@
 {
-  "version": "1.3.1",
-  "fingerprint": "80a6d9947268737c9834b7fd1b3b70a2d4a006b7e70d74d8d5fa6b176be9093d",
+  "version": "1.3.2",
+  "fingerprint": "611444619148fc546704de4a5108a4296c75808aeb022cccff336f4e6132e4d5",
   "files": {
     "adversarial": {
       "embedded_instructions.txt": "64f4bdb035f998d11929e07f6dba2337baa5d1e017f68c6d740d1b65629a0382",
@@ -110,6 +110,7 @@
       "s03_spec.json": "139b54aedde102e5e550054fc62c844a92aa119d6b5ba5790facf11d35918526"
     },
     "wedge": {
+      "adversarial_ground_truth.json": "d67cff7471c81c269ae9cc29f8fc5d414bc4af3623e021a5b80529e6a1889112",
       "ground_truth.json": "949792373ad7b29d5932198479e90c998a724b6954584339d1dfc54bac781f69",
       "sample_memo_01.txt": "2cee63241b4f234c1f9c7411a8d9e061ab6e0d16a8206354410b7a32d1510867",
       "sample_memo_02.txt": "c717f35938dd65c7faa5b0595d415418ab2c1361e9088a3dbd6b67f17febe6da",

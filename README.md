@@ -78,3 +78,39 @@ contract below is enforced by `tests/test_scope_discipline.py` and mirrored in
   claim to an extracted span, the response is a refusal, never a guess.
 - Persist BYO API keys anywhere except the OS keychain abstraction
   (`scripts/keychain_store.py`); config files and logs are scanned for leaks.
+
+## Inherited document-pipeline development quickstart
+
+This is the Python document-intelligence test/development path, **not** the
+Rust desktop preview launch path above. The Python sidecar integrates
+Python-native OCR/layout and document parsing libraries; numpy supports local
+embedding calculations. Use a clean Python 3.12 environment (the inherited
+`embed-anything` dependency pins an ONNX Runtime wheel unavailable on Python
+3.14). Do not bypass dependency resolution with `--no-deps`.
+
+```sh
+python3.12 -m venv .venv
+. .venv/bin/activate
+python -m pip install -r requirements-test.txt pytest pytest-xdist httpx uvicorn
+python -m pytest --import-mode=importlib -q tests/
+make run DOC=samples/invoice/sample_invoice_01.txt Q="What is the invoice number?"
+```
+
+The Q&A command requires GNU Make; on Windows use WSL or invoke
+`python scripts/qa_pipeline.py --doc samples/invoice/sample_invoice_01.txt --question "What is the invoice number?"`.
+Semantic PDF tests require `model2vec` and the committed weights in
+`kairo-sidecar/assets/models/potion-base-8M/`. Keep `KAIRO_REQUIRE_SEMANTIC=1`
+for semantic validation: hash fallback is not semantic retrieval evidence.
+The dependency list is not a production lockfile and these commands do not
+certify that the broad suite is green. See PR #20 for outstanding launch gates.
+
+## Platform support boundaries
+
+| Platform | Desktop preview / native integration status |
+| --- | --- |
+| Windows | Preview only; production approval and native end-to-end verification pending. |
+| macOS | Inherited platform scaffold; ghost-typing is not shipped or CI-verified. Native validation pending. |
+| Linux | Inherited platform scaffold; ghost-typing is not shipped or CI-verified. Native validation pending. |
+
+Python API tests on Linux do not certify native application integration on any
+platform. No automatic cross-application typing is enabled by this quickstart.
