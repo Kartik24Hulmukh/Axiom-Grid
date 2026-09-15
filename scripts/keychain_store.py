@@ -30,6 +30,28 @@ KAIRO_KEYCHAIN_SERVICE = "kairo-phantom"
 KAIRO_ENV_PREFIX = "KAIRO_KEY_"
 
 
+def _backend_is_usable(backend) -> bool:
+    """True unless *backend* is keyring's fail/null backend (or a chainer of them).
+
+    keyring >= 23 exposes the no-backend case as ``keyring.backends.fail.Keyring``
+    (priority 0), not a class literally named ``FailKeyring``; matching on the
+    class name alone let the broken backend through and the first
+    ``set_password`` raised ``NoKeyringError`` in production.
+    """
+    module = type(backend).__module__ or ""
+    if module.startswith("keyring.backends.fail") or module.startswith("keyring.backends.null"):
+        return False
+    try:
+        if float(getattr(backend, "priority", 1)) <= 0:
+            return False
+    except (TypeError, ValueError):
+        pass
+    backends = getattr(backend, "backends", None)
+    if backends is not None:  # ChainerBackend
+        return any(_backend_is_usable(b) for b in backends)
+    return True
+
+
 class KeychainStore:
     """OS keychain abstraction for storing BYO-key cloud API keys.
 
@@ -49,19 +71,28 @@ class KeychainStore:
 
         try:
             import keyring
-            # Test that keyring backend is available (not the fail backend)
+            from keyring import errors as keyring_errors
+
             backend = keyring.get_keyring()
-            if backend and type(backend).__name__ != "FailKeyring":
-                self._keyring = keyring
-            else:
-                raise ImportError("No usable keyring backend")
-        except ImportError:
+            if backend is None or not _backend_is_usable(backend):
+                raise keyring_errors.NoKeyringError(
+                    "keyring resolved to the fail/null backend"
+                )
+            # Real round-trip probe: on headless Linux without a Secret Service
+            # daemon get_keyring() still returns a backend object, and the
+            # failure only surfaces on first use as NoKeyringError. Probe once
+            # at construction so callers get the documented fallback instead
+            # of an unhandled exception in the request path.
+            backend.get_password(self.service, "__kairo_backend_probe__")
+            self._keyring = keyring
+        except Exception as exc:  # ImportError / keyring.errors.KeyringError / backend RuntimeError
             self._using_fallback = True
             logger.warning(
-                "OS keychain not available (keyring library missing or no backend). "
+                "OS keychain not available (%s: %s). "
                 "Using in-memory fallback — keys will NOT persist and this is less secure. "
                 "Install 'keyring' and configure a backend (Secret Service on Linux, "
-                "Keychain on macOS, Credential Manager on Windows)."
+                "Keychain on macOS, Credential Manager on Windows).",
+                type(exc).__name__, exc,
             )
 
     @property
