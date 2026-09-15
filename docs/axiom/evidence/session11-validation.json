@@ -1,0 +1,70 @@
+{
+  "baseline_revision": "0800f13",
+  "integrated_remote_revision": "202f75f",
+  "python": "3.14.6",
+  "baseline_focused": {
+    "passed": 214,
+    "seconds": 14.58
+  },
+  "final_focused_plus_compressor": {
+    "passed": 230,
+    "exit": 0,
+    "command": "python3 -m pytest -q overlay/tests kernel/tests tests/test_context_compressor.py -W error::ResourceWarning -W error::pytest.PytestUnraisableExceptionWarning"
+  },
+  "focused_only_expected": 219,
+  "new_regressions": 5,
+  "before_regressions": {
+    "compression_failed": 3,
+    "trace_context_failed": 1,
+    "parallel_overlap_failed": 1,
+    "parallel_implementation": "tested then reverted: throughput regression"
+  },
+  "node_passed": 17,
+  "wedge_f1": 0.996,
+  "adversarial_f1": 0.977,
+  "collection_initial": {
+    "collected": 2656,
+    "errors": 37
+  },
+  "latest_broad": {
+    "passed": 831,
+    "failed": 15,
+    "skipped": 17,
+    "seconds": 41.27,
+    "stopped_at_maxfail": 15,
+    "failed_tests": [
+      "FAILED kairo-sidecar/test_domain7_export.py::TestPodcastExport::test_podcast_creates_file",
+      "FAILED kairo-sidecar/test_domain7_export.py::TestPodcastExport::test_local_podcast_flag",
+      "FAILED kairo-sidecar/test_domain9_media.py::TestMediaTranscribe::test_extract_audio_raises_if_ffmpeg_missing",
+      "FAILED kairo-sidecar/test_phase0_1_e2e.py::TestEndToEndTraceReceipt::test_word_master_trace_emitted",
+      "FAILED kairo-sidecar/test_phase0_1_e2e.py::TestEndToEndTraceReceipt::test_excel_master_trace_emitted",
+      "FAILED kairo-sidecar/test_phase0_1_e2e.py::TestEndToEndTraceReceipt::test_pdf_master_trace_emitted",
+      "FAILED kairo-sidecar/test_phase0_1_e2e.py::TestEndToEndTraceReceipt::test_legal_analyze_contract_trace_emitted",
+      "FAILED kairo-sidecar/test_phase0_1_e2e.py::TestEndToEndTraceReceipt::test_multi_domain_trace_receipt_chain",
+      "FAILED kairo-sidecar/test_phase0_1_opik.py::TestOpikTracerEmission::test_single_trace_has_trace_id",
+      "FAILED kairo-sidecar/test_phase0_1_opik.py::TestOpikTracerEmission::test_five_domain_calls_produce_five_traces",
+      "FAILED kairo-sidecar/test_phase0_1_opik.py::TestOpikTracerEmission::test_trace_writes_to_jsonl_file",
+      "FAILED kairo-sidecar/test_phase0_1_opik.py::TestOpikTracerEmission::test_trace_emission_errors_loudly_on_write_failure",
+      "FAILED kairo-sidecar/test_phase0_1_opik.py::TestPiiGuardOnTraces::test_ssn_redacted_in_trace",
+      "FAILED kairo-sidecar/test_phase0_1_opik.py::TestPiiGuardOnTraces::test_email_redacted_in_trace",
+      "FAILED kairo-sidecar/test_phase0_1_opik.py::TestPiiGuardOnTraces::test_phone_redacted_in_trace"
+    ]
+  },
+  "isolated_legacy_tracing": {
+    "assertions_passed": 23,
+    "process_exit": 1,
+    "reason": "strict teardown unraisable ZipFile ValueError and unclosed SQLite connections"
+  },
+  "cycles": {
+    "compression": 1,
+    "worker_context": 1,
+    "parallelism": 1,
+    "broad_environment_remediation": 4
+  },
+  "local_unavailable": [
+    "cargo",
+    "docker"
+  ],
+  "launch_decision": "NO-GO; PR draft, do not merge on focused checks alone",
+  "dependency_consistency": "pip check passed"
+}

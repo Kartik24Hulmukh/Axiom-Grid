@@ -1,0 +1,85 @@
+FFF                                                                      [100%]
+=================================== FAILURES ===================================
+_________________ test_completed_compressions_are_not_retained _________________
+
+    def test_completed_compressions_are_not_retained():
+        compressor._global_stats.clear()
+        refs = []
+        for _ in range(1000):
+            stats = compressor.CompressionStats(tokens_before=10, tokens_after=6, tokens_saved=4)
+            refs.append(weakref.ref(stats))
+            compressor.record_compression(stats)
+        del stats
+        gc.collect()
+>       assert sum(ref() is not None for ref in refs) == 0
+E       assert 1000 == 0
+E        +  where 1000 = sum(<generator object test_completed_compressions_are_not_retained.<locals>.<genexpr> at 0x7853d130e190>)
+
+kernel/tests/test_compression_accounting.py:18: AssertionError
+___________________ test_stats_do_not_alias_caller_or_reader ___________________
+
+    def test_stats_do_not_alias_caller_or_reader():
+        compressor._global_stats.clear()
+        stats = compressor.CompressionStats(tokens_before=10, transforms_applied=["original"])
+        compressor.record_compression(stats)
+        stats.transforms_applied.append("caller mutation")
+        first = compressor.get_compression_stats()
+>       assert first["last_run"]["transforms_applied"] == ["original"]
+E       AssertionError: assert ['original', ...ler mutation'] == ['original']
+E
+E         Left contains one more item: 'caller mutation'
+E         Use -v to get more diff
+
+kernel/tests/test_compression_accounting.py:30: AssertionError
+____________ test_concurrent_writes_and_snapshots_have_exact_totals ____________
+
+    def test_concurrent_writes_and_snapshots_have_exact_totals():
+        compressor._global_stats.clear()
+        def worker(_):
+            for _ in range(100):
+                compressor.record_compression(compressor.CompressionStats(
+                    tokens_before=10, tokens_after=6, tokens_saved=4))
+                snap = compressor.get_compression_stats()
+                assert snap["total_tokens_before"] == snap["total_runs"] * 10
+                assert snap["total_tokens_after"] == snap["total_runs"] * 6
+                assert snap["total_tokens_saved"] == snap["total_runs"] * 4
+        with concurrent.futures.ThreadPoolExecutor(100) as pool:
+>           list(pool.map(worker, range(100)))
+
+kernel/tests/test_compression_accounting.py:46:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+/usr/local/lib/python3.14/concurrent/futures/_base.py:645: in result_iterator
+    yield _result_or_cancel(fs.pop())
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.14/concurrent/futures/_base.py:312: in _result_or_cancel
+    return fut.result(timeout)
+           ^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.14/concurrent/futures/_base.py:447: in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.14/concurrent/futures/_base.py:396: in __get_result
+    raise self._exception
+/usr/local/lib/python3.14/concurrent/futures/thread.py:86: in run
+    result = ctx.run(self.task)
+             ^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.14/concurrent/futures/thread.py:73: in run
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+_ = 71
+
+    def worker(_):
+        for _ in range(100):
+            compressor.record_compression(compressor.CompressionStats(
+                tokens_before=10, tokens_after=6, tokens_saved=4))
+            snap = compressor.get_compression_stats()
+>           assert snap["total_tokens_before"] == snap["total_runs"] * 10
+E           assert 4720 == (572 * 10)
+
+kernel/tests/test_compression_accounting.py:42: AssertionError
+=========================== short test summary info ============================
+FAILED kernel/tests/test_compression_accounting.py::test_completed_compressions_are_not_retained
+FAILED kernel/tests/test_compression_accounting.py::test_stats_do_not_alias_caller_or_reader
+FAILED kernel/tests/test_compression_accounting.py::test_concurrent_writes_and_snapshots_have_exact_totals
+3 failed in 1.14s

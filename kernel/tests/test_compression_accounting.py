@@ -1,6 +1,7 @@
 """Compression telemetry must not retain per-request objects or torn totals."""
 import concurrent.futures
 import gc
+import threading
 import weakref
 
 from kairo.context import compressor
@@ -34,7 +35,9 @@ def test_stats_do_not_alias_caller_or_reader():
 
 def test_concurrent_writes_and_snapshots_have_exact_totals():
     compressor._global_stats.clear()
+    start = threading.Barrier(100)
     def worker(_):
+        start.wait(timeout=10)
         for _ in range(100):
             compressor.record_compression(compressor.CompressionStats(
                 tokens_before=10, tokens_after=6, tokens_saved=4))
