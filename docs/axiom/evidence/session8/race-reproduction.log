@@ -1,0 +1,105 @@
+FFF                                                                      [100%]
+=================================== FAILURES ===================================
+_________ test_stale_success_cannot_close_newly_opened_circuit[False] __________
+
+budget_response = False
+
+    @pytest.mark.parametrize("budget_response", [False, True])
+    def test_stale_success_cannot_close_newly_opened_circuit(budget_response):
+        entered, release = threading.Event(), threading.Event()
+    
+        def transport(model, payload, timeout):
+            if payload["messages"][0]["content"] == "old":
+                entered.set()
+                assert release.wait(3)
+                if budget_response:
+                    return {"choices": [{"message": {"content": ""}, "finish_reason": "length"}]}
+                return dict(OK)
+            raise TimeoutError("controlled failure")
+    
+        router = MeliousModelRouter(models=("a",), transport=transport, max_retries=0)
+        router.breakers["a"].failure_threshold = 1
+        with ThreadPoolExecutor(1) as pool:
+            old = pool.submit(router.complete, [{"role": "user", "content": "old"}])
+            try:
+                assert entered.wait(3)
+                with pytest.raises(RouterError):
+                    router.complete(MSG)
+            finally:
+                release.set()
+            if budget_response:
+                with pytest.raises(RouterError):
+                    old.result(timeout=3)
+            else:
+                old.result(timeout=3)
+>       assert router.breakers["a"].state == "OPEN"
+E       AssertionError: assert 'CLOSED' == 'OPEN'
+E         
+E         - OPEN
+E         + CLOSED
+
+kernel/tests/test_router_concurrency_fencing.py:42: AssertionError
+__________ test_stale_success_cannot_close_newly_opened_circuit[True] __________
+
+budget_response = True
+
+    @pytest.mark.parametrize("budget_response", [False, True])
+    def test_stale_success_cannot_close_newly_opened_circuit(budget_response):
+        entered, release = threading.Event(), threading.Event()
+    
+        def transport(model, payload, timeout):
+            if payload["messages"][0]["content"] == "old":
+                entered.set()
+                assert release.wait(3)
+                if budget_response:
+                    return {"choices": [{"message": {"content": ""}, "finish_reason": "length"}]}
+                return dict(OK)
+            raise TimeoutError("controlled failure")
+    
+        router = MeliousModelRouter(models=("a",), transport=transport, max_retries=0)
+        router.breakers["a"].failure_threshold = 1
+        with ThreadPoolExecutor(1) as pool:
+            old = pool.submit(router.complete, [{"role": "user", "content": "old"}])
+            try:
+                assert entered.wait(3)
+                with pytest.raises(RouterError):
+                    router.complete(MSG)
+            finally:
+                release.set()
+            if budget_response:
+                with pytest.raises(RouterError):
+                    old.result(timeout=3)
+            else:
+                old.result(timeout=3)
+>       assert router.breakers["a"].state == "OPEN"
+E       AssertionError: assert 'CLOSED' == 'OPEN'
+E         
+E         - OPEN
+E         + CLOSED
+
+kernel/tests/test_router_concurrency_fencing.py:42: AssertionError
+_______ test_cancelled_half_open_probe_releases_lease_and_inflight_slot ________
+
+    def test_cancelled_half_open_probe_releases_lease_and_inflight_slot():
+        class Cancelled(BaseException):
+            pass
+    
+        def transport(*args):
+            raise Cancelled()
+    
+        router = MeliousModelRouter(models=("a",), transport=transport, max_retries=0, max_inflight=1)
+        breaker = router.breakers["a"]
+        breaker.failures = breaker.failure_threshold
+        breaker.opened_at = time.monotonic() - breaker.recovery_seconds - 1
+        with pytest.raises(Cancelled):
+            router.complete(MSG)
+>       assert not breaker.probing
+E       assert not True
+E        +  where True = CircuitBreaker(failure_threshold=3, recovery_seconds=15.0, failures=3, opened_at=28339221.937788248, probing=True).probing
+
+kernel/tests/test_router_concurrency_fencing.py:60: AssertionError
+=========================== short test summary info ============================
+FAILED kernel/tests/test_router_concurrency_fencing.py::test_stale_success_cannot_close_newly_opened_circuit[False]
+FAILED kernel/tests/test_router_concurrency_fencing.py::test_stale_success_cannot_close_newly_opened_circuit[True]
+FAILED kernel/tests/test_router_concurrency_fencing.py::test_cancelled_half_open_probe_releases_lease_and_inflight_slot
+3 failed in 0.18s

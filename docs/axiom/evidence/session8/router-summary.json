@@ -1,0 +1,24 @@
+{
+  "baseline": {
+    "throughput_rps": 16258.57,
+    "p50": 0.0237,
+    "p95": 11.2834,
+    "p99": 18.6703,
+    "rss_floor_mib": 24.52,
+    "rss_peak_mib": 62.06
+  },
+  "candidate": {
+    "throughput_rps": 14299.5,
+    "p50": 0.0831,
+    "p95": 11.6083,
+    "p99": 32.0402,
+    "rss_floor_mib": 24.58,
+    "rss_peak_mib": 63.05
+  },
+  "delta_percent": {
+    "throughput_rps": -12.05,
+    "p50": 250.63,
+    "p95": 2.88,
+    "p99": 71.61
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "scope": "4 bounded live requests, max 256 completion tokens each; not load certification",
+  "results": [
+    {
+      "model": "glm-5.3",
+      "outcome": "RouterError",
+      "status": null,
+      "latency_ms": 12351.99,
+      "metrics": {
+        "requests": 1,
+        "successes": 0,
+        "failures": 1,
+        "fallbacks": 0,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "reasoning_tokens": 0,
+        "total_tokens": 0,
+        "budget_exhausted": 0,
+        "circuits": {
+          "glm-5.3": "CLOSED"
+        }
+      }
+    },
+    {
+      "model": "glm-5.3-flash",
+      "outcome": "success",
+      "nonempty": true,
+      "latency_ms": 3409.59,
+      "metrics": {
+        "requests": 1,
+        "successes": 1,
+        "failures": 0,
+        "fallbacks": 0,
+        "prompt_tokens": 24,
+        "completion_tokens": 3,
+        "reasoning_tokens": 1,
+        "total_tokens": 27,
+        "budget_exhausted": 0,
+        "circuits": {
+          "glm-5.3-flash": "CLOSED"
+        }
+      }
+    },
+    {
+      "model": "kimi-k3",
+      "outcome": "success",
+      "nonempty": true,
+      "latency_ms": 4945.02,
+      "metrics": {
+        "requests": 1,
+        "successes": 1,
+        "failures": 0,
+        "fallbacks": 0,
+        "prompt_tokens": 132,
+        "completion_tokens": 88,
+        "reasoning_tokens": 77,
+        "total_tokens": 220,
+        "budget_exhausted": 0,
+        "circuits": {
+          "kimi-k3": "CLOSED"
+        }
+      }
+    },
+    {
+      "model": "qwen3.8-27b",
+      "outcome": "success",
+      "nonempty": true,
+      "latency_ms": 1044.97,
+      "metrics": {
+        "requests": 1,
+        "successes": 1,
+        "failures": 0,
+        "fallbacks": 0,
+        "prompt_tokens": 18,
+        "completion_tokens": 31,
+        "reasoning_tokens": 28,
+        "total_tokens": 49,
+        "budget_exhausted": 0,
+        "circuits": {
+          "qwen3.8-27b": "CLOSED"
+        }
+      }
+    }
+  ]
+}
