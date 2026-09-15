@@ -194,7 +194,10 @@ class IngestorImpl:
         except ImportError as exc:
             raise RuntimeError("DOCX ingestion requires python-docx") from exc
 
-        doc = DocxDocument(str(filepath))
+        try:
+            doc = DocxDocument(str(filepath))
+        except Exception as exc:  # noqa: BLE001 -- malformed Office container boundary
+            raise ValueError("Unable to parse DOCX document") from exc
         chunks: list[Chunk] = []
         current_line = 0
         page_count = 1

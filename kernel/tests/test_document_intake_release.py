@@ -80,6 +80,7 @@ def test_binary_documents_classified_from_parsed_content(tmp_path):
             assert result.status_code == 200, result.text
             assert result.json()["doc_type"] == "memo", result.text
             assert result.json()["fields"], result.text
-        bad = tmp_path / "bad.pdf"
-        bad.write_bytes(b"Not a PDF")
-        assert client.post("/api/extract-document", json={"file": str(bad)}).status_code == 422
+        for suffix in ("pdf", "docx", "xlsx", "pptx"):
+            bad = tmp_path / f"bad.{suffix}"
+            bad.write_bytes(b"Not a valid document container")
+            assert client.post("/api/extract-document", json={"file": str(bad)}).status_code == 422

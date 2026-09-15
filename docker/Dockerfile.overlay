@@ -30,7 +30,7 @@ ENV PYTHONUNBUFFERED=1 \
 
 WORKDIR /app
 
-# Runtime supply chain is LOCKED (no floating versions). Install before COPY for layer caching.
+# Direct dependencies are pinned; transitive resolution is not a hash-locked supply chain.
 COPY docker/requirements-runtime.txt /app/docker/requirements-runtime.txt
 COPY requirements-telemetry.txt /app/requirements-telemetry.txt
 RUN pip install --no-cache-dir --requirement /app/docker/requirements-runtime.txt --requirement /app/requirements-telemetry.txt
