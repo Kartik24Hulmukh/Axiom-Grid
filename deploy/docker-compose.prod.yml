@@ -12,12 +12,16 @@ services:
     environment:
       AXIOM_API_KEYS: ${AXIOM_API_KEYS:?set AXIOM_API_KEYS (fail-closed)}
       AXIOM_REQUIRE_AUTH: "1"
+      AXIOM_STATE_DIR: /var/lib/axiom
       WEB_CONCURRENCY: "2"
       AXIOM_OTEL_ENABLED: "1"
       AXIOM_TRUST_PROXY: "1"
       AXIOM_LOG_FORMAT: json
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
       OTEL_SERVICE_NAME: axiom-grid-api
+      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+      OTEL_METRICS_EXPORTER: none
+      OTEL_LOGS_EXPORTER: none
       OTEL_TRACES_SAMPLER: parentbased_traceidratio
       OTEL_TRACES_SAMPLER_ARG: "0.10"
     deploy:
@@ -25,6 +29,7 @@ services:
         limits: { cpus: "2.0", memory: 768M }
         reservations: { cpus: "1.0", memory: 256M }
     stop_grace_period: 25s
+    volumes: [axiom-state:/var/lib/axiom]
     read_only: true
     tmpfs: [/tmp]
     security_opt: [no-new-privileges:true]
@@ -72,3 +77,6 @@ services:
 networks:
   internal: { internal: true }
   public: {}
+
+volumes:
+  axiom-state: {}
