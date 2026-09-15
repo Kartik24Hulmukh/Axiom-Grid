@@ -20,7 +20,6 @@ cryptography>=42.0.0
 beautifulsoup4>=4.12.0
 # PDF domain engines (permissive only — PyMuPDF/AGPL BANNED)
 # pdfplumber (MIT) — text + word/char coordinates (read-back oracle)
-pdfplumber>=0.11.0
 # pypdfium2 (BSD-3-Clause, Google PDFium) — render/rasterize, image extraction
 pypdfium2>=4.0.0
 # pikepdf (MPL-2.0, unmodified dep) — content-stream edit, redaction, forms, encryption
