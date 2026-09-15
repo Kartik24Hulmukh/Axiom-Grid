@@ -1240,6 +1240,17 @@ async def metrics(format: str = "json"):
         lines=[f"axiom_requests_total {total}",f"axiom_errors_total {data['errors_total']}",
                f"axiom_auth_rejections_total {data['auth_rejections_total']}",f"axiom_extraction_shed_total {data['extraction_shed_total']}",f"axiom_log_dropped_total {data['log_dropped_total']}",f"axiom_rate_limit_buckets {data['active_rate_limit_buckets']}"]
         lines += [f'axiom_http_status_total{{code="{code}"}} {count}' for code,count in data["status_counts"].items()]
+        # Latency summary (Prometheus summary-style quantiles). Alerting on P95/P99 requires this
+        # exposition; the JSON form alone is not scrapeable. Quantiles are over the bounded in-process
+        # sample window, so each worker reports its own distribution (aggregate with max() by pod).
+        lines += ["# TYPE axiom_request_latency_ms summary"]
+        lines += [f'axiom_request_latency_ms{{quantile="{q}"}} {v}' for q, v in
+                  (("0.5", data["latency_percentiles"]["p50"]), ("0.9", data["latency_percentiles"]["p90"]),
+                   ("0.95", data["latency_percentiles"]["p95"]), ("0.99", data["latency_percentiles"]["p99"]))]
+        lines += [f"axiom_request_latency_ms_sum {round(OPS_METRICS['latency_ms_total'], 2)}",
+                  f"axiom_request_latency_ms_count {total}",
+                  f"axiom_request_latency_ms_max {data['latency_ms_max']}",
+                  f"axiom_uptime_seconds {data['uptime_seconds']}"]
         return HTMLResponse("\n".join(lines)+"\n", media_type="text/plain; version=0.0.4")
     return data
 
