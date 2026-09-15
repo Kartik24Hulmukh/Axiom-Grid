@@ -14,7 +14,9 @@ The kernel imports NOTHING from /domains or /legacy.
 from __future__ import annotations
 
 import logging
+import threading
 
+from kernel.core.threadsafe import synchronized_class
 from kernel.core.data_model import (
     Action,
     Chain,
@@ -26,6 +28,7 @@ from kernel.core.data_model import (
 logger = logging.getLogger(__name__)
 
 
+@synchronized_class()
 class ProvenanceLogImpl:
     """Concrete ProvenanceLog implementation.
 
@@ -35,6 +38,8 @@ class ProvenanceLogImpl:
     """
 
     def __init__(self) -> None:
+        # Re-entrant: public methods call other public methods.
+        self._lock = threading.RLock()
         self._documents: dict[str, Document] = {}
         self._chunks: dict[str, Chunk] = {}
         self._extractions: dict[str, Extraction] = {}
@@ -62,6 +67,22 @@ class ProvenanceLogImpl:
     def register_action(self, action: Action) -> None:
         """Register a CUA action linked to an extraction."""
         self._actions[action.action_id] = action
+
+    # ---- Safe read accessors (never touch private dicts from outside) ----
+
+    def chunks_for_doc(self, doc_id: str) -> list[Chunk]:
+        """Return a consistent snapshot of the chunks registered for a doc.
+
+        Callers (e.g. the overlay HTTP layer) MUST use this instead of reading
+        ``_chunks`` directly: iterating the live dict while a concurrent
+        request registers a chunk raises "dictionary changed size during
+        iteration".
+        """
+        return [c for c in self._chunks.values() if c.doc_id == doc_id]
+
+    def all_chunks(self) -> list[Chunk]:
+        """Return a consistent snapshot of every registered chunk."""
+        return list(self._chunks.values())
 
     # ---- Chain Resolution ----
 

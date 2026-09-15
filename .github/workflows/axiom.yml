@@ -37,7 +37,16 @@ jobs:
       - name: Overlay server gate (real provenance digest, strict input schema)
         run: |
           python3 -m pip install --quiet pytest pytest-asyncio hypothesis fastapi httpx uvicorn ruff psutil opentelemetry-sdk==1.44.0
-          python3 -m pytest -q -p no:cacheprovider overlay/tests kernel/tests -W error::ResourceWarning -W error::pytest.PytestUnraisableExceptionWarning
+          python3 -m pytest -q -p no:cacheprovider overlay/tests kernel/tests tests/test_concurrency_safety.py -W error::ResourceWarning -W error::pytest.PytestUnraisableExceptionWarning
+      - name: Concurrency posture gate (pipeline gate must be parallel, never a global mutex)
+        run: |
+          python3 - <<'PY'
+          from overlay.server import orchestrator_gate, PIPELINE_CONCURRENCY, EXTRACTION_WORKERS
+          assert orchestrator_gate.limit > 1, f"global serialization reintroduced: limit={orchestrator_gate.limit}"
+          assert orchestrator_gate.limit == PIPELINE_CONCURRENCY
+          assert EXTRACTION_WORKERS >= 4, EXTRACTION_WORKERS
+          print(f"CONCURRENCY POSTURE GATE: PASS (pipeline={PIPELINE_CONCURRENCY}, extraction_workers={EXTRACTION_WORKERS})")
+          PY
       - name: Wave 11 changed-file lint gate
         run: python3 -m ruff check overlay/server.py kernel/sidecar/melious_router.py overlay/tests/test_server_wave11.py kernel/tests/test_melious_router_wave11.py scripts/stress_wave11.py
       - name: Wave 11 undrained-stderr spike and shutdown gate
