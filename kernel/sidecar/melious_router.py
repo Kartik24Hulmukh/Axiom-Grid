@@ -39,6 +39,13 @@ class CircuitBreaker:
 
 class RouterError(RuntimeError): pass
 
+class BudgetExhaustedError(RouterError):
+    """The completion budget was consumed (finish_reason=length) before any
+    visible text was produced -- on reasoning models the hidden reasoning
+    tokens eat a small max_tokens. This is a caller budget problem, not an
+    upstream fault: it must not trip breakers or cascade through the
+    fallback chain (which would multiply spend and still return nothing)."""
+
 class MeliousModelRouter:
     """Bounded-time fallback router with independent, thread-safe breakers."""
     DEFAULT_MODELS = ("glm-5.3", "glm-5.3-flash", "kimi-k3", "qwen3.8-27b")
@@ -70,7 +77,7 @@ class MeliousModelRouter:
         self._transport=transport or self._http_transport; self._sleep=sleep
         self._lock=threading.RLock(); self.breakers={m:CircuitBreaker() for m in self.models}
         self._cooldown_until = {m: 0.0 for m in self.models}
-        self.metrics={"requests":0,"successes":0,"failures":0,"fallbacks":0,"prompt_tokens":0,"completion_tokens":0,"reasoning_tokens":0,"total_tokens":0}
+        self.metrics={"requests":0,"successes":0,"failures":0,"fallbacks":0,"prompt_tokens":0,"completion_tokens":0,"reasoning_tokens":0,"total_tokens":0,"budget_exhausted":0}
     def _http_transport(self, model, payload, timeout):
         key=os.getenv("MELIOUS_API_KEY")
         if not key: raise RouterError("MELIOUS_API_KEY is not configured")
@@ -191,6 +198,11 @@ class MeliousModelRouter:
                         if not isinstance(choice, dict) or not isinstance(choice.get("message"), dict):
                             raise RouterError("malformed upstream choice")
                         if not isinstance(choice["message"].get("content"), str) or not choice["message"]["content"].strip():
+                            if choice.get("finish_reason") == "length":
+                                exhausted = BudgetExhaustedError("completion budget consumed before any output text (reasoning tokens); raise max_tokens")
+                                try: exhausted.usage = self._usage_counts(data)
+                                except RouterError: exhausted.usage = None
+                                raise exhausted
                             raise RouterError("upstream text completion content must be a non-empty string")
                     if len(data["choices"]) != 1:
                         raise RouterError("unexpected multiple completions")
@@ -206,6 +218,17 @@ class MeliousModelRouter:
                     finally: self._lock.release()
                     data["router"]={"selected_model":model,"fallback_chain":trace+[ {"model":model,"result":"success"} ]}
                     return data
+                except BudgetExhaustedError as exc:
+                    # Fail fast: healthy upstream, wrong budget. Account spend, leave breaker CLOSED.
+                    trace.append({"model":model,"result":"budget_exhausted","error":"BudgetExhaustedError","detail":"completion budget consumed by reasoning tokens","status":None})
+                    if self._lock.acquire(timeout=self.acquire_timeout):
+                        try:
+                            self.metrics["failures"]+=1; self.metrics["budget_exhausted"]+=1
+                            for key, value in (exc.usage or {}).items():
+                                self.metrics[key] += value
+                        finally: self._lock.release()
+                    exc.trace = trace; exc.status = None
+                    raise
                 except Exception as exc:  # noqa: BLE001 -- isolate arbitrary injected transport failures
                     last=exc; trace.append({"model":model,"result":"failure","error":type(exc).__name__,"detail":f"upstream HTTP {exc.status}" if type(getattr(exc,"status",None)) is int else "upstream request failed","status":getattr(exc,"status",None)})
                     if self._lock.acquire(timeout=self.acquire_timeout):
