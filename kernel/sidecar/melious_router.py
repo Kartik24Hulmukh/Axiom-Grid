@@ -61,17 +61,17 @@ class BudgetExhaustedError(RouterError):
 
 class SpendCeilingError(RouterError):
     """Admitting this request would push aggregate provider token spend past
-    the configured fleet ceiling. Refused before any network cost is incurred
-    so a 100x burst cannot overshoot the operator's spend envelope."""
+    the configured local admission ceiling. This is not a provider-side billing cap."""
 
 class SpendGovernor:
     """Thread-safe aggregate token ledger: reserve-before-dispatch,
     settle-to-actual, release-on-failure.
 
     Per-call ``max_tokens`` bounds one response; it does not bound the fleet.
-    Concurrent callers therefore reserve their worst case up front, so the sum
-    of *committed + reserved* tokens can never exceed ``ceiling``. ``None``
-    keeps the ledger (for observability) without enforcing a limit.
+    Concurrent callers reserve an estimate before routing. Admission rejects
+    estimates that exceed ``ceiling``; actual usage can exceed the estimate.
+    This ledger is process-local, not durable or shared between replicas.
+    ``None`` keeps accounting without enforcing an admission limit.
     """
     def __init__(self, ceiling: int | None = None):
         if ceiling is not None and (type(ceiling) is not int or ceiling < 1):
@@ -94,8 +94,7 @@ class SpendGovernor:
         the reservation (upstream overshoot is still real money) and is never
         clamped; it may be 0 when the request produced no billable usage."""
         with self._lock:
-            self.reserved -= reservation
-            self.reserved = max(self.reserved, 0)
+            self.reserved = max(0, self.reserved - reservation)
             self.committed += max(0, int(actual))
     def release(self, reservation: int) -> None:
         self.settle(reservation, 0)
@@ -134,9 +133,9 @@ class MeliousModelRouter:
             if not math.isfinite(value) or value <= 0:
                 raise RouterError("timeouts must be finite and positive")
         self._slots = threading.BoundedSemaphore(max_inflight)
-        # Fleet-wide spend envelope. MELIOUS_TOKEN_CEILING="<int>" enables it
-        # without a redeploy; a shared SpendGovernor lets several routers
-        # (or processes behind one ledger) draw from a single ceiling.
+        # Process-local admission envelope. MELIOUS_TOKEN_CEILING enables it
+        # at construction; explicitly shared governors span routers in this
+        # process only. Multi-process/fleet limits need an external ledger.
         if spend is None:
             if spend_ceiling is None:
                 env_ceiling = os.getenv("MELIOUS_TOKEN_CEILING", "").strip()
@@ -195,6 +194,10 @@ class MeliousModelRouter:
         counts["reasoning_tokens"] = details.get("reasoning_tokens", usage.get("reasoning_tokens", 0))
         if any(type(value) is not int or value < 0 for value in counts.values()):
             raise RouterError("upstream token counts must be non-negative integers")
+        # Providers may omit or understate total_tokens. Reasoning tokens are
+        # already included in completion_tokens; do not count them twice.
+        counts["total_tokens"] = max(counts["total_tokens"],
+                                     counts["prompt_tokens"] + counts["completion_tokens"])
         return counts
 
     MAX_MESSAGES = 256
@@ -206,21 +209,23 @@ class MeliousModelRouter:
         # No unbounded queue of blocked callers or outbound socket stampede.
         if not self._slots.acquire(blocking=False):
             raise RouterError("router saturated: inflight capacity exhausted")
-        try:
-            reservation = self.spend.reserve(self._reservation_estimate(messages, options))
-        except RouterError:
-            self._slots.release(); raise
+        reservation = None
         spent = [0]
         try:
+            reservation = self.spend.reserve(self._reservation_estimate(messages, options))
             return self._complete(messages, time.monotonic() + self.total_timeout, spent, **options)
         finally:
-            # Failure paths may still have billed tokens (e.g. reasoning ate the
-            # budget); settle whatever was actually reported, never the estimate.
-            self.spend.settle(reservation, spent[0])
-            self._slots.release()
+            # Admission failures, cancellation and settlement failures must all
+            # return the inflight permit. Billing is independent of success.
+            try:
+                if reservation is not None:
+                    self.spend.settle(reservation, spent[0])
+            finally:
+                self._slots.release()
 
-    # Conservative prompt heuristic: 1 token per 3 characters overestimates for
-    # English (~4 chars/token) so the reservation is an upper bound, not a guess.
+    # English-oriented estimate, NOT a tokenizer upper bound. Unicode, model
+    # templates, tools and billed retries can exceed it. Do not use this local
+    # admission heuristic as a hard fleet-wide/provider monetary ceiling.
     PROMPT_CHARS_PER_TOKEN = 3
     def _reservation_estimate(self, messages, options) -> int:
         if not isinstance(messages, list): return 0
@@ -301,7 +306,17 @@ class MeliousModelRouter:
                         if remaining <= 0:
                             raise RouterError("router total deadline exhausted")
                         data=self._transport(model,payload,min(remaining, self.probe_timeout if is_probe else self.timeout))
-                        if not isinstance(data, dict) or not isinstance(data.get("choices"), list) or not data["choices"]:
+                        if not isinstance(data, dict):
+                            raise RouterError("malformed upstream response")
+                        # A rejected completion can still be billable. Account
+                        # each response once, before validating its output, and
+                        # before fallbacks can overwrite the upstream evidence.
+                        counts = self._usage_counts(data)
+                        spent[0] += counts["total_tokens"]
+                        with self._lock:
+                            for key, value in counts.items():
+                                self.metrics[key] += value
+                        if not isinstance(data.get("choices"), list) or not data["choices"]:
                             raise RouterError("malformed upstream response")
                         for choice in data["choices"]:
                             if not isinstance(choice, dict) or not isinstance(choice.get("message"), dict):
@@ -309,22 +324,17 @@ class MeliousModelRouter:
                             if not isinstance(choice["message"].get("content"), str) or not choice["message"]["content"].strip():
                                 if choice.get("finish_reason") == "length":
                                     exhausted = BudgetExhaustedError("completion budget consumed before any output text (reasoning tokens); raise max_tokens")
-                                    try: exhausted.usage = self._usage_counts(data)
-                                    except RouterError: exhausted.usage = None
+                                    exhausted.usage = counts
                                     raise exhausted
                                 raise RouterError("upstream text completion content must be a non-empty string")
                         if len(data["choices"]) != 1:
                             raise RouterError("unexpected multiple completions")
-                        counts = self._usage_counts(data)
                         if counts["completion_tokens"] > budget:
                             raise RouterError("upstream exceeded completion budget")
                         if not self._lock.acquire(timeout=self.acquire_timeout):
                             raise RouterError(f"router saturated: lock not acquired within {self.acquire_timeout}s")
                         try:
                             self.breakers[model].success(generation); self.metrics["successes"]+=1
-                            for key, value in counts.items():
-                                self.metrics[key] += value
-                            spent[0] += counts["total_tokens"]
                         finally: self._lock.release()
                         data["router"]={"selected_model":model,"fallback_chain":trace+[ {"model":model,"result":"success"} ]}
                         return data
@@ -339,9 +349,6 @@ class MeliousModelRouter:
                                 # probing forever after a reasoning-only recovery response.
                                 self.breakers[model].success(generation)
                                 self.metrics["failures"]+=1; self.metrics["budget_exhausted"]+=1
-                                for key, value in (exc.usage or {}).items():
-                                    self.metrics[key] += value
-                                spent[0] += int((exc.usage or {}).get("total_tokens", 0) or 0)
                             finally: self._lock.release()
                         exc.trace = trace; exc.status = None
                         raise

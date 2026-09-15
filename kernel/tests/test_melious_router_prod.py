@@ -29,7 +29,9 @@ def test_default_budget_is_sent_and_over_budget_response_falls_back():
                 "usage": {"completion_tokens": 4097 if model == "a" else 2}}
     router = MeliousModelRouter(models=("a", "b"), max_retries=0, transport=transport)
     assert router.complete(MSG)["router"]["selected_model"] == "b"
-    assert router.get_metrics()["completion_tokens"] == 2
+    # Rejected over-budget output is still billable; include both attempts.
+    assert router.get_metrics()["completion_tokens"] == 4099
+    assert router.get_metrics()["spend_committed"] == 4099
 
 def test_conflicting_token_limits_rejected():
     router = MeliousModelRouter(models=("a",))
