@@ -1,0 +1,63 @@
+{
+  "scenario": {
+    "healthz_burst": {
+      "n": 1000,
+      "concurrency": 100,
+      "codes": {
+        "200": 1000
+      },
+      "wall_s": 1.07,
+      "rps": 934.3,
+      "5xx": 0
+    },
+    "fuzz_burst": {
+      "n": 600,
+      "concurrency": 100,
+      "codes": {
+        "422": 550,
+        "400": 50
+      },
+      "wall_s": 1.0,
+      "rps": 602.1,
+      "5xx": 0
+    },
+    "human_100p": {
+      "n": 2500,
+      "personas": 100,
+      "codes": {
+        "200": 1000,
+        "404": 532,
+        "422": 931,
+        "400": 37
+      },
+      "wall_s": 5.99,
+      "rps": 417.0,
+      "5xx": 0,
+      "p50_ms": 197.8,
+      "p95_ms": 477.3,
+      "p99_ms": 510.5
+    },
+    "error_recovery_unsat": {
+      "n": 120,
+      "5xx": 0,
+      "p50_ms": 1.9,
+      "p95_ms": 2.5,
+      "p99_ms": 2.9,
+      "slo_200ms_p50_p95_p99": true
+    }
+  },
+  "pid": 1816,
+  "boot_seconds": 0.57,
+  "rss_floor_mb": 79.0,
+  "probes_after_torture": {
+    "/healthz": 200,
+    "/livez": 200,
+    "/readyz": 200,
+    "/metrics": 200
+  },
+  "rss_ceiling_mb": 126.5,
+  "fd_base": 10,
+  "fd_after": 10,
+  "fd_leak": 0,
+  "sigterm_seconds": 0.214
+}
