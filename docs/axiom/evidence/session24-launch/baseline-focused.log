@@ -1,0 +1,1205 @@
+[Truncated evidence excerpt: final 80000 characters; full log retained in local evidence directory.]
+yz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     overlay.server:server.py:437 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     overlay.server:server.py:437 request completed
+INFO     overlay.server:server.py:437 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     overlay.server:server.py:437 request completed
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     overlay.server:server.py:437 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     overlay.server:server.py:437 request completed
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     overlay.server:server.py:437 request completed
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     overlay.server:server.py:437 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     overlay.server:server.py:437 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     overlay.server:server.py:437 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     overlay.server:server.py:437 request completed
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     overlay.server:server.py:437 request completed
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     overlay.server:server.py:437 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     overlay.server:server.py:437 request completed
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     overlay.server:server.py:437 request completed
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     overlay.server:server.py:437 request completed
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     overlay.server:server.py:437 request completed
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     overlay.server:server.py:437 request completed
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     overlay.server:server.py:437 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     overlay.server:server.py:437 request completed
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     overlay.server:server.py:437 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     overlay.server:server.py:437 request completed
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     overlay.server:server.py:437 request completed
+INFO     overlay.server:server.py:437 request completed
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     overlay.server:server.py:437 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     overlay.server:server.py:437 request completed
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     overlay.server:server.py:437 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     overlay.server:server.py:437 request completed
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     overlay.server:server.py:437 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     overlay.server:server.py:437 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     overlay.server:server.py:437 request completed
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     overlay.server:server.py:437 request completed
+INFO     overlay.server:server.py:437 request completed
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     overlay.server:server.py:437 request completed
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     overlay.server:server.py:437 request completed
+INFO     overlay.server:server.py:437 request completed
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     overlay.server:server.py:437 request completed
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     overlay.server:server.py:437 request completed
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     overlay.server:server.py:437 request completed
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     overlay.server:server.py:437 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     overlay.server:server.py:437 request completed
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     overlay.server:server.py:437 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     overlay.server:server.py:437 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     overlay.server:server.py:437 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     overlay.server:server.py:437 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     overlay.server:server.py:437 request completed
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     overlay.server:server.py:437 request completed
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     overlay.server:server.py:437 request completed
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     overlay.server:server.py:437 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     overlay.server:server.py:437 request completed
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     overlay.server:server.py:437 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     overlay.server:server.py:437 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     overlay.server:server.py:437 request completed
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     overlay.server:server.py:437 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     overlay.server:server.py:437 request completed
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     overlay.server:server.py:437 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     overlay.server:server.py:437 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     overlay.server:server.py:437 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     overlay.server:server.py:437 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     overlay.server:server.py:437 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     overlay.server:server.py:437 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     overlay.server:server.py:437 request completed
+INFO     overlay.server:server.py:437 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+______________________ test_cold_start_single_publication ______________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7c21610e4ec0>
+
+    def test_cold_start_single_publication(monkeypatch):
+        calls = 0
+        lock = Lock()
+        original = ClassifiedMemoPack.extract_text
+        def extract(self, text):
+            nonlocal calls
+            with lock:
+                calls += 1
+            return original(self, text)
+        monkeypatch.setattr(ClassifiedMemoPack, "extract_text", extract)
+        server._readyz_probe_ok.clear()
+        try:
+            with ThreadPoolExecutor(max_workers=100) as pool:
+>               results = list(pool.map(lambda _: server._run_readyz_probe(), range(1000)))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+overlay/tests/test_readiness_atomic.py:24: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.14/concurrent/futures/_base.py:645: in result_iterator
+    yield _result_or_cancel(fs.pop())
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.14/concurrent/futures/_base.py:312: in _result_or_cancel
+    return fut.result(timeout)
+           ^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.14/concurrent/futures/_base.py:447: in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.14/concurrent/futures/_base.py:396: in __get_result
+    raise self._exception
+/usr/local/lib/python3.14/concurrent/futures/thread.py:86: in run
+    result = ctx.run(self.task)
+             ^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.14/concurrent/futures/thread.py:73: in run
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+overlay/tests/test_readiness_atomic.py:24: in <lambda>
+    results = list(pool.map(lambda _: server._run_readyz_probe(), range(1000)))
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _run_readyz_probe() -> dict:
+        """Single-flight probe. Publishes the verdict (positive or negative) under
+        the lock together with file cleanup so a racing worker never observes a
+        half-built state or follows a pre-created symlink in shared /tmp."""
+        with _readyz_probe_lock:
+            cached = _readyz_cached()
+            if cached is not None:
+                if cached["status"] != "ready":
+                    raise RuntimeError(cached.get("error", "not_ready"))
+                return cached
+            checks = _readyz_dependency_checks()
+            verdict: dict
+            try:
+                failed = {k: v for k, v in checks.items() if v != "ok" and k != "extraction_capacity"}
+                if failed:
+>                   raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+E                   RuntimeError: dependency checks failed: ['pdf_parser']
+
+overlay/server.py:1428: RuntimeError
+---------------------------- Captured stdout setup -----------------------------
+{"ts":"2026-09-16T19:24:01.365Z","level":"INFO","logger":"kernel.sidecar.memory_store","msg":"MemoryStore initialized: /home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/.kairo/overlay_store.db","service":"axiom-grid-overlay"}
+------------------------------ Captured log setup ------------------------------
+INFO     kernel.sidecar.memory_store:memory_store.py:170 MemoryStore initialized: /home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/.kairo/overlay_store.db
+_______________________ test_failed_probe_is_not_cached ________________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7c21610e7070>
+
+    def test_failed_probe_is_not_cached(monkeypatch):
+        server._readyz_probe_ok.clear()
+        monkeypatch.setattr(ClassifiedMemoPack, "extract_text", lambda *args: {})
+>       with pytest.raises(RuntimeError, match="zero fields"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'zero fields'
+E         Actual message: "dependency checks failed: ['pdf_parser']"
+
+overlay/tests/test_readiness_atomic.py:35: AssertionError
+---------------------------- Captured stdout setup -----------------------------
+{"ts":"2026-09-16T19:24:01.453Z","level":"INFO","logger":"kernel.sidecar.memory_store","msg":"MemoryStore initialized: /home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/.kairo/overlay_store.db","service":"axiom-grid-overlay"}
+------------------------------ Captured log setup ------------------------------
+INFO     kernel.sidecar.memory_store:memory_store.py:170 MemoryStore initialized: /home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/.kairo/overlay_store.db
+_____________________________ test_readyz_endpoint _____________________________
+
+client = <starlette.testclient.TestClient object at 0x7c23647c6690>
+
+    def test_readyz_endpoint(client):
+        """OPS-001: readiness probe verifies the real extraction pipeline end-to-end."""
+        response = client.get("/readyz")
+>       assert response.status_code == 200
+E       assert 503 == 200
+E        +  where 503 = <Response [503 Service Unavailable]>.status_code
+
+overlay/tests/test_server.py:286: AssertionError
+---------------------------- Captured stdout setup -----------------------------
+{"ts":"2026-09-16T19:24:01.851Z","level":"INFO","logger":"kernel.sidecar.memory_store","msg":"MemoryStore initialized: /home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/.kairo/overlay_store.db","service":"axiom-grid-overlay"}
+------------------------------ Captured log setup ------------------------------
+INFO     kernel.sidecar.memory_store:memory_store.py:170 MemoryStore initialized: /home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/.kairo/overlay_store.db
+----------------------------- Captured stdout call -----------------------------
+{"ts":"2026-09-16T19:24:01.855Z","level":"ERROR","logger":"overlay.server","msg":"readiness probe failed","service":"axiom-grid-overlay","exc_type":"RuntimeError"}
+{"ts":"2026-09-16T19:24:01.856Z","level":"INFO","logger":"overlay.server","msg":"request completed","service":"axiom-grid-overlay","request_id":"3413f0a1e76c444093b7c2bd8412f7a1","path":"/readyz","status":503,"latency_ms":2.7,"client":"testclient"}
+{"ts":"2026-09-16T19:24:01.857Z","level":"INFO","logger":"httpx2","msg":"HTTP Request: GET http://testserver/readyz \"HTTP/1.1 503 Service Unavailable\"","service":"axiom-grid-overlay"}
+------------------------------ Captured log call -------------------------------
+ERROR    overlay.server:server.py:1408 readiness probe failed
+Traceback (most recent call last):
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1406, in readyz
+    return await asyncio.to_thread(_run_readyz_probe)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/asyncio/threads.py", line 26, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/local/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/overlay/server.py", line 1428, in _run_readyz_probe
+    raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+RuntimeError: dependency checks failed: ['pdf_parser']
+INFO     overlay.server:server.py:437 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/readyz "HTTP/1.1 503 Service Unavailable"
+=========================== short test summary info ============================
+FAILED kernel/tests/test_document_intake_release.py::test_pdf_extracts_real_text_without_optional_model_or_agpl_engine
+FAILED kernel/tests/test_document_intake_release.py::test_malformed_pdf_is_not_decoded_as_document_text
+FAILED kernel/tests/test_document_intake_release.py::test_binary_documents_classified_from_parsed_content
+FAILED kernel/tests/test_launch_hardening_ag07_08_09.py::test_pdf_page_flood_rejected
+FAILED kernel/tests/test_launch_hardening_ag07_08_09.py::test_readyz_revalidates_after_ttl_and_recovers
+FAILED kernel/tests/test_launch_hardening_ag07_08_09.py::test_readyz_single_flight_under_probe_stampede
+FAILED overlay/tests/test_readiness_atomic.py::test_cold_start_single_publication
+FAILED overlay/tests/test_readiness_atomic.py::test_failed_probe_is_not_cached
+FAILED overlay/tests/test_server.py::test_readyz_endpoint - assert 503 == 200
+9 failed, 345 passed in 24.65s

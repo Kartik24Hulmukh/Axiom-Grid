@@ -1,0 +1,23 @@
+short test summary info ============================
+FAILED kairo-sidecar/test_domain7_export.py::TestPodcastExport::test_podcast_creates_file
+FAILED kairo-sidecar/test_domain7_export.py::TestPodcastExport::test_local_podcast_flag
+FAILED kairo-sidecar/test_domain9_media.py::TestMediaTranscribe::test_extract_audio_raises_if_ffmpeg_missing
+FAILED kairo-sidecar/test_phase0_3_markitdown.py::TestPDFIngestion::test_pdf_ingestion_returns_text
+FAILED kairo-sidecar/test_phase0_3_markitdown.py::TestPDFIngestion::test_pdf_routing_prefers_fast_path
+FAILED kairo-sidecar/test_risk_a1_cross_platform.py::TestCrossPlatformFallback::test_no_silent_success_on_missing_tools
+FAILED kairo-sidecar/test_risk_a2_license.py::TestAGPLLicenseGuard::test_pymupdf_is_lazy_imported
+FAILED kairo-sidecar/test_risk_a3_hardware.py::TestHardwareDegradation::test_cpu_fallback_image_processor_works
+FAILED kairo-sidecar/test_risk_a4_repo_size.py::TestRepoSize::test_no_large_files_in_git_tracking
+FAILED kairo-sidecar/test_risk_a4_repo_size.py::TestRepoSize::test_gitignore_covers_build_artifacts
+FAILED kairo-sidecar/test_risk_a6_mem0_security.py::TestMem0ThreeLayerGate::test_prompt_shield_blocks_injection_in_memory_text
+FAILED kairo-sidecar/test_risk_a6_mem0_security.py::TestMem0ThreeLayerGate::test_three_layer_gate_chained
+FAILED kairo-sidecar/test_risk_a7_airgap.py::TestAirGapCompleteness::test_no_ungated_network_calls_in_sidecar
+FAILED kairo-sidecar/tests/test_cli_redline.py::TestExcelCLI::test_excel_happy_path
+FAILED kairo-sidecar/tests/test_domain9_embed_wiring.py::test_embed_anything_installed
+FAILED kairo-sidecar/tests/test_domain9_embed_wiring.py::test_flag_true - Ass...
+FAILED kairo-sidecar/tests/test_domain9_embed_wiring.py::test_ctor_does_not_report_missing
+FAILED kairo-sidecar/tests/test_excel_oracles.py::TestXlsxRecompute::test_financial_model_recompute
+FAILED kairo-sidecar/tests/test_excel_oracles.py::TestXlsxRecompute::test_pivot_aggregation_recompute
+FAILED kairo-sidecar/tests/test_excel_oracles.py::TestXlsxRecompute::test_kill_proof_wrong_formula
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 20 failures !!!!!!!!!!!!!!!!!!!!!!!!!!
+20 failed, 1358 passed, 28 skipped, 18 warnings in 45.40s

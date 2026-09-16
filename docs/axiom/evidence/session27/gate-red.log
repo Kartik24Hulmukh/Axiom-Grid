@@ -1,0 +1,187 @@
+..............FFFFF.FFFFF                                                [100%]
+=================================== FAILURES ===================================
+_______________ test_incomplete_observation_cannot_pass[change0] _______________
+
+change = {'harness_error': 'partial execution'}
+
+    @pytest.mark.parametrize("change", [
+        {"harness_error": "partial execution"},
+        {"server_exception_markers": None},
+        {"fd_growth": -1, "resources": []},
+    ])
+    def test_incomplete_observation_cannot_pass(change):
+        report = valid_report()
+        report.update(change)
+>       assert audit.gate(report)
+E       AssertionError: assert []
+E        +  where [] = <function gate at 0x7422e6e02350>({'scenarios': {'health_1_client': {'server_errors': 0, 'transport_errors': 0, 'max_ms': 10, 'n': 3000}, 'health_100_cl...ompleted': 120, 'probes': {'/healthz': 200, '/livez': 200, '/readyz': 200, '/metrics': 200}, 'shutdown_exit': -15, ...})
+E        +    where <function gate at 0x7422e6e02350> = audit.gate
+
+tests/test_launch_tcp_audit.py:63: AssertionError
+_______________ test_incomplete_observation_cannot_pass[change1] _______________
+
+change = {'server_exception_markers': None}
+
+    @pytest.mark.parametrize("change", [
+        {"harness_error": "partial execution"},
+        {"server_exception_markers": None},
+        {"fd_growth": -1, "resources": []},
+    ])
+    def test_incomplete_observation_cannot_pass(change):
+        report = valid_report()
+        report.update(change)
+>       assert audit.gate(report)
+E       AssertionError: assert []
+E        +  where [] = <function gate at 0x7422e6e02350>({'scenarios': {'health_1_client': {'server_errors': 0, 'transport_errors': 0, 'max_ms': 10, 'n': 3000}, 'health_100_cl...ompleted': 120, 'probes': {'/healthz': 200, '/livez': 200, '/readyz': 200, '/metrics': 200}, 'shutdown_exit': -15, ...})
+E        +    where <function gate at 0x7422e6e02350> = audit.gate
+
+tests/test_launch_tcp_audit.py:63: AssertionError
+_______________ test_incomplete_observation_cannot_pass[change2] _______________
+
+change = {'fd_growth': -1, 'resources': []}
+
+    @pytest.mark.parametrize("change", [
+        {"harness_error": "partial execution"},
+        {"server_exception_markers": None},
+        {"fd_growth": -1, "resources": []},
+    ])
+    def test_incomplete_observation_cannot_pass(change):
+        report = valid_report()
+        report.update(change)
+>       assert audit.gate(report)
+E       AssertionError: assert []
+E        +  where [] = <function gate at 0x7422e6e02350>({'scenarios': {'health_1_client': {'server_errors': 0, 'transport_errors': 0, 'max_ms': 10, 'n': 3000}, 'health_100_cl...ompleted': 120, 'probes': {'/healthz': 200, '/livez': 200, '/readyz': 200, '/metrics': 200}, 'shutdown_exit': -15, ...})
+E        +    where <function gate at 0x7422e6e02350> = audit.gate
+
+tests/test_launch_tcp_audit.py:63: AssertionError
+_____________ test_empty_report_returns_failure_instead_of_raising _____________
+
+    def test_empty_report_returns_failure_instead_of_raising():
+>       assert audit.gate({})
+               ^^^^^^^^^^^^^^
+
+tests/test_launch_tcp_audit.py:67: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+report = {}
+
+    def gate(report):
+        failures=[]
+        required={'health_1_client','health_100_clients','fuzz_100_clients','synthetic_120_clients','extraction_queue_100_clients','recovery'}
+        if not required.issubset(report.get('scenarios',{})):
+            failures.append('scenarios: incomplete')
+        if report.get('personas_completed') != 120:
+            failures.append('personas: incomplete')
+        if set(report.get('probes',{})) != {'/healthz','/livez','/readyz','/metrics'}:
+            failures.append('probes: incomplete')
+>       for name, group in report['scenarios'].items():
+                           ^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'scenarios'
+
+scripts/launch_tcp_audit.py:54: KeyError
+____________________ test_invalid_latency_cannot_pass[nan] _____________________
+
+value = nan
+
+    @pytest.mark.parametrize("value", [float("nan"), float("inf"), -1, None])
+    def test_invalid_latency_cannot_pass(value):
+        report = valid_report()
+        report["scenarios"]["recovery"]["max_ms"] = value
+>       assert audit.gate(report)
+E       AssertionError: assert []
+E        +  where [] = <function gate at 0x7422e6e02350>({'scenarios': {'health_1_client': {'server_errors': 0, 'transport_errors': 0, 'max_ms': 10, 'n': 3000}, 'health_100_cl...ompleted': 120, 'probes': {'/healthz': 200, '/livez': 200, '/readyz': 200, '/metrics': 200}, 'shutdown_exit': -15, ...})
+E        +    where <function gate at 0x7422e6e02350> = audit.gate
+
+tests/test_launch_tcp_audit.py:74: AssertionError
+_____________________ test_invalid_latency_cannot_pass[-1] _____________________
+
+value = -1
+
+    @pytest.mark.parametrize("value", [float("nan"), float("inf"), -1, None])
+    def test_invalid_latency_cannot_pass(value):
+        report = valid_report()
+        report["scenarios"]["recovery"]["max_ms"] = value
+>       assert audit.gate(report)
+E       AssertionError: assert []
+E        +  where [] = <function gate at 0x7422e6e02350>({'scenarios': {'health_1_client': {'server_errors': 0, 'transport_errors': 0, 'max_ms': 10, 'n': 3000}, 'health_100_cl...ompleted': 120, 'probes': {'/healthz': 200, '/livez': 200, '/readyz': 200, '/metrics': 200}, 'shutdown_exit': -15, ...})
+E        +    where <function gate at 0x7422e6e02350> = audit.gate
+
+tests/test_launch_tcp_audit.py:74: AssertionError
+____________________ test_invalid_latency_cannot_pass[None] ____________________
+
+value = None
+
+    @pytest.mark.parametrize("value", [float("nan"), float("inf"), -1, None])
+    def test_invalid_latency_cannot_pass(value):
+        report = valid_report()
+        report["scenarios"]["recovery"]["max_ms"] = value
+>       assert audit.gate(report)
+               ^^^^^^^^^^^^^^^^^^
+
+tests/test_launch_tcp_audit.py:74: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+report = {'scenarios': {'health_1_client': {'server_errors': 0, 'transport_errors': 0, 'max_ms': 10, 'n': 3000}, 'health_100_cl...ompleted': 120, 'probes': {'/healthz': 200, '/livez': 200, '/readyz': 200, '/metrics': 200}, 'shutdown_exit': -15, ...}
+
+    def gate(report):
+        failures=[]
+        required={'health_1_client','health_100_clients','fuzz_100_clients','synthetic_120_clients','extraction_queue_100_clients','recovery'}
+        if not required.issubset(report.get('scenarios',{})):
+            failures.append('scenarios: incomplete')
+        if report.get('personas_completed') != 120:
+            failures.append('personas: incomplete')
+        if set(report.get('probes',{})) != {'/healthz','/livez','/readyz','/metrics'}:
+            failures.append('probes: incomplete')
+        for name, group in report['scenarios'].items():
+            if group['server_errors'] or group['transport_errors']:
+                failures.append(name+': request errors')
+>       if report['scenarios'].get('recovery',{}).get('max_ms',float('inf')) >= 200:
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: '>=' not supported between instances of 'NoneType' and 'int'
+
+scripts/launch_tcp_audit.py:57: TypeError
+_____________________ test_empty_health_sample_cannot_pass _____________________
+
+    def test_empty_health_sample_cannot_pass():
+        report = valid_report()
+        report["scenarios"]["health_100_clients"]["n"] = 0
+>       assert audit.gate(report)
+E       AssertionError: assert []
+E        +  where [] = <function gate at 0x7422e6e02350>({'scenarios': {'health_1_client': {'server_errors': 0, 'transport_errors': 0, 'max_ms': 10, 'n': 3000}, 'health_100_cl...ompleted': 120, 'probes': {'/healthz': 200, '/livez': 200, '/readyz': 200, '/metrics': 200}, 'shutdown_exit': -15, ...})
+E        +    where <function gate at 0x7422e6e02350> = audit.gate
+
+tests/test_launch_tcp_audit.py:80: AssertionError
+_________________ test_loaded_error_latency_is_a_release_gate __________________
+
+    def test_loaded_error_latency_is_a_release_gate():
+        report = valid_report()
+        report["scenarios"]["fuzz_100_clients"]["max_ms"] = 201
+>       assert audit.gate(report)
+E       AssertionError: assert []
+E        +  where [] = <function gate at 0x7422e6e02350>({'scenarios': {'health_1_client': {'server_errors': 0, 'transport_errors': 0, 'max_ms': 10, 'n': 3000}, 'health_100_cl...ompleted': 120, 'probes': {'/healthz': 200, '/livez': 200, '/readyz': 200, '/metrics': 200}, 'shutdown_exit': -15, ...})
+E        +    where <function gate at 0x7422e6e02350> = audit.gate
+
+tests/test_launch_tcp_audit.py:86: AssertionError
+__________________ test_unexpected_health_status_cannot_pass ___________________
+
+    def test_unexpected_health_status_cannot_pass():
+        report = valid_report()
+        report["scenarios"]["health_100_clients"]["codes"] = {"404": 1000}
+>       assert audit.gate(report)
+E       AssertionError: assert []
+E        +  where [] = <function gate at 0x7422e6e02350>({'scenarios': {'health_1_client': {'server_errors': 0, 'transport_errors': 0, 'max_ms': 10, 'n': 3000}, 'health_100_cl...ompleted': 120, 'probes': {'/healthz': 200, '/livez': 200, '/readyz': 200, '/metrics': 200}, 'shutdown_exit': -15, ...})
+E        +    where <function gate at 0x7422e6e02350> = audit.gate
+
+tests/test_launch_tcp_audit.py:92: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_launch_tcp_audit.py::test_incomplete_observation_cannot_pass[change0]
+FAILED tests/test_launch_tcp_audit.py::test_incomplete_observation_cannot_pass[change1]
+FAILED tests/test_launch_tcp_audit.py::test_incomplete_observation_cannot_pass[change2]
+FAILED tests/test_launch_tcp_audit.py::test_empty_report_returns_failure_instead_of_raising
+FAILED tests/test_launch_tcp_audit.py::test_invalid_latency_cannot_pass[nan]
+FAILED tests/test_launch_tcp_audit.py::test_invalid_latency_cannot_pass[-1]
+FAILED tests/test_launch_tcp_audit.py::test_invalid_latency_cannot_pass[None]
+FAILED tests/test_launch_tcp_audit.py::test_empty_health_sample_cannot_pass
+FAILED tests/test_launch_tcp_audit.py::test_loaded_error_latency_is_a_release_gate
+FAILED tests/test_launch_tcp_audit.py::test_unexpected_health_status_cannot_pass
+10 failed, 15 passed in 0.25s

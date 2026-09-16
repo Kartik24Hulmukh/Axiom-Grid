@@ -15,13 +15,13 @@ import hashlib
 import hmac
 import importlib
 import json
-import math
-import re
 import logging
 import logging.handlers
+import math
 import os
 import pathlib
 import queue
+import re
 import sys
 import tempfile
 import threading
@@ -32,14 +32,13 @@ from typing import Self
 from urllib.parse import urlsplit
 
 from fastapi import FastAPI, HTTPException
-from fastapi.exceptions import RequestValidationError
 from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.responses import JSONResponse as _BaseJSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator, model_validator
-
 
 # ------------------------------------------------------------------
 # SEC-015: lone UTF-16 surrogates (e.g. JSON "\udcff") are *valid JSON* and
@@ -1537,7 +1536,7 @@ async def _validation_exception_handler(request, exc):
     """Fail closed with 422 for any unparseable/invalid request payload."""
     try:
         content = {"detail": jsonable_encoder(_sanitize_validation_payload(exc.errors()))}
-    except Exception:  # pragma: no cover - the error path must never panic
+    except (TypeError, ValueError, UnicodeError, RecursionError):
         content = {"detail": [{"type": "value_error", "msg": "invalid request payload"}]}
     logger.warning(
         "request validation rejected",
