@@ -34,8 +34,6 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.exceptions import RequestValidationError
-from fastapi.encoders import jsonable_encoder
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator
 
