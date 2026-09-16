@@ -34,6 +34,8 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.exceptions import RequestValidationError
+from fastapi.encoders import jsonable_encoder
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator
 
@@ -1421,6 +1423,55 @@ async def metrics(format: str = "json"):
                   f"axiom_uptime_seconds {data['uptime_seconds']}"]
         return HTMLResponse("\n".join(lines)+"\n", media_type="text/plain; version=0.0.4")
     return data
+
+
+# ------------------------------------------------------------------
+# SEC-014 (zero-day): RequestValidationError serialization panic.
+# FastAPI's jsonable_encoder renders raw bytes with `lambda o: o.decode()`.
+# A client POSTing non-UTF-8 garbage (e.g. Content-Type:
+# application/octet-stream) therefore raises UnicodeDecodeError *inside* the
+# ASGI error path, which escapes Starlette as an unhandled 500 panic instead
+# of an honest 422. We sanitize the validation payload (lossy-replace
+# undecodable bytes, cap echoed blob size) before encoding, so malformed
+# input always fails closed, fast, and without leaking a stack trace.
+# ------------------------------------------------------------------
+_MAX_ECHOED_INPUT_BYTES = 256
+
+
+def _sanitize_validation_payload(value):
+    """Recursively make a Pydantic validation payload JSON-serializable."""
+    if isinstance(value, (bytes, bytearray, memoryview)):
+        raw = bytes(value)
+        text = raw[:_MAX_ECHOED_INPUT_BYTES].decode("utf-8", errors="replace")
+        if len(raw) > _MAX_ECHOED_INPUT_BYTES:
+            text += f"...[truncated {len(raw) - _MAX_ECHOED_INPUT_BYTES} bytes]"
+        return text
+    if isinstance(value, dict):
+        return {
+            str(_sanitize_validation_payload(k)): _sanitize_validation_payload(v)
+            for k, v in value.items()
+        }
+    if isinstance(value, (list, tuple, set, frozenset)):
+        return [_sanitize_validation_payload(v) for v in value]
+    if isinstance(value, BaseException):
+        return type(value).__name__
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return value
+    return repr(value)[:_MAX_ECHOED_INPUT_BYTES]
+
+
+@app.exception_handler(RequestValidationError)
+async def _validation_exception_handler(request, exc):
+    """Fail closed with 422 for any unparseable/invalid request payload."""
+    try:
+        content = {"detail": jsonable_encoder(_sanitize_validation_payload(exc.errors()))}
+    except Exception:  # pragma: no cover - the error path must never panic
+        content = {"detail": [{"type": "value_error", "msg": "invalid request payload"}]}
+    logger.warning(
+        "request validation rejected",
+        extra={"path": request.url.path, "status": 422},
+    )
+    return JSONResponse(status_code=422, content=content)
 
 
 # Register last so spans enclose auth, rate limiting and request logging.
