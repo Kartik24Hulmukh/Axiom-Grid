@@ -30,6 +30,8 @@ from typing import Self
 from urllib.parse import urlsplit
 
 from fastapi import FastAPI, HTTPException
+from fastapi.exceptions import RequestValidationError
+from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -85,6 +87,30 @@ async def _lifespan(_app: FastAPI):
 
 app = FastAPI(title="Axiom-Grid Overlay API", lifespan=_lifespan)
 logger = logging.getLogger("overlay.server")
+
+
+# ZERO-DAY FIX (2026-09-16): safe RequestValidationError handler.
+# FastAPI's default jsonable_encoder does bytes: lambda o: o.decode() which
+# raises UnicodeDecodeError on random garbage bytes (e.g. octet-stream fuzz).
+# That bubbles as 500 instead of 422. Clean bytes recursively with
+# errors="replace" so every malformed payload fails closed with 422.
+def _safe_clean_errors(v):
+    if isinstance(v, bytes):
+        try:
+            return v.decode("utf-8")
+        except UnicodeDecodeError:
+            return v.decode("utf-8", errors="replace")
+    if isinstance(v, list):
+        return [_safe_clean_errors(item) for item in v]
+    if isinstance(v, dict):
+        return {k: _safe_clean_errors(val) for k, val in v.items()}
+    return v
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc):
+    safe_errors = _safe_clean_errors(exc.errors())
+    return JSONResponse(status_code=422, content={"detail": jsonable_encoder(safe_errors)})
 
 
 # ------------------------------------------------------------------
