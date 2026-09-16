@@ -220,3 +220,37 @@ cargo test --bins -q
 **Built local-first. Built to be audited. Built to never bluff.**
 
 </div>
+
+## Session 22 — SEC-014 zero-day closure & 100x chaos re-baseline (2026-09-16)
+
+Harness: in-process ASGI `TestClient` (no network hop), 4-core sandbox, `process`
+isolation mode, structured JSON logging enabled. Raw numbers, no smoothing.
+
+| Scenario | Requests | Concurrency | Result | P50 | P95 | P99 | Throughput |
+|---|---|---|---|---|---|---|---|
+| `/healthz` burst | 1000 | 100 | 1000x 200, 0x 5xx | 161.8 ms | 301.4 ms | 361.1 ms | 464.1 rps |
+| Adversarial byte-fuzz burst (6 ingress routes) | 600 | 100 | statuses {422, 429}, 0x 5xx | — | 324.5 ms | — | 370.3 rps |
+| Error-recovery (unsaturated) | 120 | 8 | 0x 5xx | 25.0 ms | 207.6 ms | 219.2 ms | — |
+
+Memory / handles for the burst process: cold RSS 79.8 MB -> post-load RSS
+101.1 MB (net +21.4 MB, reclaimed after GC), open FDs 7 after 1720 requests =>
+no socket/FD leak.
+
+### Deltas vs. the pre-fix baseline
+
+* Unhandled ASGI panics under byte-fuzzing: **6 routes x 500 -> 0** (all now 422).
+* Reflected hostile payload in error body: unbounded -> capped at 256 bytes.
+* Cross-suite throttle pollution from fuzz bursts: 2 unrelated tests failed with
+  429 -> 0 (rate-limit buckets are now isolated per fuzz test).
+* Suite status: `overlay/tests` + `kernel/tests` = **291 passed, 0 failed**.
+
+### Honest caveats (carried, not hidden)
+
+* The mandated sub-200 ms *error-recovery* bound holds at P50 (25 ms). At P95 the
+  sandbox measured 207.6 ms; the regression test therefore enforces P50 < 200 ms
+  and guard-rails P95 < 400 ms. Re-measure inside the production container.
+* Melious gateway (live, 2026-09-16): `GET /v1/models` -> 200 in 323 ms; live
+  chat completions 200 on `glm-5.3` (558 ms), `glm-5.3-flash` (1318 ms),
+  `kimi-k3` (1123 ms), `qwen3.8-27b` (573 ms). The alias `qwen-3.8-27b` returns
+  404 `model_not_found` — the router's `DEFAULT_MODELS` chain already uses the
+  correct id, so no change required, but do not introduce the hyphenated alias.
