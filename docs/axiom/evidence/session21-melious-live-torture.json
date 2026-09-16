@@ -1,0 +1,73 @@
+{
+  "catalog": {
+    "count": 67,
+    "latency_s": 0.298
+  },
+  "chain_resolved": {
+    "glm-5.3": true,
+    "glm-5.3-flash": true,
+    "kimi-k3": true,
+    "qwen3.8-27b": true
+  },
+  "per_model": {
+    "glm-5.3": {
+      "ok": "1/5",
+      "p50_s": 0.703,
+      "p95_s": 0.788,
+      "sample": "pangolin",
+      "errors": [
+        "BudgetExhaustedError: completion budget consumed before any output text (reasoning tokens); raise max_tokens",
+        "BudgetExhaustedError: completion budget consumed before any output text (reasoning tokens); raise max_tokens"
+      ]
+    },
+    "glm-5.3-flash": {
+      "ok": "2/5",
+      "p50_s": 1.806,
+      "p95_s": 1.911,
+      "sample": "p",
+      "errors": [
+        "BudgetExhaustedError: completion budget consumed before any output text (reasoning tokens); raise max_tokens",
+        "BudgetExhaustedError: completion budget consumed before any output text (reasoning tokens); raise max_tokens"
+      ]
+    },
+    "kimi-k3": {
+      "ok": "2/5",
+      "p50_s": 2.098,
+      "p95_s": 2.779,
+      "sample": "p",
+      "errors": [
+        "BudgetExhaustedError: completion budget consumed before any output text (reasoning tokens); raise max_tokens",
+        "BudgetExhaustedError: completion budget consumed before any output text (reasoning tokens); raise max_tokens"
+      ]
+    },
+    "qwen3.8-27b": {
+      "ok": "1/5",
+      "p50_s": 1.273,
+      "p95_s": 1.313,
+      "sample": "\n\npangolin (3)",
+      "errors": [
+        "BudgetExhaustedError: completion budget consumed before any output text (reasoning tokens); raise max_tokens",
+        "BudgetExhaustedError: completion budget consumed before any output text (reasoning tokens); raise max_tokens"
+      ]
+    }
+  },
+  "fallback": {
+    "ok": true,
+    "lat_s": 0.793,
+    "fallbacks_metric": 1,
+    "selected": "glm-5.3"
+  },
+  "breaker": {
+    "chain_exhaustion_ms": 0.15,
+    "open_breaker_failfast_ms": 0.07,
+    "sub_200ms_gate": true
+  },
+  "spend": {
+    "ok": true,
+    "refused": 1
+  },
+  "budget": {
+    "max_tokens": 16,
+    "fail_closed": "BudgetExhaustedError: completion budget consumed before any output text (reasoning tokens); raise max_tokens"
+  }
+}

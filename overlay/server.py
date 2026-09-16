@@ -67,8 +67,11 @@ async def _lifespan(_app: FastAPI):
     global _extraction_pool
     memory_store.reopen()
     if _extraction_pool._shutdown:
+        # Recreate at the CONFIGURED capacity, not a hard-coded four: silently
+        # reverting to four workers after a restart collapses extraction
+        # throughput at the intended replica size (worker-starvation premortem).
         _extraction_pool = concurrent.futures.ThreadPoolExecutor(
-            max_workers=4, thread_name_prefix="axiom-extract"
+            max_workers=EXTRACTION_WORKERS, thread_name_prefix="axiom-extract"
         )
     try:
         yield
@@ -924,9 +927,26 @@ async def extract_document(req: ExtractDocumentRequest):
             # Binary containers are not UTF-8 text. Classify parsed content,
             # otherwise real PDF/DOCX invoices silently select GenericPack.
             try:
-                with orchestrator_lock:
-                    chunks, _, _ = IngestorImpl().ingest(filepath)
-                text = "\n\n".join(chunk.text for chunk in chunks)
+                from kernel.sidecar.isolated_ingest import (
+                    IsolatedIngestDeadline,
+                    IsolatedIngestResourceError,
+                    ingest_isolated,
+                    isolation_enabled,
+                )
+                if isolation_enabled():
+                    # Killable child process with rlimits: a hung/adversarial
+                    # parser cannot pin a service thread or the GIL (AG-21).
+                    texts = ingest_isolated(
+                        filepath, timeout=max(5.0, EXTRACTION_DEADLINE_SECONDS - 2.0))
+                    text = "\n\n".join(texts)
+                else:
+                    with orchestrator_lock:
+                        chunks, _, _ = IngestorImpl().ingest(filepath)
+                    text = "\n\n".join(chunk.text for chunk in chunks)
+            except IsolatedIngestDeadline as exc:
+                raise HTTPException(status_code=504, detail="Isolated parsing exceeded its deadline", headers={"Retry-After": "5"}) from exc
+            except IsolatedIngestResourceError as exc:
+                raise HTTPException(status_code=422, detail="Document exceeds isolated parsing resource limits") from exc
             except (ValueError, RuntimeError) as exc:
                 raise HTTPException(status_code=422, detail="Document format is unsupported, invalid, or unavailable") from exc
 

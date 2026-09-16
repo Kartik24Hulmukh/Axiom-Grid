@@ -1,0 +1,62 @@
+{
+  "isolation_mode": "process",
+  "cold_boot": {
+    "readyz": [
+      200,
+      0.0022992119193077087
+    ],
+    "livez": [
+      200,
+      0.002700597047805786
+    ],
+    "metrics": [
+      200,
+      0.0054241567850112915
+    ],
+    "rss_mb": 9.5
+  },
+  "burst": {
+    "workers": 100,
+    "requests": 600,
+    "ok": 600,
+    "errors": 0,
+    "rps": 553.9,
+    "p50_ms": 170.0,
+    "p95_ms": 202.9,
+    "p99_ms": 221.9,
+    "max_ms": 222.6
+  },
+  "extraction_burst": {
+    "workers": 40,
+    "codes": {
+      "504": 20,
+      "503": 20
+    },
+    "duration_s": 34.2,
+    "p95_s": 34.23,
+    "no_unexpected_5xx": true
+  },
+  "fuzz": {
+    "3MiB_body": 413,
+    "malformed_json": 422,
+    "path_traversal": 404,
+    "abs_passwd": 404,
+    "empty_field": 422,
+    "oversized_graph_query": 422,
+    "garbage_bytes": 500,
+    "unknown_route": 404,
+    "huge_header": 200
+  },
+  "fuzz_fail_closed": false,
+  "sustained": {
+    "requests": 15810,
+    "rss_start_mb": 0.0,
+    "rss_end_mb": 0.0,
+    "rss_growth_mb": 0.0,
+    "healthz_after": 200
+  },
+  "shutdown": {
+    "clean": true,
+    "seconds": 0.0
+  }
+}
