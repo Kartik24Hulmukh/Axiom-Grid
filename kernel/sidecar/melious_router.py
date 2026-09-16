@@ -1,6 +1,7 @@
 """Resilient Melious multi-model router. Credentials are read at call time only."""
 from __future__ import annotations
 
+import contextlib
 import json
 import math
 import os
@@ -104,6 +105,96 @@ class SpendGovernor:
                     "spend_reserved": self.reserved, "spend_committed": self.committed,
                     "spend_refused": self.refused}
 
+class DurableSpendLedger(SpendGovernor):
+    """AG-08: shared, durable, idempotent spend ledger backed by SQLite.
+
+    Every replica that mounts the same ledger file (or a shared volume) admits
+    against ONE aggregate: ``committed + reserved`` is computed inside a
+    ``BEGIN IMMEDIATE`` transaction, so concurrent replicas cannot each admit
+    against stale local state. Each attempt is a durable row keyed by a
+    unique ``attempt_id``; a crash between dispatch and settle leaves the
+    reservation visible (conservative: still counted) and ``reconcile()``
+    expires stale reservations only after ``stale_after_seconds`` so restarts
+    never double-admit. Settle is idempotent: replaying the same attempt does
+    not double-count. This is still NOT a provider-side billing cap -- pair
+    it with the provider's hard budget and periodic reconciliation.
+    """
+    def __init__(self, path: str, ceiling: int | None = None, stale_after_seconds: float = 900.0):
+        super().__init__(ceiling)
+        import sqlite3
+        self._sqlite = sqlite3
+        self.path = str(path)
+        self.stale_after_seconds = float(stale_after_seconds)
+        with contextlib.closing(self._connect()) as conn:
+            conn.execute("PRAGMA journal_mode=WAL")
+            conn.execute("""CREATE TABLE IF NOT EXISTS spend_attempts (
+                attempt_id TEXT PRIMARY KEY, reserved INTEGER NOT NULL,
+                actual INTEGER, state TEXT NOT NULL, created_at REAL NOT NULL, settled_at REAL)""")
+            conn.execute("CREATE INDEX IF NOT EXISTS spend_state_idx ON spend_attempts(state)")
+    def _connect(self):
+        conn = self._sqlite.connect(self.path, timeout=5.0, isolation_level=None)
+        conn.execute("PRAGMA busy_timeout=5000")
+        return conn
+    def _totals(self, conn):
+        row = conn.execute("SELECT COALESCE(SUM(CASE WHEN state='reserved' THEN reserved ELSE 0 END),0),"
+                           " COALESCE(SUM(CASE WHEN state='settled' THEN actual ELSE 0 END),0) FROM spend_attempts").fetchone()
+        return int(row[0]), int(row[1])
+    def reserve(self, tokens: int, attempt_id: str | None = None) -> str:  # type: ignore[override]
+        if type(tokens) is not int or tokens < 0:
+            raise RouterError("reservation must be a non-negative integer")
+        import uuid
+        attempt_id = attempt_id or uuid.uuid4().hex
+        with self._lock:
+            conn = self._connect()
+            try:
+                conn.execute("BEGIN IMMEDIATE")
+                existing = conn.execute("SELECT reserved FROM spend_attempts WHERE attempt_id=?", (attempt_id,)).fetchone()
+                if existing is not None:  # idempotent replay of the same attempt
+                    conn.execute("COMMIT"); return attempt_id
+                reserved, committed = self._totals(conn)
+                if self.ceiling is not None and committed + reserved + tokens > self.ceiling:
+                    conn.execute("COMMIT"); self.refused += 1
+                    raise SpendCeilingError(
+                        f"spend ceiling {self.ceiling} would be exceeded: committed={committed} reserved={reserved} requested={tokens}")
+                conn.execute("INSERT INTO spend_attempts VALUES (?,?,NULL,'reserved',?,NULL)", (attempt_id, tokens, time.time()))
+                conn.execute("COMMIT")
+            except BaseException:
+                if conn.in_transaction: conn.execute("ROLLBACK")
+                raise
+            finally:
+                conn.close()
+        return attempt_id
+    def settle(self, reservation, actual: int) -> None:  # type: ignore[override]
+        with self._lock:
+            conn = self._connect()
+            try:
+                conn.execute("BEGIN IMMEDIATE")
+                conn.execute("UPDATE spend_attempts SET actual=?, state='settled', settled_at=? WHERE attempt_id=? AND state='reserved'",
+                             (max(0, int(actual)), time.time(), str(reservation)))
+                conn.execute("COMMIT")
+            except BaseException:
+                if conn.in_transaction: conn.execute("ROLLBACK")
+                raise
+            finally:
+                conn.close()
+    def reconcile(self, now: float | None = None) -> int:
+        """Expire reservations older than ``stale_after_seconds`` (crashed replicas).
+        Returns the number expired. Conservative: stale rows settle at their
+        full reservation, never at zero, so a lost attempt is charged, not forgiven."""
+        now = time.time() if now is None else now
+        with self._lock, contextlib.closing(self._connect()) as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            cur = conn.execute("UPDATE spend_attempts SET actual=reserved, state='settled', settled_at=? "
+                               "WHERE state='reserved' AND created_at < ?", (now, now - self.stale_after_seconds))
+            conn.execute("COMMIT")
+            return cur.rowcount
+    def snapshot(self) -> dict:
+        with self._lock, contextlib.closing(self._connect()) as conn:
+            reserved, committed = self._totals(conn)
+        return {"spend_ceiling": self.ceiling if self.ceiling is not None else 0,
+                "spend_reserved": reserved, "spend_committed": committed,
+                "spend_refused": self.refused, "spend_ledger": self.path}
+
 class MeliousModelRouter:
     """Bounded-time fallback router with independent, thread-safe breakers."""
     DEFAULT_MODELS = ("glm-5.3", "glm-5.3-flash", "kimi-k3", "qwen3.8-27b")
@@ -142,7 +233,8 @@ class MeliousModelRouter:
                 if env_ceiling:
                     if not env_ceiling.isdigit(): raise RouterError("MELIOUS_TOKEN_CEILING must be a positive integer")
                     spend_ceiling = int(env_ceiling)
-            spend = SpendGovernor(spend_ceiling)
+            ledger_path = os.getenv("MELIOUS_SPEND_LEDGER", "").strip()
+            spend = DurableSpendLedger(ledger_path, spend_ceiling) if ledger_path else SpendGovernor(spend_ceiling)
         self.spend = spend
         self._transport=transport or self._http_transport; self._sleep=sleep
         self._lock=threading.RLock(); self.breakers={m:CircuitBreaker() for m in self.models}
