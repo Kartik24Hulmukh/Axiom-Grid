@@ -223,6 +223,31 @@ class MeliousModelRouter:
         for value in (self.timeout, self.acquire_timeout, self.probe_timeout, self.total_timeout):
             if not math.isfinite(value) or value <= 0:
                 raise RouterError("timeouts must be finite and positive")
+        # Per-model timeout overrides: MELIOUS_MODEL_TIMEOUTS="a=0.8,b=2.0".
+        # Order fallbacks so historically slow routes run last, then cap each
+        # model's deadline below the fleet default so a slow route cannot
+        # consume the whole total budget. Unknown models and non-finite or
+        # non-positive values fail closed at startup, never at request time.
+        self.model_timeouts = {}
+        env_timeouts = os.getenv("MELIOUS_MODEL_TIMEOUTS", "").strip()
+        if env_timeouts:
+            for pair in env_timeouts.split(","):
+                pair = pair.strip()
+                if not pair:
+                    continue
+                if "=" not in pair:
+                    raise RouterError(f"MELIOUS_MODEL_TIMEOUTS entry must be model=seconds: {pair!r}")
+                name, _, raw = pair.partition("=")
+                name = name.strip()
+                if name not in self.models:
+                    raise RouterError(f"MELIOUS_MODEL_TIMEOUTS names unknown model {name!r}")
+                try:
+                    value = float(raw)
+                except ValueError:
+                    raise RouterError(f"MELIOUS_MODEL_TIMEOUTS value for {name!r} must be a number") from None
+                if not math.isfinite(value) or value <= 0:
+                    raise RouterError(f"MELIOUS_MODEL_TIMEOUTS value for {name!r} must be finite and positive")
+                self.model_timeouts[name] = value
         self._slots = threading.BoundedSemaphore(max_inflight)
         # Process-local admission envelope. MELIOUS_TOKEN_CEILING enables it
         # at construction; explicitly shared governors span routers in this
@@ -397,7 +422,10 @@ class MeliousModelRouter:
                         remaining = deadline - time.monotonic()
                         if remaining <= 0:
                             raise RouterError("router total deadline exhausted")
-                        data=self._transport(model,payload,min(remaining, self.probe_timeout if is_probe else self.timeout))
+                        # Per-model deadline, always capped by the remaining
+                        # total budget and the half-open probe budget.
+                        base = self.probe_timeout if is_probe else self.model_timeouts.get(model, self.timeout)
+                        data=self._transport(model,payload,min(remaining, base))
                         if not isinstance(data, dict):
                             raise RouterError("malformed upstream response")
                         # A rejected completion can still be billable. Account
