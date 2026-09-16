@@ -1,0 +1,237 @@
+FFFFFFF                                                                  [100%]
+=================================== FAILURES ===================================
+___________ test_context_restores_environment_and_socket[False-None] ___________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x73f8faefbbb0>
+existing = None, raises = False
+
+    @pytest.mark.parametrize("existing", [None, "0", "1"])
+    @pytest.mark.parametrize("raises", [False, True])
+    def test_context_restores_environment_and_socket(monkeypatch, existing, raises):
+        for key in KEYS:
+            if existing is None:
+                monkeypatch.delenv(key, raising=False)
+            else:
+                monkeypatch.setenv(key, existing)
+        before = {key: os.environ.get(key) for key in KEYS}
+        connect = socket.socket.connect
+        try:
+            with SocketEgressInterceptor():
+                assert os.environ["KAIRO_SEALED"] == "1"
+                assert socket.socket.connect is not connect
+                if raises:
+                    raise ValueError("test exception")
+        except ValueError:
+            pass
+        assert socket.socket.connect is connect
+>       assert {key: os.environ.get(key) for key in KEYS} == before
+E       AssertionError: assert {'KAIRO_AIRGA...o_proxy': '*'} == {'KAIRO_AIRGA..._proxy': None}
+E         
+E         Differing items:
+E         {'KAIRO_AIRGAP': '1'} != {'KAIRO_AIRGAP': None}
+E         {'NO_PROXY': '*'} != {'NO_PROXY': None}
+E         {'KAIRO_SEALED': '1'} != {'KAIRO_SEALED': None}
+E         {'no_proxy': '*'} != {'no_proxy': None}
+E         Use -v to get more diff
+
+tests/test_airgap_context_lifecycle.py:28: AssertionError
+____________ test_context_restores_environment_and_socket[False-0] _____________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x73f8f993c050>
+existing = '0', raises = False
+
+    @pytest.mark.parametrize("existing", [None, "0", "1"])
+    @pytest.mark.parametrize("raises", [False, True])
+    def test_context_restores_environment_and_socket(monkeypatch, existing, raises):
+        for key in KEYS:
+            if existing is None:
+                monkeypatch.delenv(key, raising=False)
+            else:
+                monkeypatch.setenv(key, existing)
+        before = {key: os.environ.get(key) for key in KEYS}
+        connect = socket.socket.connect
+        try:
+            with SocketEgressInterceptor():
+                assert os.environ["KAIRO_SEALED"] == "1"
+                assert socket.socket.connect is not connect
+                if raises:
+                    raise ValueError("test exception")
+        except ValueError:
+            pass
+        assert socket.socket.connect is connect
+>       assert {key: os.environ.get(key) for key in KEYS} == before
+E       AssertionError: assert {'KAIRO_AIRGA...o_proxy': '*'} == {'KAIRO_AIRGA...o_proxy': '0'}
+E         
+E         Differing items:
+E         {'KAIRO_AIRGAP': '1'} != {'KAIRO_AIRGAP': '0'}
+E         {'NO_PROXY': '*'} != {'NO_PROXY': '0'}
+E         {'KAIRO_SEALED': '1'} != {'KAIRO_SEALED': '0'}
+E         {'no_proxy': '*'} != {'no_proxy': '0'}
+E         Use -v to get more diff
+
+tests/test_airgap_context_lifecycle.py:28: AssertionError
+____________ test_context_restores_environment_and_socket[False-1] _____________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x73f8fae81b50>
+existing = '1', raises = False
+
+    @pytest.mark.parametrize("existing", [None, "0", "1"])
+    @pytest.mark.parametrize("raises", [False, True])
+    def test_context_restores_environment_and_socket(monkeypatch, existing, raises):
+        for key in KEYS:
+            if existing is None:
+                monkeypatch.delenv(key, raising=False)
+            else:
+                monkeypatch.setenv(key, existing)
+        before = {key: os.environ.get(key) for key in KEYS}
+        connect = socket.socket.connect
+        try:
+            with SocketEgressInterceptor():
+                assert os.environ["KAIRO_SEALED"] == "1"
+                assert socket.socket.connect is not connect
+                if raises:
+                    raise ValueError("test exception")
+        except ValueError:
+            pass
+        assert socket.socket.connect is connect
+>       assert {key: os.environ.get(key) for key in KEYS} == before
+E       AssertionError: assert {'KAIRO_AIRGA...o_proxy': '*'} == {'KAIRO_AIRGA...o_proxy': '1'}
+E         
+E         Omitting 2 identical items, use -vv to show
+E         Differing items:
+E         {'NO_PROXY': '*'} != {'NO_PROXY': '1'}
+E         {'no_proxy': '*'} != {'no_proxy': '1'}
+E         Use -v to get more diff
+
+tests/test_airgap_context_lifecycle.py:28: AssertionError
+___________ test_context_restores_environment_and_socket[True-None] ____________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x73f8fadf2470>
+existing = None, raises = True
+
+    @pytest.mark.parametrize("existing", [None, "0", "1"])
+    @pytest.mark.parametrize("raises", [False, True])
+    def test_context_restores_environment_and_socket(monkeypatch, existing, raises):
+        for key in KEYS:
+            if existing is None:
+                monkeypatch.delenv(key, raising=False)
+            else:
+                monkeypatch.setenv(key, existing)
+        before = {key: os.environ.get(key) for key in KEYS}
+        connect = socket.socket.connect
+        try:
+            with SocketEgressInterceptor():
+                assert os.environ["KAIRO_SEALED"] == "1"
+                assert socket.socket.connect is not connect
+                if raises:
+                    raise ValueError("test exception")
+        except ValueError:
+            pass
+        assert socket.socket.connect is connect
+>       assert {key: os.environ.get(key) for key in KEYS} == before
+E       AssertionError: assert {'KAIRO_AIRGA...o_proxy': '*'} == {'KAIRO_AIRGA..._proxy': None}
+E         
+E         Differing items:
+E         {'KAIRO_AIRGAP': '1'} != {'KAIRO_AIRGAP': None}
+E         {'NO_PROXY': '*'} != {'NO_PROXY': None}
+E         {'KAIRO_SEALED': '1'} != {'KAIRO_SEALED': None}
+E         {'no_proxy': '*'} != {'no_proxy': None}
+E         Use -v to get more diff
+
+tests/test_airgap_context_lifecycle.py:28: AssertionError
+_____________ test_context_restores_environment_and_socket[True-0] _____________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x73f8fadf1d00>
+existing = '0', raises = True
+
+    @pytest.mark.parametrize("existing", [None, "0", "1"])
+    @pytest.mark.parametrize("raises", [False, True])
+    def test_context_restores_environment_and_socket(monkeypatch, existing, raises):
+        for key in KEYS:
+            if existing is None:
+                monkeypatch.delenv(key, raising=False)
+            else:
+                monkeypatch.setenv(key, existing)
+        before = {key: os.environ.get(key) for key in KEYS}
+        connect = socket.socket.connect
+        try:
+            with SocketEgressInterceptor():
+                assert os.environ["KAIRO_SEALED"] == "1"
+                assert socket.socket.connect is not connect
+                if raises:
+                    raise ValueError("test exception")
+        except ValueError:
+            pass
+        assert socket.socket.connect is connect
+>       assert {key: os.environ.get(key) for key in KEYS} == before
+E       AssertionError: assert {'KAIRO_AIRGA...o_proxy': '*'} == {'KAIRO_AIRGA...o_proxy': '0'}
+E         
+E         Differing items:
+E         {'KAIRO_AIRGAP': '1'} != {'KAIRO_AIRGAP': '0'}
+E         {'NO_PROXY': '*'} != {'NO_PROXY': '0'}
+E         {'KAIRO_SEALED': '1'} != {'KAIRO_SEALED': '0'}
+E         {'no_proxy': '*'} != {'no_proxy': '0'}
+E         Use -v to get more diff
+
+tests/test_airgap_context_lifecycle.py:28: AssertionError
+_____________ test_context_restores_environment_and_socket[True-1] _____________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x73f8fae25850>
+existing = '1', raises = True
+
+    @pytest.mark.parametrize("existing", [None, "0", "1"])
+    @pytest.mark.parametrize("raises", [False, True])
+    def test_context_restores_environment_and_socket(monkeypatch, existing, raises):
+        for key in KEYS:
+            if existing is None:
+                monkeypatch.delenv(key, raising=False)
+            else:
+                monkeypatch.setenv(key, existing)
+        before = {key: os.environ.get(key) for key in KEYS}
+        connect = socket.socket.connect
+        try:
+            with SocketEgressInterceptor():
+                assert os.environ["KAIRO_SEALED"] == "1"
+                assert socket.socket.connect is not connect
+                if raises:
+                    raise ValueError("test exception")
+        except ValueError:
+            pass
+        assert socket.socket.connect is connect
+>       assert {key: os.environ.get(key) for key in KEYS} == before
+E       AssertionError: assert {'KAIRO_AIRGA...o_proxy': '*'} == {'KAIRO_AIRGA...o_proxy': '1'}
+E         
+E         Omitting 2 identical items, use -vv to show
+E         Differing items:
+E         {'NO_PROXY': '*'} != {'NO_PROXY': '1'}
+E         {'no_proxy': '*'} != {'no_proxy': '1'}
+E         Use -v to get more diff
+
+tests/test_airgap_context_lifecycle.py:28: AssertionError
+___________________ test_nested_context_restores_outer_state ___________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x73f8fae26d50>
+
+    def test_nested_context_restores_outer_state(monkeypatch):
+        for key in KEYS:
+            monkeypatch.delenv(key, raising=False)
+        with SocketEgressInterceptor():
+            outer_connect = socket.socket.connect
+            with SocketEgressInterceptor():
+                assert os.environ["KAIRO_SEALED"] == "1"
+            assert os.environ["KAIRO_SEALED"] == "1"
+            assert socket.socket.connect is outer_connect
+>       assert "KAIRO_SEALED" not in os.environ
+E       AssertionError: assert 'KAIRO_SEALED' not in environ({'PATH': '/usr/local/python/current/bin:/usr/local/py-utils/bin:/usr/local/jupyter:/usr/local/share/nvm/curren...sted_context_restores_outer_state (call)', 'KAIRO_AIRGAP': '1', 'KAIRO_SEALED': '1', 'NO_PROXY': '*', 'no_proxy': '*'})
+E        +  where environ({'PATH': '/usr/local/python/current/bin:/usr/local/py-utils/bin:/usr/local/jupyter:/usr/local/share/nvm/curren...sted_context_restores_outer_state (call)', 'KAIRO_AIRGAP': '1', 'KAIRO_SEALED': '1', 'NO_PROXY': '*', 'no_proxy': '*'}) = os.environ
+
+tests/test_airgap_context_lifecycle.py:40: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_airgap_context_lifecycle.py::test_context_restores_environment_and_socket[False-None]
+FAILED tests/test_airgap_context_lifecycle.py::test_context_restores_environment_and_socket[False-0]
+FAILED tests/test_airgap_context_lifecycle.py::test_context_restores_environment_and_socket[False-1]
+FAILED tests/test_airgap_context_lifecycle.py::test_context_restores_environment_and_socket[True-None]
+FAILED tests/test_airgap_context_lifecycle.py::test_context_restores_environment_and_socket[True-0]
+FAILED tests/test_airgap_context_lifecycle.py::test_context_restores_environment_and_socket[True-1]
+FAILED tests/test_airgap_context_lifecycle.py::test_nested_context_restores_outer_state
+7 failed in 0.26s
