@@ -1,0 +1,63 @@
+{
+ "boot_ok": true,
+ "rss_start_mb": 83.3,
+ "cold_readyz": {
+  "status": 200,
+  "ms": 65
+ },
+ "cold_livez": {
+  "status": 200,
+  "ms": 6
+ },
+ "cold_metrics": {
+  "status": 200,
+  "ms": 6
+ },
+ "phaseA_100workers": {
+  "n": 600,
+  "rps": 543.3,
+  "codes": {
+   "200": 600
+  },
+  "p50_ms": 122.0,
+  "p95_ms": 317.9,
+  "p99_ms": 331.3,
+  "max_ms": 387.8
+ },
+ "fixtures": [
+  "fixtures/README.md",
+  "fixtures/adversarial/embedded_instructions.txt",
+  "fixtures/adversarial/hidden_text_layer.txt",
+  "fixtures/adversarial/malformed_structure.txt",
+  "fixtures/adversarial/oversized_input.txt",
+  "fixtures/adversarial/prompt_injection_qa.txt"
+ ],
+ "phaseB_extraction_40conc": {
+  "codes": {
+   "504": 29,
+   "200": 11
+  },
+  "p95_ms": 70516.6
+ },
+ "phaseC_adversarial": {
+  "oversize_3MiB": 413,
+  "malformed_json": 422,
+  "path_traversal": 404,
+  "abs_path_etc_passwd": 404,
+  "empty_field": 422,
+  "graph_oversized": 422,
+  "unknown_route": 404,
+  "garbage_bytes_demo": 400,
+  "huge_header": 200
+ },
+ "phaseD_sustained_30workers_20s": {
+  "codes": {
+   "200": 30,
+   "504": 1
+  },
+  "rss_end_mb": 139.3,
+  "rss_growth_mb": 56.0
+ },
+ "healthz_after": 200,
+ "clean_shutdown": true
+}
