@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import concurrent.futures
 import json
+import math
 import os
 from pathlib import Path
 import random
@@ -43,29 +44,79 @@ def summarize(rows, wall):
                 server_errors=sum(r['status']>=500 for r in rows))
 
 def gate(report):
-    failures=[]
-    required={'health_1_client','health_100_clients','fuzz_100_clients','synthetic_120_clients','extraction_queue_100_clients','recovery'}
-    if not required.issubset(report.get('scenarios',{})):
-        failures.append('scenarios: incomplete')
+    """Reject missing, inconsistent or non-finite evidence; never infer a pass."""
+    failures = []
+    if not isinstance(report, dict):
+        return ['report: invalid']
+    expected = {'health_1_client': 200, 'health_100_clients': 1000,
+                'fuzz_100_clients': 720, 'synthetic_120_clients': 3000,
+                'extraction_queue_100_clients': 200, 'recovery': 120}
+
+    def finite(value):
+        return (type(value) is int and value >= 0) or (
+            type(value) is float and math.isfinite(value) and value >= 0
+        )
+
+    scenarios = report.get('scenarios')
+    if not isinstance(scenarios, dict):
+        scenarios = {}
+    if set(scenarios) != set(expected):
+        failures.append('scenarios: incomplete or unexpected')
+    for name, count in expected.items():
+        group = scenarios.get(name)
+        if not isinstance(group, dict):
+            failures.append(name + ': missing evidence')
+            continue
+        if type(group.get('n')) is not int or group['n'] != count:
+            failures.append(name + ': incorrect sample count')
+        codes = group.get('codes')
+        codes_valid = (isinstance(codes, dict) and bool(codes)
+                       and all(isinstance(k, str) and
+                               (k == '-1' or (k.isdigit() and 100 <= int(k) <= 599))
+                               and type(v) is int and v > 0 for k, v in codes.items()))
+        if not codes_valid or sum(codes.values()) != count:
+            failures.append(name + ': invalid status accounting')
+        else:
+            if group.get('server_errors') != sum(v for k, v in codes.items() if int(k) >= 500):
+                failures.append(name + ': inconsistent server error count')
+            if group.get('transport_errors') != codes.get('-1', 0):
+                failures.append(name + ': inconsistent transport error count')
+            if name.startswith('health_') and codes != {'200': count}:
+                failures.append(name + ': unhealthy responses')
+        for metric in ('server_errors', 'transport_errors'):
+            if type(group.get(metric)) is not int or group[metric] != 0:
+                failures.append(name + ': ' + metric)
+        latency = group.get('max_ms')
+        if not finite(latency):
+            failures.append(name + ': invalid maximum latency')
+        elif name in ('recovery', 'fuzz_100_clients') and latency >= 200:
+            failures.append(name + ': at least one error response >=200ms')
     if report.get('personas_completed') != 120:
         failures.append('personas: incomplete')
-    if set(report.get('probes',{})) != {'/healthz','/livez','/readyz','/metrics'}:
-        failures.append('probes: incomplete')
-    for name, group in report['scenarios'].items():
-        if group['server_errors'] or group['transport_errors']:
-            failures.append(name+': request errors')
-    if report['scenarios'].get('recovery',{}).get('max_ms',float('inf')) >= 200:
-        failures.append('recovery: at least one request >=200ms')
-    if any(c != 200 for c in report['probes'].values()):
-        failures.append('probes: not all ready')
-    if (report.get('shutdown_exit') not in (0, -15) or not report.get('shutdown_complete')) or report.get('shutdown_s',99) > 25:
+    probes = report.get('probes')
+    if not isinstance(probes, dict) or probes != dict.fromkeys(
+            ['/healthz', '/livez', '/readyz', '/metrics'], 200):
+        failures.append('probes: incomplete or not ready')
+    if (report.get('shutdown_exit') not in (0, -15)
+            or report.get('shutdown_complete') is not True
+            or not finite(report.get('shutdown_s')) or report['shutdown_s'] > 25):
         failures.append('shutdown: unclean or deadline exceeded')
-    if report.get('server_exception_markers'):
-        failures.append('server: unhandled exception marker')
-    if report.get('personas_completed') == 120 and report['scenarios'].get('synthetic_120_clients',{}).get('n') != 3000:
-        failures.append('requests: missing recorded persona outcomes')
-    if report.get('fd_growth', 1) > 0:
-        failures.append('resources: FD growth requires investigation')
+    markers = report.get('server_exception_markers')
+    if not isinstance(markers, dict) or markers:
+        failures.append('server: exception markers or missing observation')
+    if 'harness_error' in report:
+        failures.append('harness: execution error')
+    resources = report.get('resources')
+    if not isinstance(resources, list) or not resources or any(
+        not isinstance(row, dict) or not finite(row.get('rss_mb'))
+        or row['rss_mb'] == 0 or type(row.get('fds')) is not int or row['fds'] < 0
+        for row in resources
+    ):
+        failures.append('resources: missing or invalid samples')
+    base, after, growth = (report.get(k) for k in ('fd_base', 'fd_after', 'fd_growth'))
+    if (any(type(v) is not int for v in (base, after, growth))
+            or base < 0 or after < 0 or after - base != growth or growth > 0):
+        failures.append('resources: invalid accounting or FD growth')
     return failures
 
 def main():
