@@ -13,6 +13,7 @@ import contextlib
 import contextvars
 import hashlib
 import hmac
+import importlib
 import json
 import logging
 import logging.handlers
@@ -273,6 +274,11 @@ OPS_METRICS = {
 }
 
 MAX_UPLOAD_BYTES = int(os.environ.get("AXIOM_MAX_UPLOAD_BYTES", str(2 * 1024 * 1024)))
+# AG-07: a hung or pathological parse must not hold the client (or the load
+# balancer) hostage. The waiter gives up at this deadline with an honest 504;
+# the admission slot is released by the worker's done-callback, never early,
+# so capacity accounting stays exact. Expanded-work caps live in the ingestor.
+EXTRACTION_DEADLINE_SECONDS = float(os.environ.get("AXIOM_EXTRACTION_DEADLINE_SECONDS", "30"))
 
 
 # ------------------------------------------------------------------
@@ -957,9 +963,18 @@ async def extract_document(req: ExtractDocumentRequest):
         raise
     work.add_done_callback(lambda _future: slots.release())
     try:
-        trace, doc_type, doc = await asyncio.wrap_future(work)
+        trace, doc_type, doc = await asyncio.wait_for(
+            asyncio.wrap_future(work), timeout=EXTRACTION_DEADLINE_SECONDS)
     except HTTPException:
         raise
+    except asyncio.TimeoutError as exc:
+        OPS_METRICS["extraction_deadline_total"] = OPS_METRICS.get("extraction_deadline_total", 0) + 1
+        logger.warning("extraction exceeded deadline of %.1fs", EXTRACTION_DEADLINE_SECONDS)
+        raise HTTPException(
+            status_code=504,
+            detail=f"Extraction exceeded {EXTRACTION_DEADLINE_SECONDS:.0f}s deadline",
+            headers={"Retry-After": "5"},
+        ) from exc
     except Exception as exc:
         logger.exception("unhandled error in /api/extract-document pipeline")
         raise HTTPException(status_code=500, detail="Extraction pipeline failed") from exc
@@ -1213,53 +1228,119 @@ async def livez():
     return {"status": "alive", "uptime_seconds": round(time.time() - OPS_METRICS["started_at"], 2)}
 
 
+# AG-09: readiness must not lie. The previous implementation cached one
+# successful synthetic probe for the life of the process, so a pod whose
+# parsers, state directory or worker pool later broke stayed in rotation.
+# Now a verified-ready verdict is only trusted for READYZ_TTL_SECONDS, a
+# failing verdict is cached briefly (negative TTL) so a load balancer polling
+# many replicas cannot stampede the pipeline, and exactly one probe runs at a
+# time per process (single-flight). Recovery is automatic: the next probe
+# after the TTL re-validates and restores routing.
+READYZ_TTL_SECONDS = float(os.environ.get("AXIOM_READYZ_TTL_SECONDS", "30"))
+# Negative caching is opt-in: the single-flight lock already serialises probes,
+# and failing dependency checks are cheap. Enable for very large fleets.
+READYZ_NEGATIVE_TTL_SECONDS = float(os.environ.get("AXIOM_READYZ_NEGATIVE_TTL_SECONDS", "0"))
 _readyz_probe_lock = threading.Lock()
-_readyz_probe_ok = threading.Event()
+_readyz_probe_ok = threading.Event()  # retained for legacy tests / introspection
+_readyz_state: dict = {"verdict": None, "checked_at": 0.0, "detail": None}
+
+
+def _readyz_dependency_checks() -> dict:
+    """Cheap, deterministic checks of everything a request actually needs."""
+    checks: dict[str, str] = {}
+    for name, module in (("pdf_parser", "pdfplumber"), ("docx_parser", "docx")):
+        try:
+            importlib.import_module(module)
+            checks[name] = "ok"
+        except Exception as exc:  # noqa: BLE001 -- report, do not crash the probe
+            checks[name] = f"missing:{type(exc).__name__}"
+    try:
+        STATE_DIR.mkdir(parents=True, exist_ok=True)
+        with tempfile.NamedTemporaryFile(dir=STATE_DIR, prefix=".readyz-", delete=True):
+            pass
+        checks["state_dir_writable"] = "ok"
+    except OSError as exc:
+        checks["state_dir_writable"] = f"failed:{type(exc).__name__}"
+    checks["extraction_capacity"] = "ok" if _extraction_slots._value > 0 else "saturated"
+    return checks
+
+
+def _readyz_cached() -> dict | None:
+    verdict, checked_at = _readyz_state["verdict"], _readyz_state["checked_at"]
+    if verdict is None:
+        return None
+    if verdict["status"] == "ready" and not _readyz_probe_ok.is_set():
+        return None  # explicit invalidation (tests / operators) always re-probes
+    ttl = READYZ_TTL_SECONDS if verdict["status"] == "ready" else READYZ_NEGATIVE_TTL_SECONDS
+    if time.monotonic() - checked_at < ttl:
+        return {**verdict, "cached": True}
+    return None
 
 
 @app.get("/readyz")
 async def readyz():
-    """Readiness probe: runs the real extraction pipeline end-to-end exactly once
-    (per process) on a synthetic classified memo, hermetically in the temp
-    sandbox, then caches the verified-ready state. Under 100x+ contention this
-    avoids re-running the heavyweight pipeline on every probe while still
-    failing closed with 503 if the pipeline has never succeeded."""
-    if _readyz_probe_ok.is_set():
-        return {"status": "ready", "pipeline": "ok", "cached": True}
+    """Readiness probe with bounded revalidation (see AG-09 note above).
 
+    Runs the real extraction pipeline on a synthetic classified memo plus
+    dependency checks; the verdict is cached for a bounded TTL only, so a
+    dependency failure removes the pod from routing within one TTL and
+    recovery restores it without a probe stampede."""
+    cached = _readyz_cached()
+    if cached is not None:
+        if cached["status"] != "ready":
+            return JSONResponse(status_code=503, content=cached)
+        return cached
     try:
         return await asyncio.to_thread(_run_readyz_probe)
     except Exception as exc:
         logger.exception("readiness probe failed")
-        return JSONResponse(status_code=503, content={"status": "not_ready", "error": type(exc).__name__})
+        return JSONResponse(status_code=503, headers={"Retry-After": "1"},
+                            content={"status": "not_ready", "error": type(exc).__name__})
 
 
 def _run_readyz_probe() -> dict:
-    """Publish success under the same lock as initialization and file cleanup.
-
-    The event-loop caller must not own cleanup: it can race the next worker
-    before publishing success. A private directory also isolates processes
-    and prevents following a pre-created symlink in the shared temp directory.
-    """
+    """Single-flight probe. Publishes the verdict (positive or negative) under
+    the lock together with file cleanup so a racing worker never observes a
+    half-built state or follows a pre-created symlink in shared /tmp."""
     with _readyz_probe_lock:
-        if _readyz_probe_ok.is_set():
-            return {"status": "ready", "pipeline": "ok", "cached": True}
-        with tempfile.TemporaryDirectory(prefix="axiom-readyz-") as directory:
-            probe_path = pathlib.Path(directory) / "probe.txt"
-            probe_path.write_text(
-                "CLASSIFICATION: UNCLASSIFIED\nSUBJECT: readiness probe\n"
-                "ORIGIN: axiom-grid ops\n", encoding="utf-8",
-            )
-            text = probe_path.read_text(encoding="utf-8")
-            from kairo.core.classifier import classify_document
-            doc_type = classify_document(text)
-            from packs.memo.pack import ClassifiedMemoPack
-            fields = ClassifiedMemoPack().extract_text(text)
-            if not fields:
-                raise RuntimeError("readiness probe extracted zero fields")
-        _readyz_probe_ok.set()
-        return {"status": "ready", "pipeline": "ok", "doc_type": doc_type,
-                "fields_extracted": len(fields)}
+        cached = _readyz_cached()
+        if cached is not None:
+            if cached["status"] != "ready":
+                raise RuntimeError(cached.get("error", "not_ready"))
+            return cached
+        checks = _readyz_dependency_checks()
+        verdict: dict
+        try:
+            failed = {k: v for k, v in checks.items() if v != "ok" and k != "extraction_capacity"}
+            if failed:
+                raise RuntimeError(f"dependency checks failed: {sorted(failed)}")
+            with tempfile.TemporaryDirectory(prefix="axiom-readyz-") as directory:
+                probe_path = pathlib.Path(directory) / "probe.txt"
+                probe_path.write_text(
+                    "CLASSIFICATION: UNCLASSIFIED\nSUBJECT: readiness probe\n"
+                    "ORIGIN: axiom-grid ops\n", encoding="utf-8",
+                )
+                text = probe_path.read_text(encoding="utf-8")
+                from kairo.core.classifier import classify_document
+                doc_type = classify_document(text)
+                from packs.memo.pack import ClassifiedMemoPack
+                fields = ClassifiedMemoPack().extract_text(text)
+                if not fields:
+                    raise RuntimeError("readiness probe extracted zero fields")
+            verdict = {"status": "ready", "pipeline": "ok", "doc_type": doc_type,
+                       "fields_extracted": len(fields), "checks": checks,
+                       "ttl_seconds": READYZ_TTL_SECONDS}
+            _readyz_probe_ok.set()
+        except Exception as exc:  # probe boundary: any failure means NOT ready
+            OPS_METRICS["readyz_failures_total"] = OPS_METRICS.get("readyz_failures_total", 0) + 1
+            _readyz_probe_ok.clear()
+            _readyz_state["verdict"] = {"status": "not_ready", "error": type(exc).__name__,
+                                        "checks": checks}
+            _readyz_state["checked_at"] = time.monotonic()
+            raise
+        _readyz_state["verdict"] = verdict
+        _readyz_state["checked_at"] = time.monotonic()
+        return dict(verdict)
 
 
 @app.get("/metrics")

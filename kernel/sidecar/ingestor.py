@@ -14,8 +14,10 @@ from __future__ import annotations
 
 import hashlib
 import logging
+import os
 import pathlib
 import re
+import zipfile
 from dataclasses import replace
 from datetime import datetime, timezone
 
@@ -26,6 +28,42 @@ logger = logging.getLogger(__name__)
 # Approximate characters per line for bbox estimation in text files
 _CHARS_PER_LINE = 80
 _LINES_PER_PAGE = 60
+
+
+
+# AG-07 resource containment: the HTTP byte cap bounds *compressed* input only.
+# A 2 MiB PDF can declare 100k pages; a 2 MiB DOCX can inflate to gigabytes of
+# XML. Parser work is therefore bounded on the *expanded* side as well: page
+# count, total extracted characters and declared decompressed container size.
+# Violations fail closed with ValueError (mapped to HTTP 422 by the overlay).
+MAX_PDF_PAGES = int(os.environ.get("AXIOM_MAX_PDF_PAGES", "200"))
+MAX_EXTRACTED_CHARS = int(os.environ.get("AXIOM_MAX_EXTRACTED_CHARS", str(4 * 1024 * 1024)))
+MAX_DOCX_EXPANDED_BYTES = int(os.environ.get("AXIOM_MAX_DOCX_EXPANDED_BYTES", str(64 * 1024 * 1024)))
+MAX_DOCX_ENTRIES = int(os.environ.get("AXIOM_MAX_DOCX_ENTRIES", "2048"))
+
+
+class ResourceBudgetExceeded(ValueError):
+    """Expanded parser work would exceed the configured containment budget."""
+
+
+def inspect_zip_container(filepath: pathlib.Path) -> tuple[int, int]:
+    """Return (entries, declared_uncompressed_bytes) or raise ResourceBudgetExceeded.
+
+    Reads only the central directory, so a decompression bomb is rejected
+    before a single byte of payload is inflated.
+    """
+    try:
+        with zipfile.ZipFile(filepath) as archive:
+            infos = archive.infolist()
+    except (zipfile.BadZipFile, OSError) as exc:
+        raise ValueError("Unable to parse DOCX document") from exc
+    if len(infos) > MAX_DOCX_ENTRIES:
+        raise ResourceBudgetExceeded(f"DOCX container has {len(infos)} entries (limit {MAX_DOCX_ENTRIES})")
+    expanded = sum(info.file_size for info in infos)
+    if expanded > MAX_DOCX_EXPANDED_BYTES:
+        raise ResourceBudgetExceeded(
+            f"DOCX declares {expanded} expanded bytes (limit {MAX_DOCX_EXPANDED_BYTES})")
+    return len(infos), expanded
 
 
 class IngestorImpl:
@@ -161,6 +199,10 @@ class IngestorImpl:
         pages: list[Page] = []
         try:
             with pdfplumber.open(filepath) as pdf:
+                if len(pdf.pages) > MAX_PDF_PAGES:
+                    raise ResourceBudgetExceeded(
+                        f"PDF has {len(pdf.pages)} pages (limit {MAX_PDF_PAGES})")
+                extracted_chars = 0
                 for number, page in enumerate(pdf.pages, 1):
                     width, height = float(page.width), float(page.height)
                     if width <= 0 or height <= 0:
@@ -173,12 +215,18 @@ class IngestorImpl:
                     text = page.extract_text() or ""
                     if not text.strip():
                         continue
+                    extracted_chars += len(text)
+                    if extracted_chars > MAX_EXTRACTED_CHARS:
+                        raise ResourceBudgetExceeded(
+                            f"PDF text exceeds {MAX_EXTRACTED_CHARS} characters")
                     x0 = max(0.0, min(1.0, min(w["x0"] for w in words) / width))
                     x1 = max(x0, min(1.0, max(w["x1"] for w in words) / width))
                     y0 = max(0.0, min(1.0, min(w["top"] for w in words) / height))
                     y1 = max(y0, min(1.0, max(w["bottom"] for w in words) / height))
                     chunks.append(Chunk(page=number, bbox=BBox(x0=x0, y0=y0, x1=x1, y1=y1),
                                         text=text.strip(), source_type="pdf_text"))
+        except ResourceBudgetExceeded:
+            raise
         except Exception as exc:  # noqa: BLE001 -- parser boundary, never return binary as text
             raise ValueError("Unable to parse PDF document") from exc
         if not chunks:
@@ -194,6 +242,7 @@ class IngestorImpl:
         except ImportError as exc:
             raise RuntimeError("DOCX ingestion requires python-docx") from exc
 
+        inspect_zip_container(filepath)
         try:
             doc = DocxDocument(str(filepath))
         except Exception as exc:  # noqa: BLE001 -- malformed Office container boundary
@@ -201,11 +250,16 @@ class IngestorImpl:
         chunks: list[Chunk] = []
         current_line = 0
         page_count = 1
+        extracted_chars = 0
 
         for para in doc.paragraphs:
             if not para.text.strip():
                 current_line += 1
                 continue
+            extracted_chars += len(para.text)
+            if extracted_chars > MAX_EXTRACTED_CHARS:
+                raise ResourceBudgetExceeded(
+                    f"DOCX text exceeds {MAX_EXTRACTED_CHARS} characters")
 
             para_lines = max(1, len(para.text) // _CHARS_PER_LINE + 1)
             page = (current_line // _LINES_PER_PAGE) + 1
