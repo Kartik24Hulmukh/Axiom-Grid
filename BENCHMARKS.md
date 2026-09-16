@@ -254,3 +254,19 @@ no socket/FD leak.
   `kimi-k3` (1123 ms), `qwen3.8-27b` (573 ms). The alias `qwen-3.8-27b` returns
   404 `model_not_found` — the router's `DEFAULT_MODELS` chain already uses the
   correct id, so no change required, but do not introduce the hyphenated alias.
+
+
+## Session 23 (2026-09-16) — SEC-015 lone-surrogate encode panic
+
+**Zero-day:** JSON `"\udcff"` (lone UTF-16 surrogate) as any value *or key* -> every ingress route returned **500**. Valid JSON, valid `str`, passes the byte-level SEC-014 sanitizer, then `JSONResponse.render()` raises `UnicodeEncodeError` in the ASGI send path after every handler try/except. Baseline probe: 11/67 vectors 5xx. Post-fix: 0/54.
+
+**Remediation (first principles):** module-level `JSONResponse.render()` made total (`_json_total` fallback: surrogates scrubbed, non-finite floats -> null, depth-capped) and set as app `default_response_class`; `IngressModel` base with `model_validator(mode="before")` rejects surrogates with 422 *before* sqlite3/pipeline (iterative, depth-bounded walker, nesting > 32 -> 422); SEC-014 sanitizer depth-capped; dead duplicate `RequestValidationError` handler + duplicate imports removed.
+
+| Scenario | N | W | Codes | P50 | P95 | P99 | rps | 5xx |
+|---|---|---|---|---|---|---|---|---|
+| `/healthz` burst | 1000 | 100 | 200x1000 | 178.0 ms | 313.8 ms | 365.0 ms | 428.9 | 0 |
+| surrogate + nesting fuzz (6 routes) | 600 | 100 | 422x246 / 429x354 | 124.5 ms | 323.6 ms | 394.7 ms | 374.7 | 0 |
+| error-recovery unsaturated | 120 | 8 | 422x120 | **24.4 ms** | 58.0 ms | 73.2 ms | — | 0 |
+| mixed human chaos (demo/apply/readyz/correct/metrics) | 500 | 50 | 200/404/422/429 | 71.4 ms | 554.3 ms | 763.6 ms | 351.8 | 0 |
+
+RSS floor 83.2 MB (app loaded) -> ceiling 128.8 MB after 2,274 requests; FDs 4 -> 7. Tests: 291 -> **346 passed, 0 failed**. Melious live: `glm-5.3` 583 ms, `glm-5.3-flash` 736 ms, `kimi-k3` 935 ms, `qwen3.8-27b` 547 ms (all 200). `qwen3-27b` / `qwen-3.8-27b` are **not** catalog ids (404). In-process TestClient figures; repeat in the production image.

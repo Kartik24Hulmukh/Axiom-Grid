@@ -1,0 +1,97 @@
+{
+  "session": 23,
+  "date": "2026-09-16",
+  "id": "SEC-015",
+  "title": "Lone UTF-16 surrogate JSON escape -> UnicodeEncodeError in JSONResponse.render() -> 500 on all 6 ingress routes",
+  "baseline_head": "f8e401b",
+  "baseline_tests": "291 passed / 0 failed",
+  "baseline_probe": {
+    "vectors": 67,
+    "5xx": 11,
+    "routes_affected": [
+      "/demo",
+      "/apply",
+      "/correct",
+      "/api/extract-document",
+      "/api/ask-document",
+      "/api/graph/query"
+    ]
+  },
+  "post_fix_probe": {
+    "vectors": 54,
+    "codes": {
+      "422": 47,
+      "400": 7
+    },
+    "5xx": 0
+  },
+  "post_fix_tests": "346 passed / 0 failed (291 baseline + 55 new)",
+  "benchmarks_in_process_testclient": {
+    "healthz_burst": {
+      "N": 1000,
+      "W": 100,
+      "p50_ms": 178.0,
+      "p95_ms": 313.8,
+      "p99_ms": 365.0,
+      "rps": 428.9,
+      "5xx": 0
+    },
+    "surrogate_nesting_fuzz": {
+      "N": 600,
+      "W": 100,
+      "codes": {
+        "422": 246,
+        "429": 354
+      },
+      "p50_ms": 124.5,
+      "p95_ms": 323.6,
+      "p99_ms": 394.7,
+      "rps": 374.7,
+      "5xx": 0
+    },
+    "error_recovery_unsaturated": {
+      "N": 120,
+      "W": 8,
+      "p50_ms": 24.4,
+      "p95_ms": 58.0,
+      "p99_ms": 73.2,
+      "5xx": 0
+    },
+    "mixed_human_chaos": {
+      "N": 500,
+      "W": 50,
+      "codes": {
+        "200": 260,
+        "404": 60,
+        "422": 60,
+        "429": 120
+      },
+      "p50_ms": 71.4,
+      "p95_ms": 554.3,
+      "p99_ms": 763.6,
+      "rps": 351.8,
+      "5xx": 0
+    },
+    "rss_mb": {
+      "interpreter_cold": 16.6,
+      "app_loaded_floor": 83.2,
+      "post_load_ceiling": 128.8,
+      "net_growth": 45.6
+    },
+    "fds": "4 -> 7 (no leak)"
+  },
+  "melious_live": {
+    "GET /v1/models": "200 326ms, 67 models",
+    "glm-5.3": "200 583ms",
+    "glm-5.3-flash": "200 736ms",
+    "kimi-k3": "200 935ms",
+    "qwen3.8-27b": "200 547ms",
+    "note": "all 4 DEFAULT_MODELS tiers live; qwen3-27b and qwen-3.8-27b are NOT catalog ids (404) - never introduce them",
+    "qwen3-32b": "503 provider error observed (not in cascade)"
+  },
+  "caveats": [
+    "TestClient in-process numbers, not networked container",
+    "P95 error recovery 58ms unsaturated; saturated P95 dominated by intentional 429 shed",
+    "credentials supplied in prompt are compromised - rotate"
+  ]
+}

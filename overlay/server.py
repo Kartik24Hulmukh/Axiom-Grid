@@ -15,6 +15,8 @@ import hashlib
 import hmac
 import importlib
 import json
+import math
+import re
 import logging
 import logging.handlers
 import os
@@ -33,9 +35,96 @@ from fastapi import FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse
+from fastapi.responses import JSONResponse as _BaseJSONResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
+
+
+# ------------------------------------------------------------------
+# SEC-015: lone UTF-16 surrogates (e.g. JSON "\udcff") are *valid JSON* and
+# valid Python str, so they pass the byte-level SEC-014 sanitizer, but
+# `str.encode("utf-8")` raises UnicodeEncodeError. Starlette's JSONResponse
+# encodes inside `render()` in the ASGI send path -- *after* every handler
+# try/except -- so one hostile escape turned every ingress route into a 500.
+# Native fix: (a) the response layer is made total (it can never raise on any
+# content), (b) ingress models reject surrogates up-front with an honest 422
+# before the payload can reach sqlite3 / the pipeline, which would also panic.
+# ------------------------------------------------------------------
+_SURROGATE_RE = re.compile(r"[\ud800-\udfff]")
+
+
+def _scrub_surrogates(text: str) -> str:
+    """Lossy-replace lone surrogates so the str is always UTF-8 encodable."""
+    return text if _SURROGATE_RE.search(text) is None else text.encode("utf-8", errors="replace").decode("utf-8")
+
+
+class JSONResponse(_BaseJSONResponse):
+    """JSONResponse whose render() is total: never raises on hostile content."""
+
+    def render(self, content) -> bytes:
+        try:
+            return super().render(content)
+        except (UnicodeEncodeError, ValueError, TypeError, RecursionError):
+            # Second pass over a fully scrubbed tree: surrogates replaced,
+            # non-finite floats -> null, unknown objects -> repr, depth-capped.
+            return json.dumps(_json_total(content), ensure_ascii=True).encode("utf-8")
+
+
+def _json_total(value, _depth: int = 0):
+    """Coerce any Python value into a tree json.dumps can never reject."""
+    if _depth > 64:
+        return "...[depth capped]"
+    if value is None or isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return _scrub_surrogates(value)
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float):
+        return value if math.isfinite(value) else None
+    if isinstance(value, dict):
+        return {_scrub_surrogates(str(k)): _json_total(v, _depth + 1) for k, v in value.items()}
+    if isinstance(value, (list, tuple, set, frozenset)):
+        return [_json_total(v, _depth + 1) for v in value]
+    return _scrub_surrogates(repr(value))[:_MAX_ECHOED_INPUT_BYTES]
+
+
+_MAX_INGRESS_NESTING = 32
+
+
+def _contains_surrogate(value) -> bool:
+    """Iterative walk (no Python recursion => no RecursionError on nesting bombs).
+
+    Raises ValueError once nesting exceeds _MAX_INGRESS_NESTING so a 5000-deep
+    payload is rejected as 422 in O(depth) instead of blowing the C stack.
+    """
+    stack = [(value, 0)]
+    while stack:
+        cur, depth = stack.pop()
+        if depth > _MAX_INGRESS_NESTING:
+            raise ValueError(f"payload nesting exceeds {_MAX_INGRESS_NESTING} levels")
+        if isinstance(cur, str):
+            if _SURROGATE_RE.search(cur) is not None:
+                return True
+        elif isinstance(cur, dict):
+            for k, v in cur.items():
+                stack.append((k, depth + 1))
+                stack.append((v, depth + 1))
+        elif isinstance(cur, (list, tuple, set, frozenset)):
+            stack.extend((v, depth + 1) for v in cur)
+    return False
+
+
+class IngressModel(BaseModel):
+    """Base for every request body: fail closed (422) on non-UTF-8-encodable text."""
+
+    @model_validator(mode="before")
+    @classmethod
+    def _reject_lone_surrogates(cls, data):
+        if _contains_surrogate(data):  # may itself raise ValueError on nesting bombs
+            raise ValueError("payload contains non-UTF-8-encodable text (lone surrogate)")
+        return data
 
 from kernel.core.data_model import (
     Action,
@@ -85,34 +174,11 @@ async def _lifespan(_app: FastAPI):
         memory_store.close()
 
 
-app = FastAPI(title="Axiom-Grid Overlay API", lifespan=_lifespan)
+app = FastAPI(title="Axiom-Grid Overlay API", lifespan=_lifespan, default_response_class=JSONResponse)
 logger = logging.getLogger("overlay.server")
 
 
 # ZERO-DAY FIX (2026-09-16): safe RequestValidationError handler.
-# FastAPI's default jsonable_encoder does bytes: lambda o: o.decode() which
-# raises UnicodeDecodeError on random garbage bytes (e.g. octet-stream fuzz).
-# That bubbles as 500 instead of 422. Clean bytes recursively with
-# errors="replace" so every malformed payload fails closed with 422.
-def _safe_clean_errors(v):
-    if isinstance(v, bytes):
-        try:
-            return v.decode("utf-8")
-        except UnicodeDecodeError:
-            return v.decode("utf-8", errors="replace")
-    if isinstance(v, list):
-        return [_safe_clean_errors(item) for item in v]
-    if isinstance(v, dict):
-        return {k: _safe_clean_errors(val) for k, val in v.items()}
-    return v
-
-
-@app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request, exc):
-    safe_errors = _safe_clean_errors(exc.errors())
-    return JSONResponse(status_code=422, content={"detail": jsonable_encoder(safe_errors)})
-
-
 # ------------------------------------------------------------------
 # OPS-002: structured JSON logging (one JSON object per line; safe for
 # Loki/Datadog/CloudWatch ingestion). Opt out with AXIOM_LOG_FORMAT=text.
@@ -652,7 +718,7 @@ orchestrator_gate = _BoundedGate(PIPELINE_CONCURRENCY)
 orchestrator_lock = orchestrator_gate
 
 
-class DemoRequest(BaseModel):
+class DemoRequest(IngressModel):
     """Strict schema: a non-blank, bounded file reference (no NUL bytes)."""
 
     file: str = Field(min_length=1, max_length=4096, pattern=r"^[^\x00]+$")
@@ -665,12 +731,12 @@ class DemoRequest(BaseModel):
         return value
 
 
-class ApplyRequest(BaseModel):
+class ApplyRequest(IngressModel):
     ext_id: str
     accept: bool
 
 
-class CorrectionRequest(BaseModel):
+class CorrectionRequest(IngressModel):
     ext_id: str
     field_name: str
     original: str
@@ -882,7 +948,7 @@ async def get_trace_stats():
 
 # ---- Phase 3: Connector Protocol ----
 
-class ExtractDocumentRequest(BaseModel):
+class ExtractDocumentRequest(IngressModel):
     """Strict schema: bounded, non-blank file path; no NUL-byte injection."""
 
     file: str = Field(min_length=1, max_length=4096, pattern=r"^[^\x00]+$")
@@ -896,7 +962,7 @@ class ExtractDocumentRequest(BaseModel):
         return value
 
 
-class AskDocumentRequest(BaseModel):
+class AskDocumentRequest(IngressModel):
     """Strict schema for /api/ask-document."""
 
     file: str = Field(min_length=1, max_length=4096, pattern=r"^[^\x00]+$")
@@ -910,7 +976,7 @@ class AskDocumentRequest(BaseModel):
         return value
 
 
-class GraphQueryRequest(BaseModel):
+class GraphQueryRequest(IngressModel):
     """Strict schema for /api/graph/query."""
 
     keyword: str | None = Field(default=None, max_length=1024)
@@ -1436,8 +1502,14 @@ async def metrics(format: str = "json"):
 _MAX_ECHOED_INPUT_BYTES = 256
 
 
-def _sanitize_validation_payload(value):
-    """Recursively make a Pydantic validation payload JSON-serializable."""
+def _sanitize_validation_payload(value, _depth: int = 0):
+    """Recursively make a Pydantic validation payload JSON-serializable.
+
+    Depth-capped: Pydantic echoes the offending `input` verbatim, so a
+    nesting bomb would otherwise recurse thousands of frames here.
+    """
+    if _depth > _MAX_INGRESS_NESTING:
+        return "...[depth capped]"
     if isinstance(value, (bytes, bytearray, memoryview)):
         raw = bytes(value)
         text = raw[:_MAX_ECHOED_INPUT_BYTES].decode("utf-8", errors="replace")
@@ -1446,14 +1518,16 @@ def _sanitize_validation_payload(value):
         return text
     if isinstance(value, dict):
         return {
-            str(_sanitize_validation_payload(k)): _sanitize_validation_payload(v)
+            str(_sanitize_validation_payload(k, _depth + 1)): _sanitize_validation_payload(v, _depth + 1)
             for k, v in value.items()
         }
     if isinstance(value, (list, tuple, set, frozenset)):
-        return [_sanitize_validation_payload(v) for v in value]
+        return [_sanitize_validation_payload(v, _depth + 1) for v in value]
     if isinstance(value, BaseException):
         return type(value).__name__
-    if value is None or isinstance(value, (str, int, float, bool)):
+    if isinstance(value, str):
+        return _scrub_surrogates(value)
+    if value is None or isinstance(value, (int, float, bool)):
         return value
     return repr(value)[:_MAX_ECHOED_INPUT_BYTES]
 
