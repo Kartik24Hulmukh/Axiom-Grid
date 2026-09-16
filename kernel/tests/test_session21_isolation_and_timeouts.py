@@ -1,6 +1,5 @@
 """Session-21 launch hardening: isolated ingestion and per-model timeouts."""
 import os
-import time
 
 import pytest
 
