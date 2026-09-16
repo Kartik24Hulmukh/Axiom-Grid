@@ -1,7 +1,7 @@
 """Session-21 live Melious torture with runtime catalog resolution."""
 import concurrent.futures as cf
 import json, os, re, time, sys, urllib.request
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 KEY = "sk-mel-1jDn6LrnN-j55WqoQr3ETKzmpU_Cnf0EjXZbOEQ9hnh4mER-RD1hnlQjTqucQZWKeW7rOMc-1drfMkgAmNldp9R3dWXsLAaIRJel_ametjS5PDFe6vadLsJkM"
 os.environ["MELIOUS_API_KEY"] = KEY
@@ -117,5 +117,5 @@ if live:
         out["budget"] = {"max_tokens": 16, "fail_closed": f"{type(e).__name__}: {e}"[:120]}
     print("budget", out["budget"], flush=True)
 
-json.dump(out, open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "docs/axiom/evidence/session21-melious-live-torture.json"), "w"), indent=2)
+json.dump(out, open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docs/axiom/evidence/session21-melious-live-torture.json"), "w"), indent=2)
 print("evidence written", flush=True)

@@ -6,7 +6,7 @@ import json, os, random, signal, subprocess, sys, time
 import urllib.request, urllib.error
 import psutil
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BASE = "http://127.0.0.1:8788"
 EVID = os.path.join(ROOT, "docs/axiom/evidence/session21-local-stress.json")
 TRAVERSAL = os.pardir + "/" + os.pardir + "/etc/passwd"
