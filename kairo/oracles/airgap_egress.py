@@ -323,6 +323,12 @@ class SocketEgressInterceptor:
         except ImportError:
             pass
 
+        # These flags belong to this scoped interceptor, not the process.
+        # Leaking KAIRO_SEALED suppresses unrelated JSONL tracing after exit.
+        self._environment_before = {
+            key: os.environ.get(key)
+            for key in ("KAIRO_AIRGAP", "KAIRO_SEALED", "NO_PROXY", "no_proxy")
+        }
         # Set environment variables to discourage network use
         os.environ["KAIRO_AIRGAP"] = "1"
         os.environ["KAIRO_SEALED"] = "1"
@@ -348,6 +354,12 @@ class SocketEgressInterceptor:
                 urllib.request.urlopen = self._original["urlopen"]
             except ImportError:
                 pass
+
+        for key, value in self._environment_before.items():
+            if value is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = value
 
         return False  # Don't suppress exceptions
 
