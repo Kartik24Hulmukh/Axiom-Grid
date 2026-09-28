@@ -1,147 +1,147 @@
 {
-  "version": "1.3.2",
-  "fingerprint": "611444619148fc546704de4a5108a4296c75808aeb022cccff336f4e6132e4d5",
+  "version": "1.0.0",
+  "fingerprint": "5a3b83fda33c18c70613231bad81addcb52001c4e3469e3d69b680649292a015",
   "files": {
     "adversarial": {
-      "embedded_instructions.txt": "64f4bdb035f998d11929e07f6dba2337baa5d1e017f68c6d740d1b65629a0382",
+      "embedded_instructions.txt": "e8d0def0cefb65532abf6ec8be801d1cbf681074959f072e90af49154589442d",
       "hidden_text_layer.txt": "7bd15af1437caf1a3d377da3e76648a03311ea2a5a0d48745489688c091a67fb",
       "malformed_structure.txt": "ea13db4608d8bc7cedc7fe9e6650f9f6071b67aa614025c192e465ae42499848",
-      "oversized_input.txt": "3cf07b9954c083c50bc24d1416868dced933047d988dbb511d56b715847c4c91",
-      "prompt_injection_qa.txt": "744e4fb1597d2e27fbd96e38b044f1f0ec09363d6aeda3d2fad3c8026d858df4",
-      "tool_url_trigger.txt": "23ab70d45159e6e6d4793d4a308017d1120b56015e0ee675639b2ec3bb440a4f"
+      "oversized_input.txt": "470345df9086f031709b7bd96a43761e71300208b54b2f878ee7c9a8d3bc44ce",
+      "prompt_injection_qa.txt": "679298100822487d8559e39d0c880ae57f5925e080e9cdd22dcd98e2bcf76278",
+      "tool_url_trigger.txt": "5ee486aa526265f59fe672f57797a19e1961a15464c9ed88925a0d662d3efccb"
     },
     "blind_holdout": {
-      "BLIND_HASH.json": "5028a88a3fba9f0ac3e158986def39ae3d3e6e9c0dffa34b757ab23f3a533c5b",
-      "blind_contract_01.txt": "a288ad5012b9a602beb01a9b2603ef0560d5dd12645660b9f3eff52f79daae72",
-      "blind_contract_02.txt": "f3bbdb626f96b21fb1dc0e0d2b94f2d93337cdf3df0c252dfb7f79cd42713373",
-      "blind_contract_03.txt": "fb6dae4b8b17fd67500e666fb64874d8e174193fa42e1f9e3d909df31a080c3e",
-      "blind_generic_01.txt": "a5b3c5e5cb8fa08138e31f1f7fc0727143c57248b631cce453b3dddc83a92ed2",
-      "blind_generic_02.txt": "4b56e73cc40ef1f7353325a65f21378a218dc278760d07dda68969d893e9e5e6",
-      "blind_invoice_01.txt": "3f04a3d025f716025c8d5f4934b1a25e7cb03e42cf056f5c67f102bf8ee1b7f6",
-      "blind_invoice_02.txt": "4a8e4cbb354a14416fa9c83a86139c21e8213875462f1cb51dd912c7ff8ed0b7",
-      "blind_invoice_03.txt": "a688ea9d62f8d87bf658c56d6cc0382764df22407b9152b5600173438ea5ebe5",
-      "blind_invoice_04.txt": "959b773fe03adf0da2540f53a7cf69093b5de43c55766dff18c38021f87f5c6d",
-      "blind_paper_01.txt": "63e13d9c0c3d888409bf68c3af1a0f1edaa32027cc61f384d8256b0109392ec9",
-      "blind_paper_02.txt": "16a68f7027b83e239a8bd2a2136eb5f79b262e76b6bc3cb5c2ab76355815f5e7",
-      "ground_truth.json": "96a4cb6adff1696a056d7d5f42da0e5b4e8c9c17596ad6de61138e86d0400d13"
+      "blind_contract_01.txt": "7a11d2716d81f936bf319d4741168602e5dc17895c7b91a687c4fa4c348493cc",
+      "blind_contract_02.txt": "319b394006e71af399a4c4afe2fdf80121ad7fb5e36b0b2d01b955b5ec6ca219",
+      "blind_contract_03.txt": "895ac5f578363af12c9224512e15b25660ffeb3ac46b56ccdab9bfaec0b892ee",
+      "blind_generic_01.txt": "74ec9b66f02249b7d5a018193ba25b9a6d33a384c776723b8e4d695ef013ce8f",
+      "blind_generic_02.txt": "bd3bd4375cb838af26e4e1c2ff881bb9929ba4671b63581e8d76201403df8c88",
+      "BLIND_HASH.json": "03d322d0034c0f1fc3449b201f7ff487b2237f81fa34acb8337c4843efe9c727",
+      "blind_invoice_01.txt": "cfb373e9e5553e7d1052a4da5801073f49cbec3cbfb51ea181a7cd3671a207a0",
+      "blind_invoice_02.txt": "c9e86884fc982dcc6f05b769669885814c034e8a9d99a245523e1493135acaf5",
+      "blind_invoice_03.txt": "3fe7b854d4f93222a7f3442c94b5c44cb97ee79835225a13cdeffc0bfc2d83a9",
+      "blind_invoice_04.txt": "d8ec704900c7df4c3115b94205202e754deeb32ee74ed2ca4e4ce6f32fbd4fbe",
+      "blind_paper_01.txt": "917296fe451dc26b9e4e4d2e628985dc748f6d9d5ce4c40ab7617d652d0a3f23",
+      "blind_paper_02.txt": "8bb99d9af111638e1afebfedb17bb7c43b5f940c2d308328575449582a61af75",
+      "ground_truth.json": "b0242e9662a63c6d6897388bfe5d23cf938af02b6f1ddbed544bb5656d8f3df5"
     },
     "contract": {
-      "ground_truth.json": "8be89d2f88f180a143d1af6638ff76eb6f93312bdd129ce398d85e52d6b711e7",
-      "sample_contract_01.txt": "9a8ad174351078e5b4822ae283a525e4e1932990f75ef9560e0899ebdb57a1e0",
-      "sample_contract_02.txt": "105c35af3babed68dfc3d4cec31cf4bdd1c3503719d66e300c5e1c492ecb6985",
-      "sample_contract_03.txt": "bb82d3afd14a25f645479fb639c4225ed151a930968705d4c019ae01b1fd18af"
+      "ground_truth.json": "7a0026345f2e2a8e37da552f7a2a67c7abea47620ccca19faea2a454f4b3df99",
+      "sample_contract_01.txt": "40d1a9ed927acea7c72969615f5ff26ed48caba1ea1e278d1439e8d6b26372e8",
+      "sample_contract_02.txt": "8cd452b66b70ed88d48463356341f317dc27f5507dc52f2ab338fe2ea5a68ab8",
+      "sample_contract_03.txt": "7c00a499ba54a0ac94b3f98b0581e8fc3d246bf22ed6daab4a151748ba526200"
     },
     "cua": {
-      "close_modal_trajectory.json": "7a3343f39304099b98631cb5b46a47650cf16fd37e4d3ce0e89ca0763980b48b",
-      "dropdown_trajectory.json": "199d230e3b95e2967a7523ef267d007bb1f9506aef24ffad6365bfae3d137942",
-      "fail_trajectory.json": "7c0e83b41fa79f4f7c0ee55967579efb11555db030597eaf71bc3740b6fc7e91",
-      "loop_trajectory.json": "a4c43aa4ca0c897af40d329980b3f2d3c9eab1273d969d3e3ac08392a9baee31",
-      "success_trajectory.json": "32518399372e468243f03ed3d5a06c6451be64cf2e4bc35698eb52778fc3b5fa",
-      "toggle_trajectory.json": "bfb4bd0d0061499aa16aa5a922f89949a8e72b73e17bd2d60db5a1218ea8b3c5",
-      "type_success_trajectory.json": "6d30ecd40d9ce8643a0b6488f74b54f90542e2c8819fa08c0107e37339a9e765",
-      "uncontrollable_trajectory.json": "7a71906bc5105fd3d1a7208305f9f5616d5307501180843f50820d1fe8f9b4a6"
+      "close_modal_trajectory.json": "4fc3f97f8af3974e1013a8de8414a7376af15da049e885c4b55a62a3f107a851",
+      "dropdown_trajectory.json": "34fc3b498f45fbc5d985948be7d39845cfdb4e13622546c75721ba0e93bd7d1c",
+      "fail_trajectory.json": "10fecfc31d5aa4c954f46a7f3bfd1d9a17cb396934d327c47a4a7ca77535d271",
+      "loop_trajectory.json": "26e2e8fdbba8aa3f27960039414456941884aa1286394cb17e649ed5cd7f7a01",
+      "success_trajectory.json": "e87a0328863257b98ce907d2c8a1c853489918dea9a6ad3e6be2043ab225519d",
+      "toggle_trajectory.json": "fd94a0d1f0b5af9a0512b8147818d899e91dc03eedbc1a96bf2ad03d581ceff9",
+      "type_success_trajectory.json": "4e91aaf2b1371f16562e537c31a22e16d58a9870d1f06ff563ca4ba86bfa4331",
+      "uncontrollable_trajectory.json": "40a9be17cce60f43c554698a99e938cdb018388cc31dc651f0cb4c0afaca9ef2"
     },
     "demo": {
-      "nda_playbook.json": "21e3e797ade708a461606d8921495b1639c7a27c1be89a72978f4cd169a4831e"
+      "nda_playbook.json": "037a3a81e7e374be023b0abcdb1629d8f4040e7c66dc4417942869de6a449e4e"
     },
     "excel": {
-      "s01_ground_truth.json": "4b2b954bd5c358a773fae69c9a763c85f64ad0af6190b25e53d63037cf93675c",
-      "s01_spec.json": "132a854dc5f1a314ca2c2deb0e20a5afa3009d749f7c297ea3960b9443615012",
-      "s02_ground_truth.json": "06e9972b34ce7b9557d44f01b9166805e1f459b5f7ff569b38ccaaa47d0e89f7",
-      "s02_spec.json": "7b08712da346988f5bc07768ec80fd8965cbd652040da25ef55d88856ef1deb3",
-      "s03_ground_truth.json": "e9c0853350db86bd6a3dbfadef553745b27b3fead328bfc2e87d9e6ba1b11054",
-      "s03_spec.json": "62badb92377116ad98a08054e6f3b2322328bc3b90a491d0b0a3b2c736dee9a0"
+      "s01_ground_truth.json": "a6213c48f7f771fd264465447f320e0cc50f821c55a7c5735e9d3df70b1d8edb",
+      "s01_spec.json": "f72bdf2ebabdc804765fdcf52127be1153078d179dd46fd6d27085c01b2a9f38",
+      "s02_ground_truth.json": "546caff209d5f8615120dd147efc9b0aed44996ac2e70ee14c3bb5632bd3da85",
+      "s02_spec.json": "acba76fdec72c19e0ede243f5b5b873d7704e2547b89818a7839312871208a88",
+      "s03_ground_truth.json": "ec7096f6683a0834f579e17be11260c5a932a8a8ed2249f3d91ad9557bd3e402",
+      "s03_spec.json": "248a75ee2a50c79dc88a3f6363569fcd0f7982e14670c4913d5b512bbfae91f9"
     },
     "generic": {
-      "ground_truth.json": "1fc437da65afbbd63e5e316d1bd6aa1bfad0c117b441492c40fc4ccb43573e25",
-      "sample_generic_01.txt": "b755b988b241a84dc2ea6c349d194b92a15599529a6606d027769f1824e8a528",
-      "sample_generic_02.txt": "2a865dba1e0748602169944e656e81087769bd830cf0f877c90a865b7e3c7e24",
-      "sample_generic_03.txt": "36c055c8ccf419c6a5e994fa241d3eec85c9dd98f7d67d775e9e454968c0b21e"
+      "ground_truth.json": "5afbb2815a9fca40c9e7facdfe2bd7b4df4b242a6fade900f9e0729e9819ecf5",
+      "sample_generic_01.txt": "cffb961f6421c3e04f06c3e633730cceba2cb0e813f293943671c92f09d1b9fd",
+      "sample_generic_02.txt": "4865d7bfa6e9799d6018ebdbeb42cf29c87dc3b4b36eab0822d87f43752e8b08",
+      "sample_generic_03.txt": "a308ef5ce651f42d7989234cc9887a89408b69a639d09da9a56452c0ade95531"
     },
     "golden_corpus": {
-      "README.md": "1a3537daf9a25e864470ba75336ad949c3eb8869f648549698e9c2a2bfab2032",
-      "snapshots.json": "d90539e4fb051f2fa0bca9611b301d285fad7dce544f07343ec33feea040eaab"
+      "README.md": "b2e72df53443c3597357ca19078736e532894cc53855d67e99d98938cd85c89d",
+      "snapshots.json": "80d7e8b65df35314ce7924882ad2b041d3b888a75b2bb78be834a4c2aa35d055"
     },
     "grounding_bench": {
-      "ui_tars_subset.json": "9ff5a7905350c8b94fdd64f140cf28e8239ce82d9d9340dd16867a435c948920"
+      "ui_tars_subset.json": "93caad8460d64f4440c727a1205306975a807c3b9142a243a6d7f4f34b326dd1"
     },
     "held_out": {
-      "ground_truth.json": "87f7c0d31847b5b2d21d51699cd83f485e58259db90cb6fe3b3576d1c3f39847",
-      "sample_heldout_01.txt": "c986edbd8045734aaa1b6a23800610bd6a08ca7d534ed6a793cec155a6684d47",
-      "sample_heldout_02.txt": "805d2e317ee9d959f2d70b4a420ed037bd9891253c4129950bb33ff21ebe402f",
-      "sample_heldout_03.txt": "bada40f9c549a4d455fd56db84d3ef4bcd8996b8f14ccf986eb21dd66d387565"
+      "ground_truth.json": "686ec995fa4c1f8f14972a5137a65cfb0c6dfe1e576842d8034412f604a823b0",
+      "sample_heldout_01.txt": "9056d06c267f3f320e7fd7aa62d885a49771b7abb796f505a48cb6f7377b8226",
+      "sample_heldout_02.txt": "64b27f7f15c0fbc9e5740ce296ef1ece9472d66a311c876a0e0dc5c02a025c9a",
+      "sample_heldout_03.txt": "e3b275b78e77d0f9ab626913c565ce288f0ef5b9fb31b697a048dfc20fba76e6"
     },
     "injection": {
-      "corpus.json": "f9bd248eb38ec09212fc65a4c0fe0579c85b115f6f03a834733a90c77bf370ae",
-      "test_playbook.json": "f30bc85476ba789a750f57b84b8768579c78aabd5db145c43094da5676030bb0"
+      "corpus.json": "8250850b89be730459411b65201a641b5349390da1b25562cb2d573971a6d8d6",
+      "test_playbook.json": "34ba887afb0545855f4d9ca4b45deba9bbec37a0c948092ed095327d49a15022"
     },
     "invoice": {
-      "ground_truth.json": "519001baf7b987475c11d04e234035f353e0403446c256b29d51641697a5fc4f",
-      "sample_invoice_01.txt": "9e0328983fa4844fdaa954ca5320f6dc28dbc67d96e0d0795b808c740b04faab",
-      "sample_invoice_02.txt": "6f1976ca214da70da70166cde416bce9964adb509da97e8be7440e3a76a4d17b",
-      "sample_invoice_03.txt": "4edebcdbaddee5e3c82eb255808427d6d3116ec0bb8aae220d0664cbdfa24dd3"
+      "ground_truth.json": "f00c804fca869e87a91bc2ffa0f83df7abfbb6eed61f32a625abb4a8d0d7a729",
+      "sample_invoice_01.txt": "0f1553f764e07c8c0c0245e6f016f644e30e9e49e66a5acbce90f9245aa0f99a",
+      "sample_invoice_02.txt": "6ab6f5cc67c66020dd9c6348ce9f41915b9b687d53625094bdb581bcfe9fb166",
+      "sample_invoice_03.txt": "3010612cea1313a407db03f2e62034bb8e9727884d426cfb250407f4ed979d6c"
     },
     "labeled_corpus": {
-      "clean_contract_01.txt": "b58a47fe536db55cf694491c7ca49c0ce9ae423beba1d853626ad14340cfcebd",
-      "clean_invoice_01.txt": "465c38929b2a4a0648627cda0a994acb7527c82ee0a804b7d764ef0b69454abd",
-      "cross_ref_contract.txt": "c5a21d163794f5b5df38a79e7e465e4207d27b76d43b5ab8a582baebb9021bc5",
-      "figure_caption_doc.txt": "f0ff295158a0f09873398a1b8c0a834187bb9789fa3e606e9e3bfbb6915cabe0",
-      "ground_truth.json": "c4eba5c16b8241acdebd32be03824086d2e775eb2a88f2c40faa5750263580cf",
-      "merged_cell_table.txt": "444d8020e9c6f875ec6074c882ea7178809b13cfb15708195b32c849ebd6a1a3",
-      "multi_column_report.txt": "38dfe8bc99e7cf3591319e18d6f49c5ac99c997799317b2b797823bf30f57df4",
-      "poor_ocr_invoice.txt": "3d8f3e132cfc692171ca9fc75417bb846af89b8e5ecd13c19be78cd272f4e94b"
+      "clean_contract_01.txt": "449c4bed8956061001bb162b2f8bd2790cf602f32589a2b514b51350f942e4c9",
+      "clean_invoice_01.txt": "dda9296260101c3a685582f9203fde77f9d555b4e73cb60020f9ebf602c01a8c",
+      "cross_ref_contract.txt": "8c4de8e9519d3a1c7c7977cd611e37005f5632b4c87fd7d43b8110cb6bb393b9",
+      "figure_caption_doc.txt": "ae92be6e97412cfe1f02adcc7012ec5767f4757c74cc0a3cf42dd01c129713bd",
+      "ground_truth.json": "fee62888ce5b03deb8eb39c4e3b336ae7060d0834bfe5f36ccb6b11890673339",
+      "merged_cell_table.txt": "bc13f88c865f61e7933e67626762f4a968c2b16f254f4fa410e0280cfa9df3b3",
+      "multi_column_report.txt": "51039e98b61afa846759df74a99e02e75e8c2b6eb3a6ed7b2ef2a9dd723bd64c",
+      "poor_ocr_invoice.txt": "01fee5e7e474e35ce7cc26770465e2f59a84153f3266a528069e8075cffa22f9"
     },
     "legal_redline": {
-      "ground_truth.json": "0db5148c5bf4060ca6735edc4925d82ef287ce2985e18aa0af4b647984a1fdb9",
-      "playbook.json": "34c597de526314ceff2af7a297cb851e81bdf17a5563600f63f2082d2c7c7a5e"
+      "ground_truth.json": "24e2cd557e68ed06828dbce2474da43b7a35d792af56c22ae4f3ca5622880708",
+      "playbook.json": "933632fde086deb32fe27261663ac8cce425bfd60fff5a475c5f1f8c7991db70"
     },
     "paper": {
-      "ground_truth.json": "f19b4fc114d8f93bf005b3d0c6b5069257744f24fa4cd69379865db26b75e3b9",
-      "sample_paper_01.txt": "081339a8527265b7f799220c1289112715155b1438597e3ac9424643a3203d5a",
-      "sample_paper_02.txt": "0c09fc1c599899aaa834e50b2ac3568c35b09979d102a6e1f39700ba94c6c4b2",
-      "sample_paper_03.txt": "386ff3f9ef8404da0c6e83d8e0abfd5d6494b47958c3d4aecdd3e08be4642b0d"
+      "ground_truth.json": "33090697bb2891134e0d3300f74a11160c02b2213f6881f409eb047e6231ea2c",
+      "sample_paper_01.txt": "e8cf73c372efc28b342385d69397138c8d0ec42877833f76befba856663cc9fd",
+      "sample_paper_02.txt": "31a2cfa62317203bcab1760e6a2c765da34f9da9e1f9f4a480fbd84fc8eb6a4c",
+      "sample_paper_03.txt": "c369ccfab1b711f257423dddd188caf750394c8a79694778bbf1dd03d23f74a2"
     },
     "pdf": {
-      "s01_ground_truth.json": "5a3c5f0e005b4b2315559cf7b7977b9049595b83338f4a43678d7a87fb163680",
-      "s01_spec.json": "2c66c5b66d781a0881730161b43b59f3880bb6e6bb959648c1d77f34ddd16e63",
-      "s02_ground_truth.json": "78a35c8790a2d62cbc34b97033c0480115e39d7f3025bc775a7fac14765b68e8",
-      "s02_spec.json": "c722326d042865bf5dfb80eb4783b9b87a0263cde5993e5477f0c765ffc72cd4",
-      "s03_ground_truth.json": "721fcffc5007b61cdea695674cbd3284809610b91ec65fca31358a55161d9cfa",
-      "s03_spec.json": "139b54aedde102e5e550054fc62c844a92aa119d6b5ba5790facf11d35918526"
+      "s01_ground_truth.json": "c2318928035ad75e1c4111e66da40f27929b399689efee0c4f123adc191c9fba",
+      "s01_spec.json": "a3a761c99aa73ca42be71e4b00d54c21c0aea4c44c9c688b30d06b1920004659",
+      "s02_ground_truth.json": "3c42c4cf8ad663a09acc94742c9e478c08537ac5d27f507fa4ae47be6bd421ce",
+      "s02_spec.json": "896fe21602c241322fea77238b706ffa92a94cfebacc94923ad5144d9ca323ab",
+      "s03_ground_truth.json": "7229fe76652011feb89dca25956df49fcc8153529fd4e2102f50b31b5786ef48",
+      "s03_spec.json": "cd7914950e801fc07b98ecb820175c2688a43af4cf157ada3cbe43aa4cf1ae3c"
     },
     "wedge": {
-      "adversarial_ground_truth.json": "d67cff7471c81c269ae9cc29f8fc5d414bc4af3623e021a5b80529e6a1889112",
-      "ground_truth.json": "949792373ad7b29d5932198479e90c998a724b6954584339d1dfc54bac781f69",
-      "sample_memo_01.txt": "2cee63241b4f234c1f9c7411a8d9e061ab6e0d16a8206354410b7a32d1510867",
-      "sample_memo_02.txt": "c717f35938dd65c7faa5b0595d415418ab2c1361e9088a3dbd6b67f17febe6da",
-      "sample_memo_03.txt": "6065d7c6ce01c5d9b0785a6c0975dd3517c45beb02291b155fd9ff8f6c4cf8be",
-      "sample_memo_04.txt": "b42cd62fe0a1fa05d6bca3633c2eac9bbbb0e181747d6fae887c3ef4f9811f1c",
-      "sample_memo_05.txt": "1c5480939fe4bd6bf09bf28e6c4e09339429822e1ddce9a89f1d0816c6f95569"
+      "adversarial_ground_truth.json": "7ab4c7b447268512fa28a0cb9eab67a2c0e0d69ee877af4f6f3176e86970ecd2",
+      "ground_truth.json": "d8fd97aad8e444fa6902f2f4464ae1710244cb5cfc7366bc808ff79819a32fde",
+      "sample_memo_01.txt": "cbe3619a2d09674ec7185d7c672057da7f9983de3aeb1fe8696ac3a05df49c10",
+      "sample_memo_02.txt": "15fd2371eaad12f87613ee88ecadd86451dba6e80ce2a6d3770bf05f10ed2703",
+      "sample_memo_03.txt": "b83859ebf7a38892c3062a1f8b58d7bc0b01e366fd5f75e1b33a787c81693e8b",
+      "sample_memo_04.txt": "4db5b56aa4b32b1d6b371552e74f70d2c17e7d610ca2d86fe5b993fc2272a523",
+      "sample_memo_05.txt": "52be5508d89ef2d00e953f512d91512a3e7452332e2669cc0e8f7d93b2e58a10"
     },
     "wedge_gauntlet": {
-      "s01_ground_truth.json": "1b6ade0ac32d308fe1b52d3273ae1da8915c95ccfff5aff4cfe8ca9a75ecfe04",
-      "s01_playbook.json": "d4ca2ecb49c8e8019f00e765fc953e1d1aceddf8163ae36b072307e2b5ce5a4c",
-      "s02_ground_truth.json": "80d8f3125cd3a63da67b419824cf1b0d1ce74fe288da50516aa1e1fd2a315e8e",
-      "s02_playbook.json": "e6c0e7f01de191a6e6fc4530aa0b8ce607a3ec3ebb14c3823a1cdcb6c5c07297",
-      "s03_ground_truth.json": "80d8f3125cd3a63da67b419824cf1b0d1ce74fe288da50516aa1e1fd2a315e8e",
-      "s03_playbook.json": "23b8a648a07a4e8f96b66eabb75eceee1e987cfe34e94018206028707042cc78",
-      "s04_ground_truth.json": "dd345a0bde11a6d48e9be2b65316c6df8a1d3a3efb3c79c576faf0e532555ca2",
-      "s04_playbook.json": "d1f8ef13921c9fc6ce6095e5db9ad9cddbfc61bebef1945297ad347ac0e713c1",
-      "s05_ground_truth.json": "dd345a0bde11a6d48e9be2b65316c6df8a1d3a3efb3c79c576faf0e532555ca2",
-      "s05_playbook.json": "28522f9d87f32863fb84d05a400abee780a85ed5861e2ae4f95056e77c17ef98",
-      "s08_ground_truth.json": "1b6ade0ac32d308fe1b52d3273ae1da8915c95ccfff5aff4cfe8ca9a75ecfe04",
-      "s08_playbook.json": "148e94a9312cc8ec42668e6ae9731d92af629b12315bd01214a8a3f4d19d1ac7",
-      "s09_ground_truth.json": "1b6ade0ac32d308fe1b52d3273ae1da8915c95ccfff5aff4cfe8ca9a75ecfe04",
-      "s09_playbook.json": "6c37ac5e40a286ee05ae9bbed7523aab6bd1fb60caa02312e2e45f336b8401f6",
-      "s10_ground_truth.json": "1b6ade0ac32d308fe1b52d3273ae1da8915c95ccfff5aff4cfe8ca9a75ecfe04",
-      "s10_playbook.json": "d1a7901748d09028ab35f21380b226dcc91f7cf5e17a8ceab074b5f5b26786a5",
-      "s11_ground_truth.json": "1b6ade0ac32d308fe1b52d3273ae1da8915c95ccfff5aff4cfe8ca9a75ecfe04",
-      "s11_playbook.json": "c4665adf7bc54d801e8d5fc88e44a0a82a50f42c6fc6cbb41d83b2a22688d298",
-      "s12_ground_truth.json": "adb4a513a4880ddd22a6a9fe8c736dc5e0e2506fece74f188cdd9a5450e1ee45",
-      "s12_playbook.json": "4c78cd6ad5074b244325c92f1072f7d7431ef38422c08b86833f2db0c197bbe1",
-      "s13_ground_truth.json": "88393a3c610ebc405e3662928b7ff1570b77819fd828056771bdd71e438a47ca",
-      "s13_playbook.json": "f14983cf1b109291db4a7ccbb7d6248c88e242ec36f148ccffb40b50b3f125cb",
-      "scenarios.json": "bb9e7b46736325a2a6322931c0c38dbcadc8641a129c325a6a7d8f56dcb023a2"
+      "s01_ground_truth.json": "bf20deb8b6f972dc006b4ee4e6d5490de68b1b9f39a64764674afeec80d09b6b",
+      "s01_playbook.json": "9975bf1f2318737a43f1b524a54ab47bc067a9ef4b32175d35f23a5e43366951",
+      "s02_ground_truth.json": "86f735a324b67b5e2e7de25321511a0fdc2929a228d6213e31d30420ced34b39",
+      "s02_playbook.json": "901ca46ac24af14c0a8ba6a8c2a7c8513b4a37a096fad6117b2f8058b7e85c6f",
+      "s03_ground_truth.json": "86f735a324b67b5e2e7de25321511a0fdc2929a228d6213e31d30420ced34b39",
+      "s03_playbook.json": "ffe165c981f75f9edd520695d6b9d666bcee94afea4eefdccc1c9bd0be333334",
+      "s04_ground_truth.json": "6d841fccbdbc35c21159d89af2585520f244c6f8c1661f3d834003143591b6cd",
+      "s04_playbook.json": "d7a1d734d6f0682958bbb536852e282be0149468e18c409eb2d1be4e3e04f022",
+      "s05_ground_truth.json": "6d841fccbdbc35c21159d89af2585520f244c6f8c1661f3d834003143591b6cd",
+      "s05_playbook.json": "e68eb88e51016e0756e6e3615820045b3cdf0ab8946147ea8e759750ffe49335",
+      "s08_ground_truth.json": "bf20deb8b6f972dc006b4ee4e6d5490de68b1b9f39a64764674afeec80d09b6b",
+      "s08_playbook.json": "ce5a8e2c200c51aeb329e8e16811cbe7229c3efce5ba2652363e5495f5747e51",
+      "s09_ground_truth.json": "bf20deb8b6f972dc006b4ee4e6d5490de68b1b9f39a64764674afeec80d09b6b",
+      "s09_playbook.json": "ff57949e9a426e08e183d202292a0e998edb622f6aa6df2e0f8072ef15a8ed05",
+      "s10_ground_truth.json": "bf20deb8b6f972dc006b4ee4e6d5490de68b1b9f39a64764674afeec80d09b6b",
+      "s10_playbook.json": "fbfa1d639816de9b2724576a9266d7205ccdd2138d07407ae0f04d5abf12c0e4",
+      "s11_ground_truth.json": "bf20deb8b6f972dc006b4ee4e6d5490de68b1b9f39a64764674afeec80d09b6b",
+      "s11_playbook.json": "9471bf318965dcb2907de396893364b6818bac36e727e95355d90de7822ebe03",
+      "s12_ground_truth.json": "9958f66b36175bd3248e3c834ece3598e7f2e21e33ee4a3dfca767ecedbf57f4",
+      "s12_playbook.json": "3847201ab2a91a9afec32b180c24cb9821d8885e23ffea93af4ad9ee7479bd16",
+      "s13_ground_truth.json": "b5d32ad2e82a0191af5a6fe7fa63ae690427e231f0b6ea4b303f5e41508fd770",
+      "s13_playbook.json": "130d7b12df44281bd211892b82f3aa40529f648c579515c4bb35ec600ad366d6",
+      "scenarios.json": "171dcac97cbe8d54fda988535503cb0bf1fd8674322d65946f960d720fb6d769"
     }
   }
 }

@@ -127,7 +127,11 @@ def test_refusal_produced_for_unanswerable(doc, question):
 # ---------------------------------------------------------------------------
 
 def test_make_run_works():
-    """The `make run` command works on the bundled samples."""
+    """The `make run` command works on the bundled samples (skips when make is unavailable)."""
+    import shutil
+    if shutil.which("make") is None:
+        import pytest
+        pytest.skip("make not installed on this platform")
     result = subprocess.run(
         ["make", "run",
          f"DOC=samples/invoice/sample_invoice_01.txt",
