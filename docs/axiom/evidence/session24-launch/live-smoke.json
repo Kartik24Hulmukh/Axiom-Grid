@@ -1,0 +1,105 @@
+{
+  "scope": "four sequential calls, 128 completion tokens per call, no retries",
+  "results": [
+    {
+      "model": "glm-5.3",
+      "ok": true,
+      "selected_model": "glm-5.3",
+      "usage": {
+        "prompt_tokens": 16,
+        "completion_tokens": 12,
+        "total_tokens": 28,
+        "cached_tokens": 0,
+        "reasoning_tokens": 10,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 10
+        }
+      },
+      "ms": 9185.439,
+      "spend": {
+        "spend_ceiling": 1000,
+        "spend_reserved": 0,
+        "spend_committed": 28,
+        "spend_refused": 0
+      }
+    },
+    {
+      "model": "glm-5.3-flash",
+      "ok": true,
+      "selected_model": "glm-5.3-flash",
+      "usage": {
+        "prompt_tokens": 20,
+        "completion_tokens": 53,
+        "total_tokens": 73,
+        "cached_tokens": 0,
+        "reasoning_tokens": 51,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 51
+        }
+      },
+      "ms": 1330.005,
+      "spend": {
+        "spend_ceiling": 1000,
+        "spend_reserved": 0,
+        "spend_committed": 73,
+        "spend_refused": 0
+      }
+    },
+    {
+      "model": "kimi-k3",
+      "ok": true,
+      "selected_model": "kimi-k3",
+      "usage": {
+        "prompt_tokens": 128,
+        "completion_tokens": 108,
+        "total_tokens": 236,
+        "cached_tokens": 0,
+        "reasoning_tokens": 97,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 97
+        }
+      },
+      "ms": 3750.507,
+      "spend": {
+        "spend_ceiling": 1000,
+        "spend_reserved": 0,
+        "spend_committed": 236,
+        "spend_refused": 0
+      }
+    },
+    {
+      "model": "qwen3.8-27b",
+      "ok": true,
+      "selected_model": "qwen3.8-27b",
+      "usage": {
+        "prompt_tokens": 14,
+        "completion_tokens": 36,
+        "total_tokens": 50,
+        "cached_tokens": 0,
+        "reasoning_tokens": 32,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 32
+        }
+      },
+      "ms": 875.5,
+      "spend": {
+        "spend_ceiling": 1000,
+        "spend_reserved": 0,
+        "spend_committed": 50,
+        "spend_refused": 0
+      }
+    }
+  ]
+}

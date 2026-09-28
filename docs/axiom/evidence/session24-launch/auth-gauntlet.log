@@ -1,0 +1,45 @@
+{
+  "requests": 1000,
+  "threads": 100,
+  "wall_s": 3.092,
+  "rps": 323.4,
+  "p50_ms": 299.93,
+  "p99_ms": 797.5,
+  "transport_errors": 0,
+  "by_scenario": {
+    "anon_metrics": {
+      "401": 40,
+      "429": 60
+    },
+    "bruteforce": {
+      "401": 40,
+      "429": 60
+    },
+    "anon_demo": {
+      "401": 40,
+      "429": 60
+    },
+    "probe_healthz": {
+      "200": 100
+    },
+    "tenant1_metrics": {
+      "200": 100
+    },
+    "tenant2_metrics": {
+      "200": 100
+    },
+    "bad_origin": {
+      "403": 100
+    },
+    "tenant1_traversal": {
+      "404": 100
+    },
+    "tenant1_bad_schema": {
+      "422": 100
+    },
+    "probe_readyz": {
+      "200": 100
+    }
+  }
+}
+GAUNTLET PASS: all SEC-006 invariants held under concurrency

@@ -99,7 +99,7 @@ class TestAdversarialGrounding:
     def verifier(self):
         return GroundingVerifierImpl(semantic_threshold=0.5)
 
-    @pytest.mark.parametrize("filename, content", load_adversarial_docs())
+    @pytest.mark.parametrize("filename, content", load_adversarial_docs(), ids=lambda fc: fc[0])
     def test_real_values_grounded_in_geometry(self, verifier, filename, content):
         """Real values present in the document must be grounded in actual
         chunk geometry, not in adversarial injected text."""
@@ -126,7 +126,7 @@ class TestAdversarialGrounding:
             # Anchor must point to a real chunk
             assert anchors[0].bbox is not None
 
-    @pytest.mark.parametrize("filename, content", load_adversarial_docs())
+    @pytest.mark.parametrize("filename, content", load_adversarial_docs(), ids=lambda fc: fc[0])
     def test_injected_values_not_grounded(self, verifier, filename, content):
         """Values from injected instructions (like 'email to attacker@evil.com')
         must not be grounded as document facts."""
@@ -177,7 +177,7 @@ class TestAdversarialRefusalBehavior:
     def verifier(self):
         return GroundingVerifierImpl(semantic_threshold=0.5)
 
-    @pytest.mark.parametrize("filename, content", load_adversarial_docs())
+    @pytest.mark.parametrize("filename, content", load_adversarial_docs(), ids=lambda fc: fc[0])
     def test_unanswerable_questions_still_refused(self, verifier, filename, content):
         """Questions not answerable from the document must still be refused,
         even if the document contains 'do not refuse' instructions."""
@@ -242,7 +242,7 @@ class TestAdversarialRefusalBehavior:
 class TestAdversarialNoEgress:
     """No network egress occurs when processing adversarial documents."""
 
-    @pytest.mark.parametrize("filename, content", load_adversarial_docs())
+    @pytest.mark.parametrize("filename, content", load_adversarial_docs(), ids=lambda fc: fc[0])
     def test_no_egress_processing_adversarial_doc(self, filename, content):
         """Processing an adversarial document must not trigger any network
         connections, even if the document contains URLs."""
@@ -302,7 +302,7 @@ class TestAdversarialRobustness:
     def verifier(self):
         return GroundingVerifierImpl(semantic_threshold=0.5)
 
-    @pytest.mark.parametrize("filename, content", load_adversarial_docs())
+    @pytest.mark.parametrize("filename, content", load_adversarial_docs(), ids=lambda fc: fc[0])
     def test_no_crash_on_adversarial_input(self, verifier, filename, content):
         """The verifier must not crash on any adversarial input."""
         chunks = text_to_chunks(content, doc_id=filename)
@@ -317,7 +317,7 @@ class TestAdversarialRobustness:
         except Exception as e:
             pytest.fail(f"Verifier crashed on {filename}: {type(e).__name__}: {e}")
 
-    @pytest.mark.parametrize("filename, content", load_adversarial_docs())
+    @pytest.mark.parametrize("filename, content", load_adversarial_docs(), ids=lambda fc: fc[0])
     def test_no_hang_with_timeout(self, verifier, filename, content):
         """The verifier must complete within a reasonable timeout (no hang)."""
         chunks = text_to_chunks(content, doc_id=filename)

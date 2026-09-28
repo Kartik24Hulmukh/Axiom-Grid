@@ -27,6 +27,7 @@ import json
 import os
 import pathlib
 import subprocess
+import tempfile
 import sys
 import time
 
@@ -208,7 +209,7 @@ def run_verifier(*args):
         [sys.executable, str(EXTERNAL_VERIFIER), *args],
         capture_output=True,
         text=True,
-        cwd="/tmp",  # not the repo root — proves no repo-relative imports
+        cwd=tempfile.gettempdir(),  # not the repo root — proves no repo-relative imports
         timeout=60,
     )
 

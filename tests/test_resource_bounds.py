@@ -7,7 +7,6 @@ No mocks: uses real orchestrator with real ingestor on synthetic large documents
 """
 import os
 import pathlib
-import resource
 import tempfile
 
 import pytest
@@ -30,13 +29,17 @@ MEMORY_BUDGET_KB = 512 * 1024
 
 
 def _get_rss_kb() -> int:
-    """Get current process RSS in KB."""
+    """Get current process RSS in KB (cross-platform)."""
     try:
-        import psutil
+        import psutil  # noqa: PLC0415
         return int(psutil.Process(os.getpid()).memory_info().rss / 1024)
     except ImportError:
-        # Fallback: use resource module (ru_maxrss is in KB on Linux)
-        return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        # POSIX fallback: ru_maxrss is in KB on Linux, reported in bytes on macOS.
+        import resource  # noqa: PLC0415
+        val = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        if sys.platform == "darwin":
+            return int(val / 1024)
+        return int(val)
 
 
 def _make_orchestrator() -> OrchestratorImpl:

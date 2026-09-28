@@ -1,0 +1,60 @@
+{
+  "extract_burst_200": {
+    "n": 200,
+    "conc": 100,
+    "codes": {
+      "200": 48,
+      "503": 152
+    },
+    "p50": 305.2,
+    "p95": 13327.5,
+    "p99": 15492.6,
+    "shed503": 152
+  },
+  "extract_burst_400": {
+    "n": 400,
+    "conc": 100,
+    "codes": {
+      "200": 48,
+      "503": 52,
+      "429": 300
+    },
+    "p50": 569.3,
+    "p95": 9049.3,
+    "p99": 13608.3,
+    "shed503": 52
+  },
+  "error_recovery": {
+    "p50": 1.1,
+    "p95": 1.4,
+    "p99": 1.7
+  },
+  "probes": {
+    "/healthz": 200,
+    "/livez": 200,
+    "/readyz": 200,
+    "/metrics": 200
+  },
+  "melious_live": {
+    "glm-5.3": {
+      "status": 200,
+      "ms": 516.2
+    },
+    "glm-5.3-flash": {
+      "status": 200,
+      "ms": 879.7
+    },
+    "kimi-k3": {
+      "status": 200,
+      "ms": 903.2
+    },
+    "qwen3.8-27b": {
+      "status": 200,
+      "ms": 544.5
+    },
+    "router_complete": {
+      "ok": false,
+      "err": "all model routes failed: [{'model': 'glm-5.3', 'result': 'failure', 'error': 'RouterError', 'detail': 'upstream request failed', 'status': None}, {'model': 'glm-5.3', 'result': 'failure', 'error': 'Ro"
+    }
+  }
+}

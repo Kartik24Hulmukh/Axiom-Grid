@@ -1,0 +1,981 @@
+{"ts":"2026-09-16T19:28:02.790Z","level":"INFO","logger":"kernel.sidecar.memory_store","msg":"MemoryStore initialized: /home/daytona/snapshot/Kartik24Hulmukh-Axiom-Grid-831b26f/.kairo/overlay_store.db","service":"axiom-grid-overlay"}
+.............FFFFFF.FFFFFF..........F................................... [  2%]
+........................................................................ [  4%]
+........................................................................ [  6%]
+..................{"ts":"2026-09-16T19:28:05.899Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'show\\s+me\\s+your\\s+rules' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-16T19:28:05.899Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'repeat\\s+your\\s+system' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-16T19:28:05.899Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'print\\s+your\\s+instructions' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-16T19:28:05.899Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'what\\s+are\\s+your\\s+instructions' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-16T19:28:05.899Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'you\\s+are\\s+now' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-16T19:28:05.899Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'forget\\s+all\\s+previous\\s+instructions' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-16T19:28:05.899Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'reveal\\s+your\\s+system\\s+prompt' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-16T19:28:05.899Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'show\\s+me\\s+your\\s+rules' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-16T19:28:05.899Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'override\\s+(?:all\\s+|your\\s+)?(?:system\\s+|safety\\s+)?(?:rules|guidelines|instructions)' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-16T19:28:05.899Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'disregard\\s+all\\s+previous' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-16T19:28:05.899Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'new\\s+instructions' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-16T19:28:05.899Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'act\\s+as\\s+if' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-16T19:28:05.899Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'ignore\\s+all\\s+previous\\s+instructions' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-16T19:28:05.900Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'override\\s+(?:all\\s+|your\\s+)?(?:system\\s+|safety\\s+)?(?:rules|guidelines|instructions)' matched","service":"axiom-grid-overlay"}
+.{"ts":"2026-09-16T19:28:05.900Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'pretend\\s+you\\s+are\\s+a' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-16T19:28:05.900Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'enter\\s+developer\\s+mode' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-16T19:28:05.900Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'disregard\\s+your' matched","service":"axiom-grid-overlay"}
+{"ts":"2026-09-16T19:28:05.900Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern 'new\\s+instructions' matched","service":"axiom-grid-overlay"}
+FFF......FFFF
+=================================== FAILURES ===================================
+________________ TestCompileTestPass.test_clean_project_passes _________________
+
+self = <kairo.domains.code.tests.test_code_oracles.TestCompileTestPass object at 0x70ab5a919590>
+
+    def test_clean_project_passes(self):
+        """A clean fixture project passes all checks."""
+        if not _HAS_TOOLCHAIN:
+>           pytest.fail("code toolchain not available — cannot test compile_test_pass")
+E           Failed: code toolchain not available — cannot test compile_test_pass
+
+kairo/domains/code/tests/test_code_oracles.py:92: Failed
+____________ TestCompileTestPass.test_kill_proof_syntax_error_fails ____________
+
+self = <kairo.domains.code.tests.test_code_oracles.TestCompileTestPass object at 0x70ab5a9196d0>
+
+    def test_kill_proof_syntax_error_fails(self):
+        """Kill-proof: introduce a syntax error → oracle FAILS."""
+        if not _HAS_TOOLCHAIN:
+>           pytest.fail("code toolchain not available")
+E           Failed: code toolchain not available
+
+kairo/domains/code/tests/test_code_oracles.py:102: Failed
+____________ TestCompileTestPass.test_kill_proof_broken_test_fails _____________
+
+self = <kairo.domains.code.tests.test_code_oracles.TestCompileTestPass object at 0x70ab5a95cb00>
+
+    def test_kill_proof_broken_test_fails(self):
+        """Kill-proof: break a test assertion → oracle FAILS."""
+        if not _HAS_TOOLCHAIN:
+>           pytest.fail("code toolchain not available")
+E           Failed: code toolchain not available
+
+kairo/domains/code/tests/test_code_oracles.py:118: Failed
+___________________ TestParseValidity.test_valid_file_passes ___________________
+
+self = <kairo.domains.code.tests.test_code_oracles.TestParseValidity object at 0x70ab5a919810>
+
+    def test_valid_file_passes(self):
+        """A valid .py file parses with zero ERROR nodes."""
+        if not _HAS_TOOLCHAIN:
+>           pytest.fail("code toolchain not available")
+E           Failed: code toolchain not available
+
+kairo/domains/code/tests/test_code_oracles.py:146: Failed
+___________ TestParseValidity.test_kill_proof_malformed_syntax_fails ___________
+
+self = <kairo.domains.code.tests.test_code_oracles.TestParseValidity object at 0x70ab5a919950>
+
+    def test_kill_proof_malformed_syntax_fails(self):
+        """Kill-proof: inject malformed syntax → oracle FAILS."""
+        if not _HAS_TOOLCHAIN:
+>           pytest.fail("code toolchain not available")
+E           Failed: code toolchain not available
+
+kairo/domains/code/tests/test_code_oracles.py:157: Failed
+____________ TestParseValidity.test_kill_proof_missing_colon_fails _____________
+
+self = <kairo.domains.code.tests.test_code_oracles.TestParseValidity object at 0x70ab5a95cc30>
+
+    def test_kill_proof_missing_colon_fails(self):
+        """Kill-proof: missing colon after def → oracle FAILS."""
+        if not _HAS_TOOLCHAIN:
+>           pytest.fail("code toolchain not available")
+E           Failed: code toolchain not available
+
+kairo/domains/code/tests/test_code_oracles.py:170: Failed
+____________ TestGauntletScenarios.test_scenario_a_fix_failing_test ____________
+
+self = <kairo.domains.code.tests.test_code_oracles.TestGauntletScenarios object at 0x70ab5a919bd0>
+
+    def test_scenario_a_fix_failing_test(self):
+        """Scenario (a): fix a deliberately failing test → now passes."""
+        if not _HAS_TOOLCHAIN:
+>           pytest.fail("code toolchain not available")
+E           Failed: code toolchain not available
+
+kairo/domains/code/tests/test_code_oracles.py:215: Failed
+_________ TestGauntletScenarios.test_scenario_b_add_function_and_test __________
+
+self = <kairo.domains.code.tests.test_code_oracles.TestGauntletScenarios object at 0x70ab5a919d10>
+
+    def test_scenario_b_add_function_and_test(self):
+        """Scenario (b): add a function + a new test that passes."""
+        if not _HAS_TOOLCHAIN:
+>           pytest.fail("code toolchain not available")
+E           Failed: code toolchain not available
+
+kairo/domains/code/tests/test_code_oracles.py:242: Failed
+___________ TestGauntletScenarios.test_scenario_c_broken_edit_caught ___________
+
+self = <kairo.domains.code.tests.test_code_oracles.TestGauntletScenarios object at 0x70ab5a95cd60>
+
+    def test_scenario_c_broken_edit_caught(self):
+        """Scenario (c): a deliberately broken edit the oracle must catch."""
+        if not _HAS_TOOLCHAIN:
+>           pytest.fail("code toolchain not available")
+E           Failed: code toolchain not available
+
+kairo/domains/code/tests/test_code_oracles.py:277: Failed
+________ TestTrustStackIntegration.test_pipeline_emits_audit_and_egress ________
+
+self = <kairo.domains.code.tests.test_code_oracles.TestTrustStackIntegration object at 0x70ab5a919e50>
+
+    def test_pipeline_emits_audit_and_egress(self):
+        """Pipeline with private_key emits audit log + egress report."""
+        if not _HAS_TOOLCHAIN:
+>           pytest.fail("code toolchain not available")
+E           Failed: code toolchain not available
+
+kairo/domains/code/tests/test_code_oracles.py:302: Failed
+______________________ TestCLIIntegration.test_cli_verify ______________________
+
+self = <kairo.domains.code.tests.test_code_oracles.TestCLIIntegration object at 0x70ab5a919f90>
+
+    def test_cli_verify(self):
+        """`kairo code verify` produces output + audit artifacts."""
+        if not _HAS_TOOLCHAIN:
+>           pytest.fail("code toolchain not available")
+E           Failed: code toolchain not available
+
+kairo/domains/code/tests/test_code_oracles.py:342: Failed
+______________________ TestCLIIntegration.test_cli_parse _______________________
+
+self = <kairo.domains.code.tests.test_code_oracles.TestCLIIntegration object at 0x70ab5a91a0d0>
+
+    def test_cli_parse(self):
+        """`kairo code parse` checks a single file."""
+        if not _HAS_TOOLCHAIN:
+>           pytest.fail("code toolchain not available")
+E           Failed: code toolchain not available
+
+kairo/domains/code/tests/test_code_oracles.py:357: Failed
+_____________ TestGauntletScenarios.test_scenario_b_two_file_join ______________
+
+self = <kairo.domains.data_analytics.tests.test_data_analytics_oracles.TestGauntletScenarios object at 0x70ab5a91b390>
+
+    def test_scenario_b_two_file_join(self):
+        """Scenario (b): JOIN across CSV + Parquet, verified vs pandas."""
+        if not _HAS_DUCKDB:
+            pytest.fail("duckdb not available")
+    
+        conn = connect()
+        load_file(conn, _ORDERS_CSV, "orders")
+        load_file(conn, _CUSTOMERS_PARQUET, "customers")
+    
+        sql = (
+            "SELECT c.name, o.product, o.amount "
+            "FROM orders o JOIN customers c ON o.customer_id = c.customer_id "
+            "ORDER BY c.name, o.product"
+        )
+    
+        # Independent calc via pandas
+>       expected_cols, expected_rows = independent_join(
+            _ORDERS_CSV,
+            _CUSTOMERS_PARQUET,
+            "customer_id",
+            "customer_id",
+            ["name", "product", "amount"],
+        )
+
+kairo/domains/data_analytics/tests/test_data_analytics_oracles.py:308: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+kairo/domains/data_analytics/oracles.py:227: in independent_join
+    right = _read(right_file)
+            ^^^^^^^^^^^^^^^^^
+kairo/domains/data_analytics/oracles.py:221: in _read
+    return pd.read_parquet(path)
+           ^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.14/site-packages/pandas/io/parquet.py:653: in read_parquet
+    impl = get_engine(engine)
+           ^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+engine = 'auto'
+
+    def get_engine(engine: str) -> BaseImpl:
+        """return our implementation"""
+        if engine == "auto":
+            engine = get_option("io.parquet.engine")
+    
+        if engine == "auto":
+            # try engines in this order
+            engine_classes = [PyArrowImpl, FastParquetImpl]
+    
+            error_msgs = ""
+            for engine_class in engine_classes:
+                try:
+                    return engine_class()
+                except ImportError as err:
+                    error_msgs += "\n - " + str(err)
+    
+>           raise ImportError(
+                "Unable to find a usable engine; "
+                "tried using: 'pyarrow', 'fastparquet'.\n"
+                "A suitable version of "
+                "pyarrow or fastparquet is required for parquet "
+                "support.\n"
+                "Trying to import the above resulted in these errors:"
+                f"{error_msgs}"
+            )
+E           ImportError: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.
+E           A suitable version of pyarrow or fastparquet is required for parquet support.
+E           Trying to import the above resulted in these errors:
+E            - Missing optional dependency 'pyarrow'. pyarrow is required for parquet support. Use pip or conda to install pyarrow.
+E            - Missing optional dependency 'fastparquet'. fastparquet is required for parquet support. Use pip or conda to install fastparquet.
+
+/usr/local/lib/python3.14/site-packages/pandas/io/parquet.py:68: ImportError
+____ TestInjectionBlocked.test_injection_payloads_blocked_in_semantic_store ____
+
+    def get_model():
+        global _model
+        if _model is None:
+            with _lock:
+                if _model is None:
+                    log.info("Loading Model2Vec 'minishlab/potion-base-8M' from vendored assets...")
+                    try:
+                        from sidecar.model_paths import (
+                            POTION_BASE_8M_HF_ID,
+                            load_potion_base_8m_static_model,
+                            resolve_potion_base_8m_path,
+                        )
+    
+                        model_dir = resolve_potion_base_8m_path()
+>                       _model = load_potion_base_8m_static_model()
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+kairo-sidecar/sidecar/embeddings.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def load_potion_base_8m_static_model():
+        """Load model2vec StaticModel from the vendored local path (no network).
+    
+        Forces HF offline env vars for the duration of the load so huggingface_hub
+        cannot phone home even if a code path tries.
+        """
+>       from model2vec import StaticModel
+E       ModuleNotFoundError: No module named 'model2vec'
+
+kairo-sidecar/sidecar/model_paths.py:84: ModuleNotFoundError
+
+The above exception was the direct cause of the following exception:
+
+self = <kairo-sidecar.test_domain10_memory.TestInjectionBlocked object at 0x70ab4faf0910>
+
+    def test_injection_payloads_blocked_in_semantic_store(self):
+        """Injection payloads must be blocked when adding to SemanticMemoryStore."""
+>       store = SemanticMemoryStore()
+                ^^^^^^^^^^^^^^^^^^^^^
+
+kairo-sidecar/test_domain10_memory.py:152: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+kairo-sidecar/sidecar/memory/semantic_memory_store.py:60: in __init__
+    test_vec = embed_text("semantic initialization test")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+kairo-sidecar/sidecar/embeddings.py:81: in embed_text
+    res = embed_texts([text])
+          ^^^^^^^^^^^^^^^^^^^
+kairo-sidecar/sidecar/embeddings.py:64: in embed_texts
+    model = get_model()
+            ^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def get_model():
+        global _model
+        if _model is None:
+            with _lock:
+                if _model is None:
+                    log.info("Loading Model2Vec 'minishlab/potion-base-8M' from vendored assets...")
+                    try:
+                        from sidecar.model_paths import (
+                            POTION_BASE_8M_HF_ID,
+                            load_potion_base_8m_static_model,
+                            resolve_potion_base_8m_path,
+                        )
+    
+                        model_dir = resolve_potion_base_8m_path()
+                        _model = load_potion_base_8m_static_model()
+                        log.info(
+                            "Model2Vec model '%s' loaded from local path %s "
+                            "(256 dimensions, offline)",
+                            POTION_BASE_8M_HF_ID,
+                            model_dir,
+                        )
+                    except Exception as e:
+                        log.error("Failed to load Model2Vec: %s", e)
+                        # KAIRO_REQUIRE_SEMANTIC is sticky in CI/e2e; always raise so a
+                        # missing model cannot be mistaken for a successful embed.
+>                       raise EmbeddingError(
+                            "Failed to load Model2Vec potion-base-8M offline model: "
+                            f"{e}. Vendored assets must be present (see "
+                            "kairo-sidecar/assets/models/potion-base-8M). "
+                            "KAIRO_REQUIRE_SEMANTIC="
+                            f"{os.getenv('KAIRO_REQUIRE_SEMANTIC', '0')}"
+                        ) from e
+E                       sidecar.embeddings.EmbeddingError: Failed to load Model2Vec potion-base-8M offline model: No module named 'model2vec'. Vendored assets must be present (see kairo-sidecar/assets/models/potion-base-8M). KAIRO_REQUIRE_SEMANTIC=1
+
+kairo-sidecar/sidecar/embeddings.py:45: EmbeddingError
+----------------------------- Captured stdout call -----------------------------
+{"ts":"2026-09-16T19:28:05.901Z","level":"INFO","logger":"kairo-sidecar.embeddings","msg":"Loading Model2Vec 'minishlab/potion-base-8M' from vendored assets...","service":"axiom-grid-overlay"}
+{"ts":"2026-09-16T19:28:05.903Z","level":"ERROR","logger":"kairo-sidecar.embeddings","msg":"Failed to load Model2Vec: No module named 'model2vec'","service":"axiom-grid-overlay"}
+------------------------------ Captured log call -------------------------------
+INFO     kairo-sidecar.embeddings:embeddings.py:25 Loading Model2Vec 'minishlab/potion-base-8M' from vendored assets...
+ERROR    kairo-sidecar.embeddings:embeddings.py:42 Failed to load Model2Vec: No module named 'model2vec'
+________ TestSQLInjectionBlocked.test_10_sql_injection_payloads_blocked ________
+
+    def get_model():
+        global _model
+        if _model is None:
+            with _lock:
+                if _model is None:
+                    log.info("Loading Model2Vec 'minishlab/potion-base-8M' from vendored assets...")
+                    try:
+                        from sidecar.model_paths import (
+                            POTION_BASE_8M_HF_ID,
+                            load_potion_base_8m_static_model,
+                            resolve_potion_base_8m_path,
+                        )
+    
+                        model_dir = resolve_potion_base_8m_path()
+>                       _model = load_potion_base_8m_static_model()
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+kairo-sidecar/sidecar/embeddings.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def load_potion_base_8m_static_model():
+        """Load model2vec StaticModel from the vendored local path (no network).
+    
+        Forces HF offline env vars for the duration of the load so huggingface_hub
+        cannot phone home even if a code path tries.
+        """
+>       from model2vec import StaticModel
+E       ModuleNotFoundError: No module named 'model2vec'
+
+kairo-sidecar/sidecar/model_paths.py:84: ModuleNotFoundError
+
+The above exception was the direct cause of the following exception:
+
+self = <kairo-sidecar.test_domain10_memory.TestSQLInjectionBlocked object at 0x70ab4faf0a50>
+
+    def test_10_sql_injection_payloads_blocked(self):
+        """SQL injection payloads must be blocked by PromptShield or sanitization."""
+        shield = PromptShield()
+        PiiGuard()
+        blocked = 0
+        for payload in SQL_INJECTION_PAYLOADS_10:
+            # Check if PromptShield catches it
+            is_safe = shield.scan(payload)
+            if not is_safe:
+                blocked += 1
+            else:
+                # Even if PromptShield doesn't catch SQL injection patterns,
+                # the _sanitize function strips control chars and the
+                # SemanticMemoryStore's security gate will reject it
+                # For this test, we also verify that sanitization neutralizes
+                # the SQL-specific characters
+                sanitized = _sanitize(payload)
+                # After sanitization, the payload should not contain raw SQL
+                # metacharacters in a dangerous form
+                # The key defense is that memory text is NEVER used as SQL —
+                # it's embedded as vectors. But we still verify PromptShield
+                # catches the override patterns
+                print(f"SQL payload not caught by PromptShield: {payload!r}")
+                # These payloads contain injection-like patterns that should
+                # be caught by the broader pattern set
+                blocked += 0  # Count only PromptShield catches
+    
+        # At minimum, the ones with "ignore"/"override" patterns should be caught
+        # But SQL injection is defended by parameterized queries in the actual
+        # storage layer, not by PromptShield. We verify the defense-in-depth:
+        # the _sanitize function + parameterized storage.
+        # For this test, we verify that SQL payloads are neutralized by sanitization
+        for payload in SQL_INJECTION_PAYLOADS_10:
+            sanitized = _sanitize(payload)
+            # Sanitized text should not be empty (it's still text, just cleaned)
+            assert sanitized != "", f"Sanitization produced empty string for {payload!r}"
+    
+        # Verify SQL payloads don't cause issues in SemanticMemoryStore
+>       store = SemanticMemoryStore()
+                ^^^^^^^^^^^^^^^^^^^^^
+
+kairo-sidecar/test_domain10_memory.py:224: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+kairo-sidecar/sidecar/memory/semantic_memory_store.py:60: in __init__
+    test_vec = embed_text("semantic initialization test")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+kairo-sidecar/sidecar/embeddings.py:81: in embed_text
+    res = embed_texts([text])
+          ^^^^^^^^^^^^^^^^^^^
+kairo-sidecar/sidecar/embeddings.py:64: in embed_texts
+    model = get_model()
+            ^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def get_model():
+        global _model
+        if _model is None:
+            with _lock:
+                if _model is None:
+                    log.info("Loading Model2Vec 'minishlab/potion-base-8M' from vendored assets...")
+                    try:
+                        from sidecar.model_paths import (
+                            POTION_BASE_8M_HF_ID,
+                            load_potion_base_8m_static_model,
+                            resolve_potion_base_8m_path,
+                        )
+    
+                        model_dir = resolve_potion_base_8m_path()
+                        _model = load_potion_base_8m_static_model()
+                        log.info(
+                            "Model2Vec model '%s' loaded from local path %s "
+                            "(256 dimensions, offline)",
+                            POTION_BASE_8M_HF_ID,
+                            model_dir,
+                        )
+                    except Exception as e:
+                        log.error("Failed to load Model2Vec: %s", e)
+                        # KAIRO_REQUIRE_SEMANTIC is sticky in CI/e2e; always raise so a
+                        # missing model cannot be mistaken for a successful embed.
+>                       raise EmbeddingError(
+                            "Failed to load Model2Vec potion-base-8M offline model: "
+                            f"{e}. Vendored assets must be present (see "
+                            "kairo-sidecar/assets/models/potion-base-8M). "
+                            "KAIRO_REQUIRE_SEMANTIC="
+                            f"{os.getenv('KAIRO_REQUIRE_SEMANTIC', '0')}"
+                        ) from e
+E                       sidecar.embeddings.EmbeddingError: Failed to load Model2Vec potion-base-8M offline model: No module named 'model2vec'. Vendored assets must be present (see kairo-sidecar/assets/models/potion-base-8M). KAIRO_REQUIRE_SEMANTIC=1
+
+kairo-sidecar/sidecar/embeddings.py:45: EmbeddingError
+----------------------------- Captured stdout call -----------------------------
+SQL payload not caught by PromptShield: "'; DROP TABLE memories; --"
+SQL payload not caught by PromptShield: "' OR '1'='1"
+SQL payload not caught by PromptShield: "'; DELETE FROM users WHERE '1'='1"
+SQL payload not caught by PromptShield: "' UNION SELECT password FROM credentials --"
+SQL payload not caught by PromptShield: "'; INSERT INTO admin VALUES ('hacker', 'pass'); --"
+SQL payload not caught by PromptShield: "' OR 1=1 --"
+SQL payload not caught by PromptShield: "'; UPDATE memories SET text='hacked' WHERE '1'='1"
+SQL payload not caught by PromptShield: "' AND 1=1 UNION SELECT * FROM system_prompts --"
+{"ts":"2026-09-16T19:28:05.922Z","level":"WARNING","logger":"kairo-sidecar.prompt_shield","msg":"PromptShield: Injection detected \u2014 pattern '(?:rm\\s+-rf|del\\s+/[fqs]|format\\s+[a-z]:)' matched","service":"axiom-grid-overlay"}
+SQL payload not caught by PromptShield: "'; GRANT ALL ON *.* TO 'attacker'@'%'; --"
+{"ts":"2026-09-16T19:28:05.922Z","level":"INFO","logger":"kairo-sidecar.embeddings","msg":"Loading Model2Vec 'minishlab/potion-base-8M' from vendored assets...","service":"axiom-grid-overlay"}
+{"ts":"2026-09-16T19:28:05.924Z","level":"ERROR","logger":"kairo-sidecar.embeddings","msg":"Failed to load Model2Vec: No module named 'model2vec'","service":"axiom-grid-overlay"}
+------------------------------ Captured log call -------------------------------
+WARNING  kairo-sidecar.prompt_shield:prompt_shield.py:215 PromptShield: Injection detected — pattern '(?:rm\s+-rf|del\s+/[fqs]|format\s+[a-z]:)' matched
+INFO     kairo-sidecar.embeddings:embeddings.py:25 Loading Model2Vec 'minishlab/potion-base-8M' from vendored assets...
+ERROR    kairo-sidecar.embeddings:embeddings.py:42 Failed to load Model2Vec: No module named 'model2vec'
+_____________ TestPIIScrubbing.test_pii_scrubbed_in_semantic_store _____________
+
+    def get_model():
+        global _model
+        if _model is None:
+            with _lock:
+                if _model is None:
+                    log.info("Loading Model2Vec 'minishlab/potion-base-8M' from vendored assets...")
+                    try:
+                        from sidecar.model_paths import (
+                            POTION_BASE_8M_HF_ID,
+                            load_potion_base_8m_static_model,
+                            resolve_potion_base_8m_path,
+                        )
+    
+                        model_dir = resolve_potion_base_8m_path()
+>                       _model = load_potion_base_8m_static_model()
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+kairo-sidecar/sidecar/embeddings.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def load_potion_base_8m_static_model():
+        """Load model2vec StaticModel from the vendored local path (no network).
+    
+        Forces HF offline env vars for the duration of the load so huggingface_hub
+        cannot phone home even if a code path tries.
+        """
+>       from model2vec import StaticModel
+E       ModuleNotFoundError: No module named 'model2vec'
+
+kairo-sidecar/sidecar/model_paths.py:84: ModuleNotFoundError
+
+The above exception was the direct cause of the following exception:
+
+self = <kairo-sidecar.test_domain10_memory.TestPIIScrubbing object at 0x70ab4faf0b90>
+
+    def test_pii_scrubbed_in_semantic_store(self):
+        """PII must be redacted before being stored in SemanticMemoryStore."""
+>       store = SemanticMemoryStore()
+                ^^^^^^^^^^^^^^^^^^^^^
+
+kairo-sidecar/test_domain10_memory.py:246: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+kairo-sidecar/sidecar/memory/semantic_memory_store.py:60: in __init__
+    test_vec = embed_text("semantic initialization test")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+kairo-sidecar/sidecar/embeddings.py:81: in embed_text
+    res = embed_texts([text])
+          ^^^^^^^^^^^^^^^^^^^
+kairo-sidecar/sidecar/embeddings.py:64: in embed_texts
+    model = get_model()
+            ^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def get_model():
+        global _model
+        if _model is None:
+            with _lock:
+                if _model is None:
+                    log.info("Loading Model2Vec 'minishlab/potion-base-8M' from vendored assets...")
+                    try:
+                        from sidecar.model_paths import (
+                            POTION_BASE_8M_HF_ID,
+                            load_potion_base_8m_static_model,
+                            resolve_potion_base_8m_path,
+                        )
+    
+                        model_dir = resolve_potion_base_8m_path()
+                        _model = load_potion_base_8m_static_model()
+                        log.info(
+                            "Model2Vec model '%s' loaded from local path %s "
+                            "(256 dimensions, offline)",
+                            POTION_BASE_8M_HF_ID,
+                            model_dir,
+                        )
+                    except Exception as e:
+                        log.error("Failed to load Model2Vec: %s", e)
+                        # KAIRO_REQUIRE_SEMANTIC is sticky in CI/e2e; always raise so a
+                        # missing model cannot be mistaken for a successful embed.
+>                       raise EmbeddingError(
+                            "Failed to load Model2Vec potion-base-8M offline model: "
+                            f"{e}. Vendored assets must be present (see "
+                            "kairo-sidecar/assets/models/potion-base-8M). "
+                            "KAIRO_REQUIRE_SEMANTIC="
+                            f"{os.getenv('KAIRO_REQUIRE_SEMANTIC', '0')}"
+                        ) from e
+E                       sidecar.embeddings.EmbeddingError: Failed to load Model2Vec potion-base-8M offline model: No module named 'model2vec'. Vendored assets must be present (see kairo-sidecar/assets/models/potion-base-8M). KAIRO_REQUIRE_SEMANTIC=1
+
+kairo-sidecar/sidecar/embeddings.py:45: EmbeddingError
+----------------------------- Captured stdout call -----------------------------
+{"ts":"2026-09-16T19:28:05.936Z","level":"INFO","logger":"kairo-sidecar.embeddings","msg":"Loading Model2Vec 'minishlab/potion-base-8M' from vendored assets...","service":"axiom-grid-overlay"}
+{"ts":"2026-09-16T19:28:05.937Z","level":"ERROR","logger":"kairo-sidecar.embeddings","msg":"Failed to load Model2Vec: No module named 'model2vec'","service":"axiom-grid-overlay"}
+------------------------------ Captured log call -------------------------------
+INFO     kairo-sidecar.embeddings:embeddings.py:25 Loading Model2Vec 'minishlab/potion-base-8M' from vendored assets...
+ERROR    kairo-sidecar.embeddings:embeddings.py:42 Failed to load Model2Vec: No module named 'model2vec'
+______________ TestSemanticRecall.test_semantic_recall_paraphrase ______________
+
+    def get_model():
+        global _model
+        if _model is None:
+            with _lock:
+                if _model is None:
+                    log.info("Loading Model2Vec 'minishlab/potion-base-8M' from vendored assets...")
+                    try:
+                        from sidecar.model_paths import (
+                            POTION_BASE_8M_HF_ID,
+                            load_potion_base_8m_static_model,
+                            resolve_potion_base_8m_path,
+                        )
+    
+                        model_dir = resolve_potion_base_8m_path()
+>                       _model = load_potion_base_8m_static_model()
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+kairo-sidecar/sidecar/embeddings.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def load_potion_base_8m_static_model():
+        """Load model2vec StaticModel from the vendored local path (no network).
+    
+        Forces HF offline env vars for the duration of the load so huggingface_hub
+        cannot phone home even if a code path tries.
+        """
+>       from model2vec import StaticModel
+E       ModuleNotFoundError: No module named 'model2vec'
+
+kairo-sidecar/sidecar/model_paths.py:84: ModuleNotFoundError
+
+The above exception was the direct cause of the following exception:
+
+self = <kairo-sidecar.test_domain10_memory.TestSemanticRecall object at 0x70ab4faf11d0>
+
+    def test_semantic_recall_paraphrase(self):
+        """
+        Insert 'cancel subscription' memory, query 'end membership'.
+        Must retrieve the memory — proves REAL semantic embeddings.
+        """
+>       store = SemanticMemoryStore()
+                ^^^^^^^^^^^^^^^^^^^^^
+
+kairo-sidecar/test_domain10_memory.py:416: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+kairo-sidecar/sidecar/memory/semantic_memory_store.py:60: in __init__
+    test_vec = embed_text("semantic initialization test")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+kairo-sidecar/sidecar/embeddings.py:81: in embed_text
+    res = embed_texts([text])
+          ^^^^^^^^^^^^^^^^^^^
+kairo-sidecar/sidecar/embeddings.py:64: in embed_texts
+    model = get_model()
+            ^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def get_model():
+        global _model
+        if _model is None:
+            with _lock:
+                if _model is None:
+                    log.info("Loading Model2Vec 'minishlab/potion-base-8M' from vendored assets...")
+                    try:
+                        from sidecar.model_paths import (
+                            POTION_BASE_8M_HF_ID,
+                            load_potion_base_8m_static_model,
+                            resolve_potion_base_8m_path,
+                        )
+    
+                        model_dir = resolve_potion_base_8m_path()
+                        _model = load_potion_base_8m_static_model()
+                        log.info(
+                            "Model2Vec model '%s' loaded from local path %s "
+                            "(256 dimensions, offline)",
+                            POTION_BASE_8M_HF_ID,
+                            model_dir,
+                        )
+                    except Exception as e:
+                        log.error("Failed to load Model2Vec: %s", e)
+                        # KAIRO_REQUIRE_SEMANTIC is sticky in CI/e2e; always raise so a
+                        # missing model cannot be mistaken for a successful embed.
+>                       raise EmbeddingError(
+                            "Failed to load Model2Vec potion-base-8M offline model: "
+                            f"{e}. Vendored assets must be present (see "
+                            "kairo-sidecar/assets/models/potion-base-8M). "
+                            "KAIRO_REQUIRE_SEMANTIC="
+                            f"{os.getenv('KAIRO_REQUIRE_SEMANTIC', '0')}"
+                        ) from e
+E                       sidecar.embeddings.EmbeddingError: Failed to load Model2Vec potion-base-8M offline model: No module named 'model2vec'. Vendored assets must be present (see kairo-sidecar/assets/models/potion-base-8M). KAIRO_REQUIRE_SEMANTIC=1
+
+kairo-sidecar/sidecar/embeddings.py:45: EmbeddingError
+----------------------------- Captured stdout call -----------------------------
+{"ts":"2026-09-16T19:28:05.956Z","level":"INFO","logger":"kairo-sidecar.embeddings","msg":"Loading Model2Vec 'minishlab/potion-base-8M' from vendored assets...","service":"axiom-grid-overlay"}
+{"ts":"2026-09-16T19:28:05.958Z","level":"ERROR","logger":"kairo-sidecar.embeddings","msg":"Failed to load Model2Vec: No module named 'model2vec'","service":"axiom-grid-overlay"}
+------------------------------ Captured log call -------------------------------
+INFO     kairo-sidecar.embeddings:embeddings.py:25 Loading Model2Vec 'minishlab/potion-base-8M' from vendored assets...
+ERROR    kairo-sidecar.embeddings:embeddings.py:42 Failed to load Model2Vec: No module named 'model2vec'
+________ TestSemanticRecall.test_semantic_recall_membership_termination ________
+
+    def get_model():
+        global _model
+        if _model is None:
+            with _lock:
+                if _model is None:
+                    log.info("Loading Model2Vec 'minishlab/potion-base-8M' from vendored assets...")
+                    try:
+                        from sidecar.model_paths import (
+                            POTION_BASE_8M_HF_ID,
+                            load_potion_base_8m_static_model,
+                            resolve_potion_base_8m_path,
+                        )
+    
+                        model_dir = resolve_potion_base_8m_path()
+>                       _model = load_potion_base_8m_static_model()
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+kairo-sidecar/sidecar/embeddings.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def load_potion_base_8m_static_model():
+        """Load model2vec StaticModel from the vendored local path (no network).
+    
+        Forces HF offline env vars for the duration of the load so huggingface_hub
+        cannot phone home even if a code path tries.
+        """
+>       from model2vec import StaticModel
+E       ModuleNotFoundError: No module named 'model2vec'
+
+kairo-sidecar/sidecar/model_paths.py:84: ModuleNotFoundError
+
+The above exception was the direct cause of the following exception:
+
+self = <kairo-sidecar.test_domain10_memory.TestSemanticRecall object at 0x70ab4faf1310>
+
+    def test_semantic_recall_membership_termination(self):
+        """
+        Insert 'cancel subscription' memory, query 'membership termination'.
+        Must retrieve — this is the exact test from Part 1.
+        """
+>       store = SemanticMemoryStore()
+                ^^^^^^^^^^^^^^^^^^^^^
+
+kairo-sidecar/test_domain10_memory.py:438: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+kairo-sidecar/sidecar/memory/semantic_memory_store.py:60: in __init__
+    test_vec = embed_text("semantic initialization test")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+kairo-sidecar/sidecar/embeddings.py:81: in embed_text
+    res = embed_texts([text])
+          ^^^^^^^^^^^^^^^^^^^
+kairo-sidecar/sidecar/embeddings.py:64: in embed_texts
+    model = get_model()
+            ^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def get_model():
+        global _model
+        if _model is None:
+            with _lock:
+                if _model is None:
+                    log.info("Loading Model2Vec 'minishlab/potion-base-8M' from vendored assets...")
+                    try:
+                        from sidecar.model_paths import (
+                            POTION_BASE_8M_HF_ID,
+                            load_potion_base_8m_static_model,
+                            resolve_potion_base_8m_path,
+                        )
+    
+                        model_dir = resolve_potion_base_8m_path()
+                        _model = load_potion_base_8m_static_model()
+                        log.info(
+                            "Model2Vec model '%s' loaded from local path %s "
+                            "(256 dimensions, offline)",
+                            POTION_BASE_8M_HF_ID,
+                            model_dir,
+                        )
+                    except Exception as e:
+                        log.error("Failed to load Model2Vec: %s", e)
+                        # KAIRO_REQUIRE_SEMANTIC is sticky in CI/e2e; always raise so a
+                        # missing model cannot be mistaken for a successful embed.
+>                       raise EmbeddingError(
+                            "Failed to load Model2Vec potion-base-8M offline model: "
+                            f"{e}. Vendored assets must be present (see "
+                            "kairo-sidecar/assets/models/potion-base-8M). "
+                            "KAIRO_REQUIRE_SEMANTIC="
+                            f"{os.getenv('KAIRO_REQUIRE_SEMANTIC', '0')}"
+                        ) from e
+E                       sidecar.embeddings.EmbeddingError: Failed to load Model2Vec potion-base-8M offline model: No module named 'model2vec'. Vendored assets must be present (see kairo-sidecar/assets/models/potion-base-8M). KAIRO_REQUIRE_SEMANTIC=1
+
+kairo-sidecar/sidecar/embeddings.py:45: EmbeddingError
+----------------------------- Captured stdout call -----------------------------
+{"ts":"2026-09-16T19:28:05.969Z","level":"INFO","logger":"kairo-sidecar.embeddings","msg":"Loading Model2Vec 'minishlab/potion-base-8M' from vendored assets...","service":"axiom-grid-overlay"}
+{"ts":"2026-09-16T19:28:05.970Z","level":"ERROR","logger":"kairo-sidecar.embeddings","msg":"Failed to load Model2Vec: No module named 'model2vec'","service":"axiom-grid-overlay"}
+------------------------------ Captured log call -------------------------------
+INFO     kairo-sidecar.embeddings:embeddings.py:25 Loading Model2Vec 'minishlab/potion-base-8M' from vendored assets...
+ERROR    kairo-sidecar.embeddings:embeddings.py:42 Failed to load Model2Vec: No module named 'model2vec'
+________ TestSemanticRecall.test_semantic_embeddings_are_real_not_hash _________
+
+    def get_model():
+        global _model
+        if _model is None:
+            with _lock:
+                if _model is None:
+                    log.info("Loading Model2Vec 'minishlab/potion-base-8M' from vendored assets...")
+                    try:
+                        from sidecar.model_paths import (
+                            POTION_BASE_8M_HF_ID,
+                            load_potion_base_8m_static_model,
+                            resolve_potion_base_8m_path,
+                        )
+    
+                        model_dir = resolve_potion_base_8m_path()
+>                       _model = load_potion_base_8m_static_model()
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+kairo-sidecar/sidecar/embeddings.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def load_potion_base_8m_static_model():
+        """Load model2vec StaticModel from the vendored local path (no network).
+    
+        Forces HF offline env vars for the duration of the load so huggingface_hub
+        cannot phone home even if a code path tries.
+        """
+>       from model2vec import StaticModel
+E       ModuleNotFoundError: No module named 'model2vec'
+
+kairo-sidecar/sidecar/model_paths.py:84: ModuleNotFoundError
+
+The above exception was the direct cause of the following exception:
+
+self = <kairo-sidecar.test_domain10_memory.TestSemanticRecall object at 0x70ab4fb088a0>
+
+    def test_semantic_embeddings_are_real_not_hash(self):
+        """
+        Verify embeddings are REAL (non-zero, different for different texts,
+        similar for semantically related texts).
+    
+        This test FAILS if embed_text returns zero vectors (hash fallback).
+        """
+>       v1 = embed_text("cancel subscription")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+kairo-sidecar/test_domain10_memory.py:454: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+kairo-sidecar/sidecar/embeddings.py:81: in embed_text
+    res = embed_texts([text])
+          ^^^^^^^^^^^^^^^^^^^
+kairo-sidecar/sidecar/embeddings.py:64: in embed_texts
+    model = get_model()
+            ^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def get_model():
+        global _model
+        if _model is None:
+            with _lock:
+                if _model is None:
+                    log.info("Loading Model2Vec 'minishlab/potion-base-8M' from vendored assets...")
+                    try:
+                        from sidecar.model_paths import (
+                            POTION_BASE_8M_HF_ID,
+                            load_potion_base_8m_static_model,
+                            resolve_potion_base_8m_path,
+                        )
+    
+                        model_dir = resolve_potion_base_8m_path()
+                        _model = load_potion_base_8m_static_model()
+                        log.info(
+                            "Model2Vec model '%s' loaded from local path %s "
+                            "(256 dimensions, offline)",
+                            POTION_BASE_8M_HF_ID,
+                            model_dir,
+                        )
+                    except Exception as e:
+                        log.error("Failed to load Model2Vec: %s", e)
+                        # KAIRO_REQUIRE_SEMANTIC is sticky in CI/e2e; always raise so a
+                        # missing model cannot be mistaken for a successful embed.
+>                       raise EmbeddingError(
+                            "Failed to load Model2Vec potion-base-8M offline model: "
+                            f"{e}. Vendored assets must be present (see "
+                            "kairo-sidecar/assets/models/potion-base-8M). "
+                            "KAIRO_REQUIRE_SEMANTIC="
+                            f"{os.getenv('KAIRO_REQUIRE_SEMANTIC', '0')}"
+                        ) from e
+E                       sidecar.embeddings.EmbeddingError: Failed to load Model2Vec potion-base-8M offline model: No module named 'model2vec'. Vendored assets must be present (see kairo-sidecar/assets/models/potion-base-8M). KAIRO_REQUIRE_SEMANTIC=1
+
+kairo-sidecar/sidecar/embeddings.py:45: EmbeddingError
+----------------------------- Captured stdout call -----------------------------
+{"ts":"2026-09-16T19:28:05.981Z","level":"INFO","logger":"kairo-sidecar.embeddings","msg":"Loading Model2Vec 'minishlab/potion-base-8M' from vendored assets...","service":"axiom-grid-overlay"}
+{"ts":"2026-09-16T19:28:05.983Z","level":"ERROR","logger":"kairo-sidecar.embeddings","msg":"Failed to load Model2Vec: No module named 'model2vec'","service":"axiom-grid-overlay"}
+------------------------------ Captured log call -------------------------------
+INFO     kairo-sidecar.embeddings:embeddings.py:25 Loading Model2Vec 'minishlab/potion-base-8M' from vendored assets...
+ERROR    kairo-sidecar.embeddings:embeddings.py:42 Failed to load Model2Vec: No module named 'model2vec'
+__________ TestSemanticRecall.test_semantic_recall_multiple_memories ___________
+
+    def get_model():
+        global _model
+        if _model is None:
+            with _lock:
+                if _model is None:
+                    log.info("Loading Model2Vec 'minishlab/potion-base-8M' from vendored assets...")
+                    try:
+                        from sidecar.model_paths import (
+                            POTION_BASE_8M_HF_ID,
+                            load_potion_base_8m_static_model,
+                            resolve_potion_base_8m_path,
+                        )
+    
+                        model_dir = resolve_potion_base_8m_path()
+>                       _model = load_potion_base_8m_static_model()
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+kairo-sidecar/sidecar/embeddings.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def load_potion_base_8m_static_model():
+        """Load model2vec StaticModel from the vendored local path (no network).
+    
+        Forces HF offline env vars for the duration of the load so huggingface_hub
+        cannot phone home even if a code path tries.
+        """
+>       from model2vec import StaticModel
+E       ModuleNotFoundError: No module named 'model2vec'
+
+kairo-sidecar/sidecar/model_paths.py:84: ModuleNotFoundError
+
+The above exception was the direct cause of the following exception:
+
+self = <kairo-sidecar.test_domain10_memory.TestSemanticRecall object at 0x70ab4fb089d0>
+
+    def test_semantic_recall_multiple_memories(self):
+        """Insert multiple memories, verify semantic search retrieves the right one."""
+>       store = SemanticMemoryStore()
+                ^^^^^^^^^^^^^^^^^^^^^
+
+kairo-sidecar/test_domain10_memory.py:475: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+kairo-sidecar/sidecar/memory/semantic_memory_store.py:60: in __init__
+    test_vec = embed_text("semantic initialization test")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+kairo-sidecar/sidecar/embeddings.py:81: in embed_text
+    res = embed_texts([text])
+          ^^^^^^^^^^^^^^^^^^^
+kairo-sidecar/sidecar/embeddings.py:64: in embed_texts
+    model = get_model()
+            ^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def get_model():
+        global _model
+        if _model is None:
+            with _lock:
+                if _model is None:
+                    log.info("Loading Model2Vec 'minishlab/potion-base-8M' from vendored assets...")
+                    try:
+                        from sidecar.model_paths import (
+                            POTION_BASE_8M_HF_ID,
+                            load_potion_base_8m_static_model,
+                            resolve_potion_base_8m_path,
+                        )
+    
+                        model_dir = resolve_potion_base_8m_path()
+                        _model = load_potion_base_8m_static_model()
+                        log.info(
+                            "Model2Vec model '%s' loaded from local path %s "
+                            "(256 dimensions, offline)",
+                            POTION_BASE_8M_HF_ID,
+                            model_dir,
+                        )
+                    except Exception as e:
+                        log.error("Failed to load Model2Vec: %s", e)
+                        # KAIRO_REQUIRE_SEMANTIC is sticky in CI/e2e; always raise so a
+                        # missing model cannot be mistaken for a successful embed.
+>                       raise EmbeddingError(
+                            "Failed to load Model2Vec potion-base-8M offline model: "
+                            f"{e}. Vendored assets must be present (see "
+                            "kairo-sidecar/assets/models/potion-base-8M). "
+                            "KAIRO_REQUIRE_SEMANTIC="
+                            f"{os.getenv('KAIRO_REQUIRE_SEMANTIC', '0')}"
+                        ) from e
+E                       sidecar.embeddings.EmbeddingError: Failed to load Model2Vec potion-base-8M offline model: No module named 'model2vec'. Vendored assets must be present (see kairo-sidecar/assets/models/potion-base-8M). KAIRO_REQUIRE_SEMANTIC=1
+
+kairo-sidecar/sidecar/embeddings.py:45: EmbeddingError
+----------------------------- Captured stdout call -----------------------------
+{"ts":"2026-09-16T19:28:05.992Z","level":"INFO","logger":"kairo-sidecar.embeddings","msg":"Loading Model2Vec 'minishlab/potion-base-8M' from vendored assets...","service":"axiom-grid-overlay"}
+{"ts":"2026-09-16T19:28:05.994Z","level":"ERROR","logger":"kairo-sidecar.embeddings","msg":"Failed to load Model2Vec: No module named 'model2vec'","service":"axiom-grid-overlay"}
+------------------------------ Captured log call -------------------------------
+INFO     kairo-sidecar.embeddings:embeddings.py:25 Loading Model2Vec 'minishlab/potion-base-8M' from vendored assets...
+ERROR    kairo-sidecar.embeddings:embeddings.py:42 Failed to load Model2Vec: No module named 'model2vec'
+=========================== short test summary info ============================
+FAILED kairo/domains/code/tests/test_code_oracles.py::TestCompileTestPass::test_clean_project_passes
+FAILED kairo/domains/code/tests/test_code_oracles.py::TestCompileTestPass::test_kill_proof_syntax_error_fails
+FAILED kairo/domains/code/tests/test_code_oracles.py::TestCompileTestPass::test_kill_proof_broken_test_fails
+FAILED kairo/domains/code/tests/test_code_oracles.py::TestParseValidity::test_valid_file_passes
+FAILED kairo/domains/code/tests/test_code_oracles.py::TestParseValidity::test_kill_proof_malformed_syntax_fails
+FAILED kairo/domains/code/tests/test_code_oracles.py::TestParseValidity::test_kill_proof_missing_colon_fails
+FAILED kairo/domains/code/tests/test_code_oracles.py::TestGauntletScenarios::test_scenario_a_fix_failing_test
+FAILED kairo/domains/code/tests/test_code_oracles.py::TestGauntletScenarios::test_scenario_b_add_function_and_test
+FAILED kairo/domains/code/tests/test_code_oracles.py::TestGauntletScenarios::test_scenario_c_broken_edit_caught
+FAILED kairo/domains/code/tests/test_code_oracles.py::TestTrustStackIntegration::test_pipeline_emits_audit_and_egress
+FAILED kairo/domains/code/tests/test_code_oracles.py::TestCLIIntegration::test_cli_verify
+FAILED kairo/domains/code/tests/test_code_oracles.py::TestCLIIntegration::test_cli_parse
+FAILED kairo/domains/data_analytics/tests/test_data_analytics_oracles.py::TestGauntletScenarios::test_scenario_b_two_file_join
+FAILED kairo-sidecar/test_domain10_memory.py::TestInjectionBlocked::test_injection_payloads_blocked_in_semantic_store
+FAILED kairo-sidecar/test_domain10_memory.py::TestSQLInjectionBlocked::test_10_sql_injection_payloads_blocked
+FAILED kairo-sidecar/test_domain10_memory.py::TestPIIScrubbing::test_pii_scrubbed_in_semantic_store
+FAILED kairo-sidecar/test_domain10_memory.py::TestSemanticRecall::test_semantic_recall_paraphrase
+FAILED kairo-sidecar/test_domain10_memory.py::TestSemanticRecall::test_semantic_recall_membership_termination
+FAILED kairo-sidecar/test_domain10_memory.py::TestSemanticRecall::test_semantic_embeddings_are_real_not_hash
+FAILED kairo-sidecar/test_domain10_memory.py::TestSemanticRecall::test_semantic_recall_multiple_memories
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 20 failures !!!!!!!!!!!!!!!!!!!!!!!!!!
+20 failed, 228 passed, 4 skipped, 8 warnings in 6.32s

@@ -1,0 +1,23 @@
+short test summary info ============================
+FAILED kairo/domains/data_analytics/tests/test_data_analytics_oracles.py::TestGauntletScenarios::test_scenario_b_two_file_join
+FAILED kairo-sidecar/test_domain10_memory.py::TestInjectionBlocked::test_injection_payloads_blocked_in_semantic_store
+FAILED kairo-sidecar/test_domain10_memory.py::TestSQLInjectionBlocked::test_10_sql_injection_payloads_blocked
+FAILED kairo-sidecar/test_domain10_memory.py::TestPIIScrubbing::test_pii_scrubbed_in_semantic_store
+FAILED kairo-sidecar/test_domain10_memory.py::TestSemanticRecall::test_semantic_recall_paraphrase
+FAILED kairo-sidecar/test_domain10_memory.py::TestSemanticRecall::test_semantic_recall_membership_termination
+FAILED kairo-sidecar/test_domain10_memory.py::TestSemanticRecall::test_semantic_embeddings_are_real_not_hash
+FAILED kairo-sidecar/test_domain10_memory.py::TestSemanticRecall::test_semantic_recall_multiple_memories
+FAILED kairo-sidecar/test_domain10_memory.py::TestSemanticRecall::test_semantic_recall_user_isolation
+FAILED kairo-sidecar/test_domain11_export.py::TestKAMISearch::test_semantic_search_finds_related
+FAILED kairo-sidecar/test_domain2_excel.py::TestForgeValidator::test_valid_sum_formula
+FAILED kairo-sidecar/test_domain2_excel.py::TestForgeValidator::test_valid_vlookup_with_all_args
+FAILED kairo-sidecar/test_domain2_excel.py::TestForgeValidator::test_valid_if_formula
+FAILED kairo-sidecar/test_domain2_excel.py::TestForgeValidator::test_valid_sumifs
+FAILED kairo-sidecar/test_domain2_excel.py::TestForgeValidator::test_valid_nested_if
+FAILED kairo-sidecar/test_domain2_excel.py::TestForgeValidator::test_valid_text_function
+FAILED kairo-sidecar/test_domain2_excel.py::TestForgeValidator::test_valid_index_match
+FAILED kairo-sidecar/test_domain2_excel.py::TestForgeValidator::test_validate_batch_mixed
+FAILED kairo-sidecar/test_domain2_excel.py::TestForgeValidator::test_confidence_valid_formula
+FAILED kairo-sidecar/test_domain2_excel.py::TestForgeValidator::test_semantic_error_division_by_zero
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 20 failures !!!!!!!!!!!!!!!!!!!!!!!!!!
+20 failed, 377 passed, 5 skipped, 8 warnings in 21.30s

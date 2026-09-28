@@ -6,8 +6,8 @@
       "codes": {
         "200": 1000
       },
-      "wall_s": 1.07,
-      "rps": 934.3,
+      "wall_s": 1.26,
+      "rps": 796.7,
       "5xx": 0
     },
     "fuzz_burst": {
@@ -17,8 +17,8 @@
         "422": 550,
         "400": 50
       },
-      "wall_s": 1.0,
-      "rps": 602.1,
+      "wall_s": 1.17,
+      "rps": 511.4,
       "5xx": 0
     },
     "human_100p": {
@@ -30,34 +30,34 @@
         "422": 931,
         "400": 37
       },
-      "wall_s": 5.99,
-      "rps": 417.0,
+      "wall_s": 7.18,
+      "rps": 348.3,
       "5xx": 0,
-      "p50_ms": 197.8,
-      "p95_ms": 477.3,
-      "p99_ms": 510.5
+      "p50_ms": 241.9,
+      "p95_ms": 582.3,
+      "p99_ms": 614.0
     },
     "error_recovery_unsat": {
       "n": 120,
       "5xx": 0,
-      "p50_ms": 1.9,
-      "p95_ms": 2.5,
-      "p99_ms": 2.9,
+      "p50_ms": 2.0,
+      "p95_ms": 2.8,
+      "p99_ms": 3.2,
       "slo_200ms_p50_p95_p99": true
     }
   },
-  "pid": 1816,
-  "boot_seconds": 0.57,
-  "rss_floor_mb": 79.0,
+  "pid": 15535,
+  "boot_seconds": 0.67,
+  "rss_floor_mb": 79.6,
   "probes_after_torture": {
     "/healthz": 200,
     "/livez": 200,
     "/readyz": 200,
     "/metrics": 200
   },
-  "rss_ceiling_mb": 126.5,
-  "fd_base": 10,
+  "rss_ceiling_mb": 125.4,
+  "fd_base": 11,
   "fd_after": 10,
-  "fd_leak": 0,
+  "fd_leak": -1,
   "sigterm_seconds": 0.214
 }

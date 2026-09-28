@@ -1,0 +1,860 @@
+[Truncated evidence excerpt: final 80000 characters; full log retained in local evidence directory.]
+ HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     overlay.server:server.py:436 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 422 Unprocessable Entity"
+INFO     overlay.server:server.py:436 request completed
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 422 Unprocessable Entity"
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 422 Unprocessable Entity"
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 422 Unprocessable Entity"
+INFO     overlay.server:server.py:436 request completed
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     overlay.server:server.py:436 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 422 Unprocessable Entity"
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 422 Unprocessable Entity"
+INFO     overlay.server:server.py:436 request completed
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 422 Unprocessable Entity"
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 422 Unprocessable Entity"
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     overlay.server:server.py:436 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 422 Unprocessable Entity"
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 422 Unprocessable Entity"
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 422 Unprocessable Entity"
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     overlay.server:server.py:436 request completed
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 422 Unprocessable Entity"
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     overlay.server:server.py:436 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 422 Unprocessable Entity"
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 422 Unprocessable Entity"
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 422 Unprocessable Entity"
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 422 Unprocessable Entity"
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 422 Unprocessable Entity"
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 422 Unprocessable Entity"
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 422 Unprocessable Entity"
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     overlay.server:server.py:436 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     overlay.server:server.py:436 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 422 Unprocessable Entity"
+INFO     overlay.server:server.py:436 request completed
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 422 Unprocessable Entity"
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 422 Unprocessable Entity"
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 422 Unprocessable Entity"
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     overlay.server:server.py:436 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 422 Unprocessable Entity"
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 422 Unprocessable Entity"
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 422 Unprocessable Entity"
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     overlay.server:server.py:436 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     overlay.server:server.py:436 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     overlay.server:server.py:436 request completed
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 422 Unprocessable Entity"
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     overlay.server:server.py:436 request completed
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     overlay.server:server.py:436 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     overlay.server:server.py:436 request completed
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     overlay.server:server.py:436 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 422 Unprocessable Entity"
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 422 Unprocessable Entity"
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 422 Unprocessable Entity"
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     overlay.server:server.py:436 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     overlay.server:server.py:436 request completed
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 422 Unprocessable Entity"
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 422 Unprocessable Entity"
+WARNING  overlay.server:server.py:1541 request validation rejected
+WARNING  overlay.server:server.py:1541 request validation rejected
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     overlay.server:server.py:436 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     overlay.server:server.py:436 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     overlay.server:server.py:436 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 422 Unprocessable Entity"
+INFO     overlay.server:server.py:436 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 422 Unprocessable Entity"
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     overlay.server:server.py:436 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 422 Unprocessable Entity"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/demo "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/apply "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/correct "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/extract-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/ask-document "HTTP/1.1 429 Too Many Requests"
+INFO     httpx2:_client.py:1090 HTTP Request: POST http://testserver/api/graph/query "HTTP/1.1 429 Too Many Requests"
+INFO     overlay.server:server.py:436 request completed
+INFO     httpx2:_client.py:1090 HTTP Request: GET http://testserver/healthz "HTTP/1.1 200 OK"
+=========================== short test summary info ============================
+FAILED overlay/tests/test_surrogate_encode_zero_day.py::test_surrogate_burst_100_workers_zero_5xx_and_recovery_slo
+1 failed, 373 passed in 28.89s

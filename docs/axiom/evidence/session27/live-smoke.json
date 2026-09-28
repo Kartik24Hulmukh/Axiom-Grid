@@ -1,0 +1,87 @@
+{
+  "scope": "one live sample/model; no percentile or capacity claim",
+  "max_requests": 4,
+  "max_completion_tokens_total": 128,
+  "results": [
+    {
+      "model": "glm-5.3",
+      "catalog_present": true,
+      "status": 200,
+      "usage": {
+        "prompt_tokens": 15,
+        "completion_tokens": 28,
+        "total_tokens": 43,
+        "cached_tokens": 0,
+        "reasoning_tokens": 25,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 25
+        }
+      },
+      "choices": 1,
+      "latency_ms": 561.41
+    },
+    {
+      "model": "glm-5.3-flash",
+      "catalog_present": true,
+      "status": 200,
+      "usage": {
+        "prompt_tokens": 19,
+        "completion_tokens": 32,
+        "total_tokens": 51,
+        "cached_tokens": 0,
+        "reasoning_tokens": 33,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 33
+        }
+      },
+      "choices": 1,
+      "latency_ms": 1825.11
+    },
+    {
+      "model": "kimi-k3",
+      "catalog_present": true,
+      "status": 200,
+      "usage": {
+        "prompt_tokens": 127,
+        "completion_tokens": 32,
+        "total_tokens": 159,
+        "cached_tokens": 0,
+        "reasoning_tokens": 32,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 32
+        }
+      },
+      "choices": 1,
+      "latency_ms": 2272.87
+    },
+    {
+      "model": "qwen3.8-27b",
+      "catalog_present": true,
+      "status": 200,
+      "usage": {
+        "prompt_tokens": 13,
+        "completion_tokens": 30,
+        "total_tokens": 43,
+        "cached_tokens": 0,
+        "reasoning_tokens": 26,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 26
+        }
+      },
+      "choices": 1,
+      "latency_ms": 764.67
+    }
+  ]
+}
