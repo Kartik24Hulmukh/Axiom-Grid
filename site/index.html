@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kairo Phantom — Offline Verifiable Knowledge-Work Agent</title>
+    <title>Axiom-Grid — Signed Receipts for Agents That Touch Documents</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
         <nav>
-            <div class="logo">👻 Kairo Phantom</div>
+            <div class="logo">👻 Axiom-Grid</div>
             <div class="nav-links">
                 <a href="#what">What</a>
                 <a href="#metrics">Metrics</a>
                 <a href="#verify">Verify</a>
                 <a href="#demo">Demo</a>
                 <a href="#receipt">Receipt</a>
-                <a href="https://github.com/Kartik24Hulmukh/Kairo-Phantom">GitHub</a>
+                <a href="https://github.com/Kartik24Hulmukh/Axiom-Grid-Phantom">GitHub</a>
             </div>
         </nav>
     </header>
@@ -26,16 +26,16 @@
         <p class="tagline">No cloud. No bluff. Every answer is grounded in your source documents — and every action is cryptographically signed.</p>
         <div class="cta-group">
             <a href="#demo" class="btn btn-primary">See the Demo</a>
-            <a href="https://github.com/Kartik24Hulmukh/Kairo-Phantom" class="btn btn-secondary">View Source</a>
+            <a href="https://github.com/Kartik24Hulmukh/Axiom-Grid-Phantom" class="btn btn-secondary">View Source</a>
         </div>
     </section>
 
     <section id="what" class="section">
-        <h2>What Kairo Does</h2>
+        <h2>What Axiom-Grid Does</h2>
         <div class="feature-grid">
             <div class="feature-card">
                 <h3>📄 READ + SUGGEST ONLY</h3>
-                <p>Kairo reads your documents and suggests answers. It never writes to or drives your source applications. Every suggestion requires explicit human confirmation.</p>
+                <p>Axiom-Grid reads your documents and suggests answers. It never writes to or drives your source applications. Every suggestion requires explicit human confirmation.</p>
             </div>
             <div class="feature-card">
                 <h3>🔒 Offline-First</h3>
@@ -43,7 +43,7 @@
             </div>
             <div class="feature-card">
                 <h3>✍️ Signed Receipts</h3>
-                <p>Every action produces an Ed25519-signed, Merkle-chained receipt. An independent verifier can validate any receipt without trusting Kairo.</p>
+                <p>Every action produces an Ed25519-signed, Merkle-chained receipt. An independent verifier can validate any receipt without trusting Axiom-Grid.</p>
             </div>
             <div class="feature-card">
                 <h3>🛡️ Injection Defense</h3>
@@ -103,8 +103,8 @@
                 <div class="step-number">1</div>
                 <div class="step-content">
                     <h3>Clone and set up</h3>
-                    <pre><code>git clone https://github.com/Kartik24Hulmukh/Kairo-Phantom.git
-cd Kairo-Phantom
+                    <pre><code>git clone https://github.com/Kartik24Hulmukh/Axiom-Grid-Phantom.git
+cd Axiom-Grid-Phantom
 pip install -r requirements-test.txt</code></pre>
                 </div>
             </div>
@@ -157,7 +157,7 @@ cargo test --workspace --exclude phantom-overlay</code></pre>
                 <div class="step-content">
                     <h3>Verify the signed receipt</h3>
                     <pre><code>python tools/verify_receipts_external.py demo_output/audit_log.json</code></pre>
-                    <p>Independently verifies the Ed25519-signed, Merkle-chained audit log — without trusting Kairo.</p>
+                    <p>Independently verifies the Ed25519-signed, Merkle-chained audit log — without trusting Axiom-Grid.</p>
                 </div>
             </div>
         </div>
@@ -204,7 +204,7 @@ cargo test --workspace --exclude phantom-overlay</code></pre>
     </section>
 
     <section class="section">
-        <h2>What Kairo Does NOT Do</h2>
+        <h2>What Axiom-Grid Does NOT Do</h2>
         <ul class="does-not-list">
             <li>Write to or drive source applications (Word, Excel, desktop) — v1 is READ + SUGGEST ONLY</li>
             <li>Act as a multi-domain expert swarm or router</li>
@@ -216,7 +216,7 @@ cargo test --workspace --exclude phantom-overlay</code></pre>
 
     <footer>
         <div class="footer-content">
-            <p>MIT License — <a href="https://github.com/Kartik24Hulmukh/Kairo-Phantom">github.com/Kartik24Hulmukh/Kairo-Phantom</a></p>
+            <p>MIT License — <a href="https://github.com/Kartik24Hulmukh/Axiom-Grid-Phantom">github.com/Kartik24Hulmukh/Axiom-Grid-Phantom</a></p>
             <p class="footer-tagline">Built local-first. Built to be audited. Built to never bluff.</p>
         </div>
     </footer>
