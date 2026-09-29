@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Kairo Phantom — Interactive Receipt Demo</title>
-<meta name="description" content="An in-browser demonstration of Kairo Phantom's signed-receipt trust model: real Ed25519 keys generated in your browser, real signatures, real tamper detection." />
+<title>Axiom-Grid — Receipt Demo</title>
+<meta name="description" content="An in-browser demonstration of Axiom-Grid's signed-receipt trust model: real Ed25519 keys generated in your browser, real signatures, real tamper detection." />
 <style>
   :root {
     --bg: #0b0e11;
@@ -102,13 +102,13 @@
     <p class="lede">
       This page generates a real Ed25519 keypair in your browser (WebCrypto — nothing leaves this page),
       simulates a legal-redline session that emits hash-chained receipts, signs each one, and lets you
-      tamper with a receipt to watch verification fail. This is the same trust model Kairo Phantom uses.
+      tamper with a receipt to watch verification fail. This is the same trust model Axiom-Grid uses.
     </p>
 
     <div class="disclaimer">
       <strong>What this is and is not:</strong> this is an illustrative, in-browser demonstration of the
       receipt scheme (Ed25519 signatures over hash-chained JSON receipts). It is <strong>not</strong> the
-      Kairo Phantom agent itself — the agent is a desktop application. The redline actions below are
+      Axiom-Grid agent itself — the agent is a desktop application. The redline actions below are
       scripted for the demo. The cryptography, however, is real: real keys, real signatures, real
       verification, generated live on your machine.
     </div>
@@ -121,7 +121,7 @@
 
     <div class="panel">
       <h2><span class="num">01</span>Generate a signing key</h2>
-      <p class="desc">Kairo Phantom holds a local Ed25519 signing key. Here, your browser generates one. The private key never leaves this page.</p>
+      <p class="desc">Axiom-Grid holds a local Ed25519 signing key. Here, your browser generates one. The private key never leaves this page.</p>
       <div class="btn-row">
         <button class="btn primary" id="btn-keygen">Generate Ed25519 keypair</button>
       </div>
@@ -174,7 +174,7 @@
 </main>
 
 <footer>
-  <div class="wrap">Kairo Phantom &middot; MIT open-core &middot; <a href="https://github.com/Kartik24Hulmukh/Kairo-Phantom">GitHub</a></div>
+  <div class="wrap">Axiom-Grid &middot; MIT open-core &middot; <a href="https://github.com/Kartik24Hulmukh/Kairo-Phantom">GitHub</a></div>
 </footer>
 
 <script>
