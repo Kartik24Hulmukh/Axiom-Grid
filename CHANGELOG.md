@@ -1,3 +1,14 @@
+## Wave 6 - 29 Sep 2026 - LAUNCH-READY: cross-platform suite green + 100x torture verified
+
+- **Suite green on main:** 1,182 passed / 0 failed / 5 skipped (tests/), 161 passed (kernel/), 65 passed (router cluster), 36 passed (concurrency/fuzz/egress).
+- **100x concurrency + 100-persona torture harness EXIT 0:** 3,700 human/chaos requests, 0x5xx, 0 fd-leak, sub-200ms error recovery (p95 15.6ms), probes healthy post-torture, 17ms SIGTERM.
+- **Melious gateway live-verified:** GLM-5.3 / GLM-5.3 Flash / Kimi K3 / Qwen 3.8 27B all 200 OK.
+- **fix(router):** cap per-model deadline at total_timeout — eliminates monotonic-clock float drift budget overshoot.
+- **fix(harness):** cross-platform RSS/fd readout in torture harness (psutil fallback for Windows).
+- **fix(test):** cross-platform verifier tempdir, corpus hash regen (v1.0.0, 105 files), make-run skip guard, parametrize-ids truncation (Windows 32,767-char env fix).
+- **feat(spec):** Open Agent Receipt Specification v0.1 — category-defining verifiable agent-action format.
+- **docs:** README + site + demo + funding rebranded to Axiom-Grid; receipt-first positioning; honest launch status.
+
 ## Wave 5 - 13 Sep 2026 - AI-002 measured generalization + CI gates
 
 - **AI-002 (NEW):** `packs/memo/adversarial_gen.py` uses a frontier model (Melious OpenAI-compatible gateway, GLM-5.3) at BUILD TIME ONLY to rewrite the 5 wedge fixtures into 15 adversarial surface forms (label-synonym, date/format, OCR-noise attacks) whose semantic ground truth is invariant by construction. Zero runtime egress; KAIRO_AIR_GAP untouched at serve time.
