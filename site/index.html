@@ -140,7 +140,7 @@ cargo test --workspace --exclude phantom-overlay</code></pre>
                 <div class="step-number">1</div>
                 <div class="step-content">
                     <h3>Redline a contract</h3>
-                    <pre><code>python -m kairo.cli redline fixtures/demo/sample_nda.docx fixtures/demo/nda_playbook.json --out demo_output</code></pre>
+                    <pre><code>python -m axiom.cli redline fixtures/demo/sample_nda.docx fixtures/demo/nda_playbook.json --out demo_output</code></pre>
                     <p>Produces real OOXML tracked changes (w:ins/w:del) on the NDA.</p>
                 </div>
             </div>
@@ -148,7 +148,7 @@ cargo test --workspace --exclude phantom-overlay</code></pre>
                 <div class="step-number">2</div>
                 <div class="step-content">
                     <h3>Seal the air-gap</h3>
-                    <pre><code>python -m kairo.cli redline fixtures/demo/sample_nda.docx fixtures/demo/nda_playbook.json --sealed --out demo_sealed</code></pre>
+                    <pre><code>python -m axiom.cli redline fixtures/demo/sample_nda.docx fixtures/demo/nda_playbook.json --sealed --out demo_sealed</code></pre>
                     <p>Activates sealed mode, blocks all outbound connections, writes air-gap report.</p>
                 </div>
             </div>
