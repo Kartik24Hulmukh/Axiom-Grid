@@ -403,7 +403,7 @@ class MeliousModelRouter:
                     if attempt:
                         # Backoff is not a lease: another request may have
                         # opened the circuit or extended Retry-After meanwhile.
-                        remaining = deadline - time.monotonic()
+                        remaining = min(deadline - time.monotonic(), self.total_timeout)
                         if remaining <= 0:
                             break
                         if not self._lock.acquire(timeout=min(self.acquire_timeout, remaining)):
@@ -419,7 +419,7 @@ class MeliousModelRouter:
                             self._lock.release()
                     try:
                         # Half-open probe gets the shorter probe_timeout deadline.
-                        remaining = deadline - time.monotonic()
+                        remaining = min(deadline - time.monotonic(), self.total_timeout)
                         if remaining <= 0:
                             raise RouterError("router total deadline exhausted")
                         # Per-model deadline, always capped by the remaining
