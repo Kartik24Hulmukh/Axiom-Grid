@@ -84,6 +84,12 @@ def pct(vals: list[float], q: float) -> float:
 
 
 def rss_mb() -> float:
+    if os.name == "nt":
+        import psutil
+        try:
+            return round(psutil.Process(SERVER_PID).memory_info().rss / (1024 * 1024), 1)
+        except Exception:
+            return -1.0
     with open(f"/proc/{SERVER_PID}/status") as f:
         for line in f:
             if line.startswith("VmRSS:"):
@@ -92,6 +98,12 @@ def rss_mb() -> float:
 
 
 def fd_count() -> int:
+    if os.name == "nt":
+        import psutil
+        try:
+            return len(psutil.Process(SERVER_PID).open_files()) + len(psutil.Process(SERVER_PID).connections())
+        except Exception:
+            return -1
     return len(os.listdir(f"/proc/{SERVER_PID}/fd"))
 
 
