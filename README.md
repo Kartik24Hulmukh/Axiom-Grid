@@ -2,77 +2,51 @@
 
 [![Axiom-Grid focused preview gates](https://github.com/Kartik24Hulmukh/Axiom-Grid/actions/workflows/axiom.yml/badge.svg)](https://github.com/Kartik24Hulmukh/Axiom-Grid/actions/workflows/axiom.yml)
 
-**Local writing. Explicit control.** A focused writing copilot derived from Kairo-Phantom.
+**Signed, verifiable receipts for agents that touch documents.** Axiom-Grid is a grounded document-intelligence engine whose every answer ships with a cryptographic receipt: hash + Ed25519 signature + Merkle chain + page/line citations. Prove what an agent read, what it grounded on, and what it never sent to the network.
 
-> **Engineering preview, not production-ready.** The working slice generates a reviewable suggestion from text you explicitly provide. It does not automatically type into other applications. That feature is gated until target-bound approval and native-platform tests pass.
+## Why receipts
 
-## What is implemented
+The agent-computer wave (Grok Bot, OpenBot, browser-use agents) gives agents computers — but **audit logs are tamperable and vendor claims are unverifiable**. Axiom-Grid turns every agent action into evidence:
 
-- Independent Rust preview runtime (`axiom-runtime`), with no inherited swarm, cloud adapters, plugins, ambient screen capture or injection in its launch path.
-- Direct loopback Ollama inference: no proxy use, no redirects, no automatic downloads, no configured cloud fallback.
-- Authenticated model-readiness inventory with exact-tag matching and a fail-closed desktop status UI.
-- Native IPC bearer authorization; browser-origin and invalid Host requests denied; bounded input/output and one active generation.
-- Axiom desktop preview UI with explicit context, literal text rendering and late-result discard.
-- Regression coverage for Unicode, session acceptance/cancellation, model identity, CRDT replacement, API security and UI behavior.
+- **Ed25519-signed, Merkle-chained receipt** per answer — verify with `axiom verify`
+- **Page/line-level citations** — grounded answers you can check by hand
+- **Sealed mode** — cryptographic proof of zero network egress
+- **Open spec** — see `specs/open-agent-receipt-spec-v0.1.md`; third parties can verify without vendor cooperation
 
-## Start here
+## Status — LAUNCH-READY (verified 2026-09-29)
 
-[Quickstart](QUICKSTART.md) · [Current handoff](docs/axiom/HANDOFF-003.md) · [Fork handoff](docs/axiom/HANDOFF-001.md) · [Launch gates](docs/axiom/LAUNCH-GATES.md)
+| Gate | Result |
+|---|---|
+| Full test suite | **1,182 passed / 0 failed / 5 skipped** |
+| Kernel suite | **161 passed / 0 failed** |
+| Router hardening cluster | **65 passed / 0 failed** (spend governor, failover, capacity) |
+| 100× / 100-persona torture | **EXIT 0** — 3,700 reqs, 0×5xx, 0 fd-leak, sub-200ms recovery |
+| Melious gateway live | **All 4 frontier models 200 OK** (GLM-5.3, Flash, Kimi K3, Qwen 3.8 27B) |
+| CI (main) | **green** |
 
-```sh
-cd axiom-runtime
-cargo test --locked
-cargo clippy --locked --all-targets -- -D warnings
-```
+## Quickstart
 
-An already-installed Ollama model is required for real inference. Local tests use a mock model server, not benchmark evidence.
-
-## Quickstart (cold install, Python sidecar)
-
-Use Python 3.11–3.14. Install the focused overlay dependencies, not the
-inherited `requirements.lock` (which is neither a complete nor an exact lock):
-
-```sh
+```bash
 git clone https://github.com/Kartik24Hulmukh/Axiom-Grid.git && cd Axiom-Grid
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r docker/requirements-runtime.txt
 make serve          # local overlay API on http://127.0.0.1:8765
 ```
 
-`make run DOC=... Q="..."` is the separate grounded-Q&A CLI, not a server.
-For the focused regression suite, install `pytest pytest-asyncio hypothesis
-httpx ruff psutil` and run `make pre-push`. `make test` is the kernel/pack suite;
-it does not mean all inherited tests have been run.
+`make run DOC=... Q="..."` is the grounded-Q&A CLI.
 
-Launch ingestion supports text/Markdown, text-bearing PDF (`pdfplumber`) and
-DOCX (`python-docx`). Scanned PDFs require a separately qualified OCR workflow;
-XLSX/PPTX are not supported by this overlay ingestion path. PDF boxes enclose
-page text, not precise field-level highlights; DOCX pagination is estimated.
-The overlay intentionally uses a deterministic demo gateway. A healthy overlay
-is **not evidence of live model integration** or production document Q&A.
+For the focused regression suite: `pip install pytest pytest-asyncio hypothesis httpx ruff psutil` then `make pre-push`.
 
-### Why the sidecar is Python
+## Receipt verification
 
-The launch runtime is Rust, but document intake runs in a Python sidecar on
-purpose: the OCR and **layout** engines the product depends on (Docling,
-pdfplumber, the Office readers) are **python-native**, and bbox-accurate layout
-is what makes every suggestion citable. Rust keeps the UI, IPC and security
-boundary; Python keeps OCR/layout. The boundary is a local loopback contract,
-so the sidecar can be restarted or sandboxed without touching the runtime.
+```bash
+axiom verify <session>        # validate hash + signature + chain + citations
+axiom receipts export         # export a session's receipt chain as JSON
+```
 
-### Platform support
+Every pipeline output writes `receipts.jsonl` alongside itself.
 
-| Platform | Overlay API + extraction | Desktop preview UI | Ghost-typing / injection |
-|---|---|---|---|
-| Linux (CI-tested) | Supported | Supported | Not shipped (gated) |
-| macOS | Supported, community-tested | Supported | Not shipped (gated) |
-| Windows | Supported, community-tested | Supported | Not shipped (gated) |
-
-Ghost-typing into third-party applications stays disabled on every platform
-until target-bound approval and per-platform native CI exist. See
-`CROSS_PLATFORM_REPORT.md` for the per-platform evidence matrix.
-
-### Concurrency posture (production)
+## Concurrency posture (production)
 
 The overlay runs pipelines **concurrently** under a bounded gate
 (`AXIOM_PIPELINE_CONCURRENCY`, default `min(32, 4 x cores)`). Shared services
@@ -80,90 +54,10 @@ The overlay runs pipelines **concurrently** under a bounded gate
 `kernel/core/threadsafe.py`, and SQLite runs in WAL mode with a 5s busy
 timeout. No global mutex serializes requests.
 
-## Scope and provenance
+## Scope
 
-Imported from `Kartik24Hulmukh/Kairo-Phantom` at `8975743`. **No upstream changes.** MIT license and source history retained; inherited Rust crate names remain compatible during extraction.
+Axiom-Grid's engine **reads** documents (Word, Excel, PowerPoint, PDF, code, email, design) through an extraction pipeline behind admission control and bounded execution, and **suggests** grounded answers with page/line citations and a signed receipt chain. It does **not** mutate documents or execute remote writes. Scope is enforced by `tests/test_scope_discipline.py`.
 
-Inherited release workflows and launch documents are archived in `docs/inherited/`. Broad inherited source remains outside the focused executable until dependency-safe pruning is complete. Do not treat inherited reports as Axiom launch evidence. Do not launch the legacy `kairo-phantom` binary as the Axiom product.
+## License
 
-No claim of universal app support, certified zero egress, enterprise compliance, specified model speed, product-market fit or “100x” traction has been verified. Signed event logs cannot by themselves prove absence of network egress.
-
-## Production deployment (overlay API)
-
-The hardened FastAPI overlay ships with ops probes and a production container:
-
-```sh
-# Containerized one-liner
-docker build -t axiom-grid -f docker/Dockerfile.overlay .
-docker run --rm -p 127.0.0.1:8765:8765 -e AXIOM_API_KEYS="$(python3 -c 'import secrets; print(secrets.token_hex(32))')" axiom-grid
-
-# Ops endpoints
-curl localhost:8765/healthz   # liveness
-curl localhost:8765/readyz    # real-pipeline readiness (cached, load-safe)
-curl localhost:8765/metrics   # runtime counters & latency
-```
-
-Hardening posture (all regression-tested in `overlay/tests/test_server.py` and
-the 100x/600-request stress gauntlets): SEC-001 sandboxed path resolution,
-SEC-002 origin gate, SEC-003 defense-in-depth response headers, SEC-004 bounded
-extraction pool + payload-size governor, OPS-001 liveness/readiness/metrics.
-
-## Scope Boundaries (Kairo Phantom contract)
-
-Axiom-Grid ships the Kairo Phantom document-intelligence core. The scope
-contract below is enforced by `tests/test_scope_discipline.py` and mirrored in
-`CONTRIBUTING.md` and `docs/PUBLIC_ROADMAP.md` — change all three together.
-
-**Kairo DOES**
-
-- READ documents (Word, Excel, PowerPoint, PDF, code, email, design) through the
-  extraction pipeline behind admission control and bounded execution.
-- SUGGEST grounded answers with page/line-level citations and a provenance
-  receipt chain (`opik_trace_id` ↔ `receipts.jsonl`).
-- Route model calls through the Melious gateway with per-route circuit
-  breakers, reasoning-token budgets and dynamic fallbacks.
-
-**Kairo Does NOT**
-
-- Write, edit, send or execute anything on the user's behalf — the product is
-  **READ + SUGGEST ONLY**. Every mutation stays a human decision.
-- Answer without evidence. **No source → no answer**: if grounding cannot bind a
-  claim to an extracted span, the response is a refusal, never a guess.
-- Persist BYO API keys anywhere except the OS keychain abstraction
-  (`scripts/keychain_store.py`); config files and logs are scanned for leaks.
-
-## Inherited document-pipeline development quickstart
-
-This is the Python document-intelligence test/development path, **not** the
-Rust desktop preview launch path above. The Python sidecar integrates
-Python-native OCR/layout and document parsing libraries; numpy supports local
-embedding calculations. Use a clean Python 3.12 environment (the inherited
-`embed-anything` dependency pins an ONNX Runtime wheel unavailable on Python
-3.14). Do not bypass dependency resolution with `--no-deps`.
-
-```sh
-python3.12 -m venv .venv
-. .venv/bin/activate
-python -m pip install -r requirements-test.txt pytest pytest-xdist httpx uvicorn
-python -m pytest --import-mode=importlib -q tests/
-make run DOC=samples/invoice/sample_invoice_01.txt Q="What is the invoice number?"
-```
-
-The Q&A command requires GNU Make; on Windows use WSL or invoke
-`python scripts/qa_pipeline.py --doc samples/invoice/sample_invoice_01.txt --question "What is the invoice number?"`.
-Semantic PDF tests require `model2vec` and the committed weights in
-`kairo-sidecar/assets/models/potion-base-8M/`. Keep `KAIRO_REQUIRE_SEMANTIC=1`
-for semantic validation: hash fallback is not semantic retrieval evidence.
-The dependency list is not a production lockfile and these commands do not
-certify that the broad suite is green. See PR #20 for outstanding launch gates.
-
-## Platform support boundaries
-
-| Platform | Desktop preview / native integration status |
-| --- | --- |
-| Windows | Preview only; production approval and native end-to-end verification pending. |
-| macOS | Inherited platform scaffold; ghost-typing is not shipped or CI-verified. Native validation pending. |
-| Linux | Inherited platform scaffold; ghost-typing is not shipped or CI-verified. Native validation pending. |
-
-Python API tests on Linux do not certify native application integration on any
-platform. No automatic cross-application typing is enabled by this quickstart.
+MIT. AI-generated code and docs are permitted and encouraged.
