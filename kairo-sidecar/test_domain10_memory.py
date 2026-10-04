@@ -290,7 +290,7 @@ class TestMemoryExportImport:
 
     def test_export_import_roundtrip(self):
         """Export memories to file, import back, verify data integrity."""
-        exporter = MemoryExportImport()
+        exporter = MemoryExportImport(passphrase="test-only-memory-passphrase")
         memories = [
             {"id": 1, "text": "User prefers dark mode for all interfaces", "user_id": "local"},
             {"id": 2, "text": "User works primarily in Python and Rust", "user_id": "local"},
@@ -312,7 +312,7 @@ class TestMemoryExportImport:
 
     def test_export_without_pii_redacts_sensitive_data(self):
         """Export with include_pii=False must redact PII from the export."""
-        exporter = MemoryExportImport()
+        exporter = MemoryExportImport(passphrase="test-only-memory-passphrase")
         memories = [
             {
                 "id": 1,
@@ -340,7 +340,7 @@ class TestMemoryExportImport:
 
     def test_export_to_kairo_memory_format(self):
         """Export to .kairo-memory format with metadata."""
-        exporter = MemoryExportImport()
+        exporter = MemoryExportImport(passphrase="test-only-memory-passphrase")
         memories = [
             {"id": 1, "text": "Test memory for kairo format", "user_id": "local"},
         ]
@@ -360,7 +360,7 @@ class TestMemoryExportImport:
 
     def test_export_import_empty_memories(self):
         """Export and import empty memory list."""
-        exporter = MemoryExportImport()
+        exporter = MemoryExportImport(passphrase="test-only-memory-passphrase")
         with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as f:
             tmp_path = f.name
         try:

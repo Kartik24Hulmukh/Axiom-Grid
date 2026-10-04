@@ -1,146 +1,189 @@
-"""
-MemoryExportImport — Cross-machine memory migration (Domain 10)
-
-Exports memories to encrypted JSON files with optional PII scrubbing.
-Supports .kairo-memory format with metadata for cross-machine portability.
-
-Encryption: Simple key-derivation using hashlib (SHA-256) + XOR cipher.
-This is NOT military-grade — it's a transport-layer obfuscation to prevent
-casual inspection of memory files in transit. For true encryption, use
-the Rust-side AES-GCM via phantom-core.
-"""
-
+"""Authenticated, custody-safe cross-machine memory migration."""
 from __future__ import annotations
 
+import base64
 import json
-import os
-import hashlib
 import logging
+import os
+import stat
+import tempfile
 import time
+from pathlib import Path
 from typing import Dict, List, Optional
+
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
 
 from sidecar.safety.pii_guard import PiiGuard
 from sidecar.safety.prompt_shield import PromptShield
 
 log = logging.getLogger("kairo-sidecar.memory_export_import")
+MAGIC = b"KAIRO_MEM\x02"
+FORMAT_VERSION = 2
+SALT_BYTES = 16
+NONCE_BYTES = 12
+MAX_EXPORT_BYTES = 64 * 1024 * 1024
+MAX_MEMORIES = 100_000
+AAD = b"kairo-memory-export:v2"
 
 
-def _derive_key(passphrase: str) -> bytes:
-    """Derive a 32-byte key from a passphrase using SHA-256."""
-    return hashlib.sha256(passphrase.encode("utf-8")).digest()
+def _derive_key(passphrase: str, salt: bytes) -> bytes:
+    if not passphrase:
+        raise ValueError("A non-empty memory export passphrase is required")
+    return Scrypt(salt=salt, length=32, n=2**14, r=8, p=1).derive(passphrase.encode("utf-8"))
 
 
-def _xor_encrypt(data: bytes, key: bytes) -> bytes:
-    """XOR cipher — simple transport obfuscation."""
-    return bytes(b ^ key[i % len(key)] for i, b in enumerate(data))
+def _read_private_regular_file(path: Path) -> bytes:
+    descriptor = os.open(path, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0))
+    try:
+        info = os.fstat(descriptor)
+        if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1:
+            raise ValueError("Memory export must be a single-link regular file")
+        if info.st_size > MAX_EXPORT_BYTES:
+            raise ValueError("Memory export exceeds the byte limit")
+        with os.fdopen(os.dup(descriptor), "rb") as source:
+            return source.read(MAX_EXPORT_BYTES + 1)
+    finally:
+        os.close(descriptor)
 
 
-def _xor_decrypt(data: bytes, key: bytes) -> bytes:
-    """XOR decrypt (same operation as encrypt)."""
-    return _xor_encrypt(data, key)
+def _atomic_private_write(path: Path, payload: bytes) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+    try:
+        existing = path.lstat()
+    except FileNotFoundError:
+        existing = None
+    if existing is not None and (not stat.S_ISREG(existing.st_mode) or existing.st_nlink != 1):
+        raise ValueError("Refusing unsafe memory export destination")
+
+    descriptor, temporary_name = tempfile.mkstemp(
+        dir=path.parent, prefix=f".{path.name}.", suffix=".tmp"
+    )
+    temporary = Path(temporary_name)
+    try:
+        os.fchmod(descriptor, 0o600)
+        with os.fdopen(descriptor, "wb", closefd=True) as target:
+            target.write(payload)
+            target.flush()
+            os.fsync(target.fileno())
+        os.replace(temporary, path)
+        directory = os.open(path.parent, os.O_RDONLY)
+        try:
+            os.fsync(directory)
+        finally:
+            os.close(directory)
+    except BaseException:
+        temporary.unlink(missing_ok=True)
+        raise
 
 
 class MemoryExportImport:
-    """
-    Memory export/import for cross-machine migration.
-
-    - export_to_file: Export memories to encrypted JSON
-    - import_from_file: Import memories from encrypted JSON
-    - export_to_kairo_memory: Export to .kairo-memory format with metadata
-    """
+    """Versioned AES-256-GCM memory export/import."""
 
     def __init__(self, passphrase: Optional[str] = None):
         self.pii_guard = PiiGuard()
         self.prompt_shield = PromptShield()
-        # Default passphrase from env or deterministic fallback
-        self.passphrase = passphrase or os.environ.get(
-            "KAIRO_MEMORY_PASSPHRASE", "kairo-phantom-default-key"
-        )
+        self.passphrase = passphrase or os.environ.get("KAIRO_MEMORY_PASSPHRASE")
+        if not self.passphrase:
+            raise ValueError("Set KAIRO_MEMORY_PASSPHRASE or provide an explicit passphrase")
 
-    def _get_default_passphrase(self) -> str:
-        return self.passphrase
-
-    def export_to_file(
-        self,
-        memories: List[Dict],
-        output_path: str,
-        include_pii: bool = False,
-    ) -> str:
-        """
-        Export memories to an encrypted JSON file.
-
-        Args:
-            memories: List of memory dicts to export
-            output_path: Path to write the export file
-            include_pii: If False, PiiGuard scrubs PII from export
-
-        Returns:
-            Path to the written file.
-        """
-        export_data = {
-            "version": 1,
-            "exported_at": time.time(),
-            "memory_count": len(memories),
-            "memories": [],
-        }
-
-        for mem in memories:
-            entry = dict(mem)  # shallow copy
+    def _build_export(
+        self, memories: List[Dict], *, include_pii: bool, user_id: Optional[str] = None
+    ) -> dict:
+        if len(memories) > MAX_MEMORIES:
+            raise ValueError("Memory export exceeds the record limit")
+        scrubbed = []
+        for memory in memories:
+            entry = dict(memory)
             if not include_pii:
-                # Scrub PII from all string fields
                 for key, value in entry.items():
                     if isinstance(value, str):
                         entry[key] = self.pii_guard.redact(value)
-            export_data["memories"].append(entry)
+            scrubbed.append(entry)
+        metadata = {
+            "exported_at": time.time(),
+            "memory_count": len(scrubbed),
+            "pii_included": include_pii,
+        }
+        if user_id is not None:
+            metadata["user_id"] = user_id
+        return {
+            "format": "kairo-memory",
+            "version": FORMAT_VERSION,
+            "metadata": metadata,
+            "memories": scrubbed,
+        }
 
-        # Serialize and encrypt
-        json_bytes = json.dumps(export_data, ensure_ascii=False).encode("utf-8")
-        key = _derive_key(self.passphrase)
-        encrypted = _xor_encrypt(json_bytes, key)
+    def _encrypt(self, export_data: dict) -> bytes:
+        plaintext = json.dumps(
+            export_data, ensure_ascii=False, separators=(",", ":")
+        ).encode("utf-8")
+        if len(plaintext) > MAX_EXPORT_BYTES:
+            raise ValueError("Memory export exceeds the byte limit")
+        salt, nonce = os.urandom(SALT_BYTES), os.urandom(NONCE_BYTES)
+        ciphertext = AESGCM(_derive_key(self.passphrase, salt)).encrypt(nonce, plaintext, AAD)
+        envelope = {
+            "format": "kairo-memory-encrypted",
+            "version": FORMAT_VERSION,
+            "kdf": {"name": "scrypt", "n": 2**14, "r": 8, "p": 1},
+            "cipher": "AES-256-GCM",
+            "salt": base64.b64encode(salt).decode("ascii"),
+            "nonce": base64.b64encode(nonce).decode("ascii"),
+            "ciphertext": base64.b64encode(ciphertext).decode("ascii"),
+        }
+        return MAGIC + json.dumps(envelope, separators=(",", ":")).encode("ascii")
 
-        # Write with header for identification
-        with open(output_path, "wb") as f:
-            f.write(b"KAIRO_MEM\x00")  # 9-byte magic header
-            f.write(encrypted)
-
-        log.info(f"Exported {len(memories)} memories to {output_path} (include_pii={include_pii})")
+    def export_to_file(
+        self, memories: List[Dict], output_path: str, include_pii: bool = False
+    ) -> str:
+        payload = self._encrypt(self._build_export(memories, include_pii=include_pii))
+        _atomic_private_write(Path(output_path), payload)
+        log.info(
+            "Exported %d memories with authenticated encryption (include_pii=%s)",
+            len(memories),
+            include_pii,
+        )
         return output_path
 
     def import_from_file(self, file_path: str) -> List[Dict]:
-        """
-        Import memories from an encrypted JSON file.
-
-        Args:
-            file_path: Path to the export file
-
-        Returns:
-            List of imported memory dicts.
-        """
-        with open(file_path, "rb") as f:
-            raw = f.read()
-
-        # Verify and strip magic header
-        if raw.startswith(b"KAIRO_MEM\x00"):
-            raw = raw[len(b"KAIRO_MEM\x00") :]
-        else:
-            # Try loading as plain JSON (backward compat)
-            try:
-                data = json.loads(raw.decode("utf-8"))
-                return data.get("memories", [])
-            except (json.JSONDecodeError, UnicodeDecodeError):
-                pass
-
-        # Decrypt
-        key = _derive_key(self.passphrase)
-        decrypted = _xor_decrypt(raw, key)
-
+        raw = _read_private_regular_file(Path(file_path))
+        if not raw.startswith(MAGIC):
+            raise ValueError(
+                "Legacy or plaintext memory exports are disabled; use an explicit migration tool"
+            )
         try:
-            data = json.loads(decrypted.decode("utf-8"))
-        except (json.JSONDecodeError, UnicodeDecodeError) as e:
-            raise ValueError(f"Failed to decrypt/parse memory file: {e}")
+            envelope = json.loads(raw[len(MAGIC) :].decode("ascii"))
+            if (
+                envelope.get("version") != FORMAT_VERSION
+                or envelope.get("cipher") != "AES-256-GCM"
+                or envelope.get("kdf", {}).get("name") != "scrypt"
+            ):
+                raise ValueError("Unsupported memory export format")
+            salt = base64.b64decode(envelope["salt"], validate=True)
+            nonce = base64.b64decode(envelope["nonce"], validate=True)
+            ciphertext = base64.b64decode(envelope["ciphertext"], validate=True)
+            if len(salt) != SALT_BYTES or len(nonce) != NONCE_BYTES:
+                raise ValueError("Invalid memory export parameters")
+            plaintext = AESGCM(_derive_key(self.passphrase, salt)).decrypt(
+                nonce, ciphertext, AAD
+            )
+            data = json.loads(plaintext.decode("utf-8"))
+        except (KeyError, TypeError, UnicodeError, json.JSONDecodeError) as exc:
+            raise ValueError("Invalid memory export envelope") from exc
+        except ValueError:
+            raise
+        except Exception as exc:
+            raise ValueError("Memory export authentication failed") from exc
 
-        memories = data.get("memories", [])
-        log.info(f"Imported {len(memories)} memories from {file_path}")
+        memories = data.get("memories")
+        if (
+            data.get("format") != "kairo-memory"
+            or data.get("version") != FORMAT_VERSION
+            or not isinstance(memories, list)
+            or len(memories) > MAX_MEMORIES
+        ):
+            raise ValueError("Invalid decrypted memory export")
+        log.info("Imported %d authenticated memory records", len(memories))
         return memories
 
     def export_to_kairo_memory(
@@ -150,46 +193,9 @@ class MemoryExportImport:
         user_id: str = "local",
         include_pii: bool = False,
     ) -> str:
-        """
-        Export to .kairo-memory format (JSON with metadata).
-
-        The .kairo-memory format is a structured JSON with:
-        - format: "kairo-memory"
-        - version: 1
-        - metadata: user_id, export timestamp, memory count, PII status
-        - memories: list of memory entries
-
-        The file is encrypted with the same XOR cipher as export_to_file.
-        """
-        export_data = {
-            "format": "kairo-memory",
-            "version": 1,
-            "metadata": {
-                "user_id": user_id,
-                "exported_at": time.time(),
-                "memory_count": len(memories),
-                "pii_included": include_pii,
-                "export_tool": "kairo-sidecar Domain 10",
-            },
-            "memories": [],
-        }
-
-        for mem in memories:
-            entry = dict(mem)
-            if not include_pii:
-                for key, value in entry.items():
-                    if isinstance(value, str):
-                        entry[key] = self.pii_guard.redact(value)
-            export_data["memories"].append(entry)
-
-        # Serialize and encrypt
-        json_bytes = json.dumps(export_data, ensure_ascii=False, indent=2).encode("utf-8")
-        key = _derive_key(self.passphrase)
-        encrypted = _xor_encrypt(json_bytes, key)
-
-        with open(output_path, "wb") as f:
-            f.write(b"KAIRO_MEM\x00")
-            f.write(encrypted)
-
-        log.info(f"Exported {len(memories)} memories to .kairo-memory format at {output_path}")
+        payload = self._encrypt(
+            self._build_export(memories, include_pii=include_pii, user_id=user_id)
+        )
+        _atomic_private_write(Path(output_path), payload)
+        log.info("Exported %d memories in authenticated .kairo-memory format", len(memories))
         return output_path

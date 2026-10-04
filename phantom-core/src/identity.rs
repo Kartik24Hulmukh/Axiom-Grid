@@ -131,11 +131,34 @@ pub struct JitToken {
 
 impl JitToken {
     pub fn is_valid(&self) -> bool {
+        use ed25519_dalek::{Signature, VerifyingKey};
+
         let now = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap_or_default()
             .as_secs();
-        now < self.expires_at
+        if self.issued_at > now || now >= self.expires_at || self.expires_at <= self.issued_at {
+            return false;
+        }
+        let Ok(key_bytes) = hex_decode(&self.agent_id) else {
+            return false;
+        };
+        let Ok(key_array) = <[u8; 32]>::try_from(key_bytes) else {
+            return false;
+        };
+        let Ok(verifying_key) = VerifyingKey::from_bytes(&key_array) else {
+            return false;
+        };
+        let Ok(signature_bytes) = hex_decode(&self.signature) else {
+            return false;
+        };
+        let Ok(signature) = Signature::from_slice(&signature_bytes) else {
+            return false;
+        };
+        let payload = format!("{}:{}:{}", self.agent_id, self.scope, self.expires_at);
+        verifying_key
+            .verify_strict(payload.as_bytes(), &signature)
+            .is_ok()
     }
     pub fn scope_matches(&self, required: &str) -> bool {
         self.scope == required || self.scope == "*"
@@ -160,11 +183,8 @@ impl RbacTable {
             .extend(patterns);
     }
     pub fn is_allowed(&self, agent_id: &str, file_path: &str) -> bool {
-        if matches!(agent_id, "auto" | "content" | "reasoning") {
-            return true;
-        }
         match self.rules.get(agent_id) {
-            None => true,
+            None => false,
             Some(patterns) => patterns.iter().any(|p| glob_match(p, file_path)),
         }
     }
@@ -727,9 +747,13 @@ impl IdentityManager {
         let receipts_path = ReceiptLog::default_path();
         let receipt_log = Some(ReceiptLog::new(receipts_path));
 
+        let mut rbac = RbacTable::new();
+        // The generated local identity is the only principal admitted by
+        // default. Unknown agents and legacy role strings fail closed.
+        rbac.allow(&identity.agent_id, vec!["*".to_string()]);
         Self {
             identity,
-            rbac: RbacTable::new(),
+            rbac,
             audit_log,
             receipt_log,
         }
@@ -781,13 +805,12 @@ pub struct OidcClient {
 }
 
 impl OidcClient {
-    pub fn verify_token(&self, token: &str) -> bool {
-        info!(
-            "🔐 [Tier 8] Verifying OIDC token via issuer: {}",
+    pub fn verify_token(&self, _token: &str) -> bool {
+        warn!(
+            "OIDC verification is unavailable; denying token for issuer {}",
             self.config.issuer
         );
-        // Mock verification logic
-        !token.is_empty() && token.starts_with("eyJ")
+        false
     }
 }
 
@@ -797,12 +820,7 @@ pub struct CloudSyncManager {
 
 impl CloudSyncManager {
     pub async fn sync_to_cloud(&self, _data: &str) -> Result<(), String> {
-        info!(
-            "☁️  [Tier 8] Syncing memory nexus to SurrealDB Cloud: {}",
-            self.surreal_endpoint
-        );
-        // Mock sync logic
-        Ok(())
+        Err("Cloud sync is disabled until authenticated encrypted transport is implemented".into())
     }
 }
 
@@ -925,7 +943,7 @@ impl LdapGroupMatcher {
     /// Get user permission ring based on mapped system groups
     pub fn get_user_ring(&self) -> PermissionRing {
         if !self.enabled {
-            return PermissionRing::Admin; // Standard fallback for local development
+            return PermissionRing::Standard;
         }
         let system_groups = Self::get_system_groups();
         self.get_user_ring_for_groups(&system_groups)
@@ -934,7 +952,7 @@ impl LdapGroupMatcher {
     /// Pure helper to map a slice of groups to a PermissionRing for testability
     pub fn get_user_ring_for_groups(&self, system_groups: &[String]) -> PermissionRing {
         if !self.enabled {
-            return PermissionRing::Admin;
+            return PermissionRing::Standard;
         }
         for admin_group in &self.admin_groups {
             if system_groups
@@ -1161,14 +1179,14 @@ mod tests {
             standard_groups: vec!["Domain Users".to_string()],
         };
 
-        // If disabled, defaults to Admin
+        // Disabled directory mapping cannot silently grant administrator.
         let disabled_matcher = LdapGroupMatcher {
             enabled: false,
             ..Default::default()
         };
         assert_eq!(
             disabled_matcher.get_user_ring_for_groups(&[]),
-            PermissionRing::Admin
+            PermissionRing::Standard
         );
 
         // Test matching Admin ring
@@ -1200,6 +1218,39 @@ mod tests {
             matcher.get_user_ring_for_groups(&["Guest".to_string()]),
             PermissionRing::Standard
         );
+    }
+
+    #[test]
+    fn test_jit_signature_and_time_bounds_fail_closed() {
+        let identity = AgentIdentity::generate("test", "local");
+        let token = identity.create_jit_token("document:read", 300);
+        assert!(token.is_valid());
+
+        let mut tampered = token.clone();
+        tampered.scope = "admin:*".to_string();
+        assert!(!tampered.is_valid());
+
+        let mut expired = token;
+        expired.expires_at = expired.issued_at;
+        assert!(!expired.is_valid());
+    }
+
+    #[test]
+    fn test_rbac_and_oidc_default_deny() {
+        let mut rbac = RbacTable::new();
+        assert!(!rbac.is_allowed("unknown", "/private/document"));
+        rbac.allow("known", vec!["/allowed/*".to_string()]);
+        assert!(rbac.is_allowed("known", "/allowed/document"));
+        assert!(!rbac.is_allowed("known", "/private/document"));
+
+        let oidc = OidcClient {
+            config: OidcConfig {
+                issuer: "https://issuer.invalid".to_string(),
+                client_id: "disabled".to_string(),
+                authorized_domains: vec![],
+            },
+        };
+        assert!(!oidc.verify_token("eyJ.not-a-verified-token"));
     }
 
     #[test]
