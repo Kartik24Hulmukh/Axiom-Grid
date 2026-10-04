@@ -29,13 +29,17 @@ The agent-computer wave (Grok Bot, OpenBot, browser-use agents) gives agents com
 ```bash
 git clone https://github.com/Kartik24Hulmukh/Axiom-Grid.git && cd Axiom-Grid
 python3 -m venv .venv && source .venv/bin/activate
-pip install -r docker/requirements-runtime.txt
+pip install -r docker/requirements-runtime.txt   # numpy, pdfplumber, python-docx, and the extraction/OCR stack
 make serve          # local overlay API on http://127.0.0.1:8765
 ```
 
 `make run DOC=... Q="..."` is the grounded-Q&A CLI.
 
 For the focused regression suite: `pip install pytest pytest-asyncio hypothesis httpx ruff psutil` then `make pre-push`.
+
+### Why a Python sidecar
+
+The Rust kernel owns the signed-receipt pipeline, admission control, and the networking boundary. Document intake runs in a **Python sidecar** because the strongest OCR/layout engines (Docling, pdfplumber, python-docx) and the numpy-based embedding/cosine path are Python-native; the sidecar runs under strict resource and network isolation and hands extracted text to the kernel for grounding.
 
 ## Receipt verification
 
