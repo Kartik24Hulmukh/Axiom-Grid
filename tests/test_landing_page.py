@@ -104,8 +104,8 @@ class TestScriptedDemo:
 
     def test_demo_has_redline_command(self):
         html = INDEX_HTML.read_text()
-        assert "kairo.cli redline" in html, (
-            "Demo must reference the redline command"
+        assert "axiom.cli redline" in html, (
+            "Demo must reference the redline command (Axiom-Grid CLI)"
         )
 
     def test_demo_has_sealed_mode(self):
