@@ -62,6 +62,11 @@ timeout. No global mutex serializes requests.
 
 Axiom-Grid's engine **reads** documents (Word, Excel, PowerPoint, PDF, code, email, design) through an extraction pipeline behind admission control and bounded execution, and **suggests** grounded answers with page/line citations and a signed receipt chain. It does **not** mutate documents or execute remote writes. Scope is enforced by `tests/test_scope_discipline.py`.
 
+## OpenBot integration & verifiable benchmark
+
+- **OpenBot receipt adapter** (`integrations/openbot/adapter.py`): every OpenBot agent action emits an Ed25519-signed, chain-linked receipt per the Open Agent Receipt Specification. `python -m integrations.openbot.adapter --emit && --verify`.
+- **Verifiable Agent-Action Benchmark** (`bench/verifiable_benchmark.py`): runs real agent tasks (extraction + signing), emits P50/P95/P99 + citation coverage scorecard wrapped in a signed receipt chain. `python bench/verifiable_benchmark.py --tasks 3`.
+
 ## License
 
 MIT. AI-generated code and docs are permitted and encouraged.
