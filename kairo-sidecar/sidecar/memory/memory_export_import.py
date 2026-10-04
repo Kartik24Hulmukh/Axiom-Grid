@@ -34,17 +34,26 @@ def _derive_key(passphrase: str, salt: bytes) -> bytes:
 
 
 def _read_private_regular_file(path: Path) -> bytes:
-    descriptor = os.open(path, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0))
+    flags = os.O_RDONLY | getattr(os, "O_BINARY", 0) | getattr(os, "O_NOFOLLOW", 0)
+    descriptor = os.open(path, flags)
     try:
         info = os.fstat(descriptor)
-        if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1:
+        if not stat.S_ISREG(info.st_mode):
+            raise ValueError("Memory export must be a regular file")
+        # st_nlink is reliable on both POSIX and Windows: a single-link file
+        # reports 1, a hardlinked file reports 2 (link count is maintained by
+        # NTFS and POSIX alike). Reject anything that is not single-link.
+        if info.st_nlink != 1:
             raise ValueError("Memory export must be a single-link regular file")
         if info.st_size > MAX_EXPORT_BYTES:
             raise ValueError("Memory export exceeds the byte limit")
-        with os.fdopen(os.dup(descriptor), "rb") as source:
+        with os.fdopen(descriptor, "rb", closefd=True) as source:
             return source.read(MAX_EXPORT_BYTES + 1)
     finally:
-        os.close(descriptor)
+        try:
+            os.close(descriptor)
+        except OSError:
+            pass
 
 
 def _atomic_private_write(path: Path, payload: bytes) -> None:
@@ -61,17 +70,33 @@ def _atomic_private_write(path: Path, payload: bytes) -> None:
     )
     temporary = Path(temporary_name)
     try:
-        os.fchmod(descriptor, 0o600)
-        with os.fdopen(descriptor, "wb", closefd=True) as target:
-            target.write(payload)
-            target.flush()
-            os.fsync(target.fileno())
-        os.replace(temporary, path)
-        directory = os.open(path.parent, os.O_RDONLY)
+        if hasattr(os, "fchmod"):
+            os.fchmod(descriptor, 0o600)
         try:
-            os.fsync(directory)
+            with os.fdopen(descriptor, "wb", closefd=True) as target:
+                target.write(payload)
+                target.flush()
+                os.fsync(target.fileno())
         finally:
-            os.close(directory)
+            # Windows has no fchmod and cannot chmod an open fd: apply the
+            # private-file mode after the handle is released. On POSIX this
+            # is a no-op because fchmod already ran.
+            if not hasattr(os, "fchmod") and os.name == "nt":
+                try:
+                    os.chmod(temporary, 0o600)
+                except OSError:
+                    pass
+        os.replace(temporary, path)
+        if os.name != "nt":
+            directory = os.open(path.parent, os.O_RDONLY)
+            try:
+                os.fsync(directory)
+            finally:
+                os.close(directory)
+        else:
+            # Windows cannot fsync a directory handle; the file fsync above
+            # plus the atomic replace provide the durability guarantee.
+            pass
     except BaseException:
         temporary.unlink(missing_ok=True)
         raise
