@@ -1,5 +1,7 @@
 # License Audit — Kairo-Phantom
 
+**Status:** Historical inventory, not current release clearance. V8.2 corrections below supersede the EPUB/default-dependency claims. This document is not an exhaustive resolved/transitive distribution audit.
+
 **Date:** 2026-07-08  
 **Auditor:** Autonomous engineering agent (GLM-5.2)  
 **License:** MIT (see [LICENSE](../LICENSE))
@@ -49,8 +51,8 @@ for a provenance header and verifies referenced ADRs exist.
 | fastapi | MIT | ✅ Yes |
 | duckdb | MIT | ✅ Yes |
 | imagehash | MIT | ✅ Yes |
-| Pillow | HPND (MIT-like) | ✅ Yes |
-| ebooklib | AGPL-3.0 | ⚠️ See below |
+| Pillow | Version-specific; installed 12.3.0 declares MIT-CMU | Review exact distributed notices |
+| EbookLib | LGPL; review exact selected version | Review-only optional KPX EPUB profile; see below |
 | odfpy | Apache-2.0 | ✅ Yes |
 | striprtf | MIT | ✅ Yes |
 | mammoth | BSD-2-Clause | ✅ Yes |
@@ -58,23 +60,13 @@ for a provenance header and verifies referenced ADRs exist.
 | sqlite-vec | MIT | ✅ Yes |
 | headroom-ai | MIT | ✅ Yes |
 
-### ⚠️ AGPL-3.0 Dependency: ebooklib
+### V8.2 correction: EbookLib and actual KPX export behavior
 
-**`ebooklib` is licensed under AGPL-3.0.** This is a **copyleft** license that 
-is NOT compatible with MIT distribution.
+The earlier AGPL label and assertion that shipped code never imports EbookLib were incorrect. `kairo-sidecar/sidecar/exporters/kami_kpx.py` imports the real EbookLib dependency during KPX EPUB export. EbookLib is LGPL, not AGPL; exact version and distribution obligations require owner review.
 
-**Status:** ebooklib is listed in `requirements-test.txt` but is NOT imported 
-by any shipped production code. It is only used in test/development paths 
-for EPUB parsing. The production agent does not import or use ebooklib.
+EbookLib is no longer in the default `requirements-test.txt` chain. `requirements-legacy-epub.txt` is a separate legal-review-only opt-in, not legal approval or a default feature guarantee. Without EbookLib, direct KPX EPUB export raises `ModuleNotFoundError`; `export_all` records a failed EPUB result despite returning top-level `ok: true`. Other real export files can succeed. Callers must inspect every requested format result. No replacement EPUB engine, UI fix or clean-host availability is claimed.
 
-**Action required:** Either:
-1. Remove ebooklib from requirements-test.txt if not needed, OR
-2. Move it to a separate dev-only requirements file that is not installed 
-   in production, OR
-3. Replace with an MIT-licensed EPUB parser.
-
-**Current risk:** LOW — ebooklib is not in the production import graph. 
-But it should be removed from requirements-test.txt to avoid confusion.
+PyMuPDF was also removed from the default sidecar requirements, but surviving `fitz` import-time probes and legacy parser/oracle paths remain unsupported/open under the default policy. Already-installed packages can still be discovered. The direct-manifest guard does not audit installed/resolved/transitive dependencies. pikepdf and Hypothesis are MPL-2.0, not permissive; retaining them is not a legal clearance decision.
 
 ## 4. No-License / Paper Code Audit
 
@@ -98,8 +90,7 @@ The following licenses are **forbidden** in shipped production code:
 - CC-BY-NC (Non-Commercial)
 - Unlicensed (no license file)
 
-**Current violations:** None in production code. 
-**Warning:** `ebooklib` (AGPL-3.0) is in requirements-test.txt but not in production imports.
+**Current release assessment:** Unresolved. Direct-default exclusions are guarded, but legacy imports, optional distribution profiles, resolved/transitive licenses and bundled notices still require review. No repository-wide absence or legal clearance is asserted.
 
 ## 6. CI Enforcement
 
@@ -110,9 +101,9 @@ The following licenses are **forbidden** in shipped production code:
 | Secret scan (gitleaks + custom) | `.github/workflows/supply_chain.yml` | ✅ Active |
 | SBOM generation (CycloneDX) | `.github/workflows/supply_chain.yml` | ✅ Active |
 
-## 7. Conclusion
+## 7. Current conclusion
 
-- **No license violations** in shipped production code.
-- **One warning:** `ebooklib` (AGPL-3.0) in requirements-test.txt — not in production imports, should be removed or isolated.
-- All shipped source is clean-room original (MIT-licensed).
-- CI gates enforce provenance headers, advisory scanning, and license checking on every push.
+- The historical clean-room, workflow and compatibility statements above are not a fresh attestation of every source file, license or CI gate.
+- Default requirements no longer declare PyMuPDF or EbookLib; automated guards check direct local manifest closure only.
+- Clean-default KPX EPUB export is unavailable; surviving legacy fitz paths and broader distribution/license obligations remain open.
+- Owner legal/distribution-profile decisions, exact artifacts and resolved/transitive notices are required before release. V8.2 does not supply legal clearance.
