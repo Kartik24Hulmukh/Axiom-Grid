@@ -375,17 +375,20 @@ async def enforce_origin_gate(request, call_next):
 # Production hardening middleware (SEC-003/004, OPS-001)
 # ------------------------------------------------------------------
 
-# SEC-004: regex-heavy packs run against a bounded thread pool so a hostile
-# oversized document cannot monopolise the async event loop (CPU-starvation
-# DoS guard). Bounded at 4 workers; 100x stress proved lock-safe behaviour.
-# Capacity now scales with the host instead of being pinned at 4: a 16-core
-# production box admits 32 concurrent extractions (8x) while a laptop keeps the
-# old safe floor. Override explicitly with AXIOM_EXTRACTION_WORKERS.
-EXTRACTION_WORKERS = max(
-    4,
-    int(os.environ.get("AXIOM_EXTRACTION_WORKERS") or 0)
-    or min(32, (os.cpu_count() or 2) * 2),
-)
+# SEC-004: parsing uses a bounded thread pool; this is not a GIL/latency guarantee.
+# Automatic host sizing retains the historical 4..32 default. An explicit
+# deployment limit must be authoritative, including the 2-worker container.
+_configured_extraction_workers = os.environ.get("AXIOM_EXTRACTION_WORKERS", "")
+try:
+    EXTRACTION_WORKERS = (
+        int(_configured_extraction_workers)
+        if _configured_extraction_workers
+        else max(4, min(32, (os.cpu_count() or 2) * 2))
+    )
+except ValueError as exc:
+    raise ValueError("AXIOM_EXTRACTION_WORKERS must be an integer between 1 and 32") from exc
+if not 1 <= EXTRACTION_WORKERS <= 32:
+    raise ValueError("AXIOM_EXTRACTION_WORKERS must be an integer between 1 and 32")
 _extraction_pool = concurrent.futures.ThreadPoolExecutor(
     max_workers=EXTRACTION_WORKERS, thread_name_prefix="axiom-extract"
 )

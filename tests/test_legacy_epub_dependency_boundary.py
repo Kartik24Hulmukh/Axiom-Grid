@@ -43,6 +43,7 @@ with tempfile.TemporaryDirectory() as directory:
     output = {
         "direct": direct,
         "aggregate_ok": aggregate["ok"],
+        "notification": aggregate["notification"],
         "epub_result": results["epub"],
         "remaining_artifacts_exist": {
             name: Path(results[name]).is_file()
@@ -67,9 +68,12 @@ class TestLegacyEpubDependencyBoundary(unittest.TestCase):
         self.assertEqual(self.observed["direct"],
                          {"exception": "ModuleNotFoundError", "name": "ebooklib"})
 
-    def test_aggregate_top_level_ok_does_not_attest_epub_success(self):
-        self.assertIs(self.observed["aggregate_ok"], True)
+    def test_aggregate_reports_requested_epub_failure(self):
+        self.assertIs(self.observed["aggregate_ok"], False)
         self.assertEqual(self.observed["epub_result"], "FAILED: No module named 'ebooklib'")
+        self.assertIn("4/5 formats exported", self.observed["notification"])
+        self.assertIn("failed: epub", self.observed["notification"])
+        self.assertNotIn("All formats exported", self.observed["notification"])
 
     def test_no_fake_epub_is_written_and_other_real_exports_remain(self):
         self.assertEqual(self.observed["epub_artifacts"], 0)

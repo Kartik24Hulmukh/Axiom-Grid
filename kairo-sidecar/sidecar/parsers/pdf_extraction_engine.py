@@ -239,6 +239,10 @@ class PdfExtractionEngine:
         # --- Final fallback: whatever fitz can provide ---
         if result is None:
             fallback_text = self._fallback_extract(file_path)
+            if not fallback_text.strip():
+                raise RuntimeError(
+                    "Legacy PDF extraction unavailable or failed: no extraction tier produced text."
+                )
             result = PdfExtractionResult(
                 text=fallback_text,
                 markdown=fallback_text,

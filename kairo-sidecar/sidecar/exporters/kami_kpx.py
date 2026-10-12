@@ -40,9 +40,9 @@ def _scan_for_injections(text: str) -> Tuple[bool, List[str]]:
         if not result.get("safe", True):
             return False, result.get("matched_patterns", [])
         return True, []
-    except ImportError:
-        log.warning("PromptShield not available — injection scan skipped (NOT secure)")
-        return True, []
+    except ImportError as exc:
+        log.error("PromptShield unavailable — refusing unscanned content")
+        raise RuntimeError("PromptShield unavailable; refusing unscanned content") from exc
 
 
 # ── KAMI Index ────────────────────────────────────────────────────────────────
@@ -436,9 +436,25 @@ blockquote {{ border-left: 4px solid #ddd; margin-left: 0; padding-left: 1em; co
             "notification": f"✅ JSON exported to {out_path}",
         }
 
+    @staticmethod
+    def _export_output_path(result: Any) -> str:
+        """Validate a format result without treating unsuccessful responses as paths."""
+        if not isinstance(result, dict):
+            raise TypeError(f"Malformed export result: expected dictionary, got {result!r}")
+        if result.get("ok") is not True:
+            raise RuntimeError(f"Export did not succeed: {result.get('error', result)}")
+        path = result.get("output_path")
+        if not isinstance(path, str) or not path:
+            raise ValueError(f"Malformed export output_path: {result!r}")
+        return path
+
     def export_all(self, text: str, metadata: Dict[str, Any]) -> Dict[str, Any]:
-        """Export to all 5 formats simultaneously."""
+        """Attempt all 5 real formats; ok attests success of every requested format.
+
+        Partial outputs remain available in results alongside FAILED error strings.
+        """
         results = {}
+        failed = []
         for fmt, method in [
             ("epub", self.export_epub),
             ("html", self.export_html),
@@ -448,14 +464,21 @@ blockquote {{ border-left: 4px solid #ddd; margin-left: 0; padding-left: 1em; co
         ]:
             try:
                 res = method(text, metadata)
-                results[fmt] = res["output_path"]
+                results[fmt] = self._export_output_path(res)
             except Exception as e:
                 results[fmt] = f"FAILED: {e}"
+                failed.append(fmt)
+        notification = f"📦 All formats exported to {self.output_dir}"
+        if failed:
+            notification = (
+                f"Export incomplete: {len(results) - len(failed)}/{len(results)} formats "
+                f"exported to {self.output_dir}; failed: {', '.join(failed)}"
+            )
         return {
-            "ok": True,
+            "ok": not failed,
             "format": "all",
             "results": results,
-            "notification": f"📦 All formats exported to {self.output_dir}",
+            "notification": notification,
         }
 
     # ── Markdown parsing helpers ──────────────────────────────────────────────
