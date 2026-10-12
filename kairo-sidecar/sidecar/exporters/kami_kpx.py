@@ -18,12 +18,28 @@ import re
 import hashlib
 from dataclasses import dataclass, field
 from datetime import datetime
+from html import escape as escape_html
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 log = logging.getLogger("kairo-sidecar.kami_kpx")
 
 # ── PromptShield integration ──────────────────────────────────────────────────
+
+
+def _validated_scan_result(result: Any) -> Tuple[bool, List[str]]:
+    """Validate the scanner's explicit decision; never infer safety by truthiness."""
+    if (
+        not isinstance(result, dict)
+        or type(result.get("safe")) is not bool
+        or not isinstance(result.get("matched_patterns"), list)
+        or any(not isinstance(pattern, str) for pattern in result["matched_patterns"])
+        or (result["safe"] is True and result["matched_patterns"])
+    ):
+        raise RuntimeError(
+            "PromptShield returned invalid safety decision; refusing unscanned content"
+        )
+    return result["safe"], list(result["matched_patterns"])
 
 
 def _scan_for_injections(text: str) -> Tuple[bool, List[str]]:
@@ -36,10 +52,7 @@ def _scan_for_injections(text: str) -> Tuple[bool, List[str]]:
         from sidecar.safety.prompt_shield import PromptShield
 
         shield = PromptShield()
-        result = shield.scan_detailed(text)
-        if not result.get("safe", True):
-            return False, result.get("matched_patterns", [])
-        return True, []
+        return _validated_scan_result(shield.scan_detailed(text))
     except ImportError as exc:
         log.error("PromptShield unavailable — refusing unscanned content")
         raise RuntimeError("PromptShield unavailable; refusing unscanned content") from exc
@@ -287,7 +300,7 @@ class KPXExporter:
                 file_name=f"chapter_{i+1}.xhtml",
                 lang="en",
             )
-            chapter.content = f"<h1>{ch_title}</h1>\n" + self._markdown_to_html(ch_content)
+            chapter.content = f"<h1>{escape_html(ch_title)}</h1>\n" + self._markdown_to_html(ch_content)
             book.add_item(chapter)
             spine.append(chapter)
             book.toc.append(chapter)
@@ -314,7 +327,7 @@ class KPXExporter:
         """Export to standalone self-contained HTML."""
         self._scan_content(text)
         ts = self._timestamp()
-        title = metadata.get("title", "Kairo Export")
+        title = escape_html(str(metadata.get("title", "Kairo Export")))
         out_path = self.output_dir / f"kairo-export-{ts}.html"
 
         html_body = self._markdown_to_html(text)
@@ -517,40 +530,40 @@ blockquote {{ border-left: 4px solid #ddd; margin-left: 0; padding-left: 1em; co
                     in_code = True
                 continue
             if in_code:
-                html_lines.append(line)
+                html_lines.append(escape_html(line))
                 continue
             # Headings
             if stripped.startswith("### "):
                 if in_list:
                     html_lines.append("</ul>")
                     in_list = False
-                html_lines.append(f"<h3>{stripped[4:]}</h3>")
+                html_lines.append(f"<h3>{escape_html(stripped[4:])}</h3>")
             elif stripped.startswith("## "):
                 if in_list:
                     html_lines.append("</ul>")
                     in_list = False
-                html_lines.append(f"<h2>{stripped[3:]}</h2>")
+                html_lines.append(f"<h2>{escape_html(stripped[3:])}</h2>")
             elif stripped.startswith("# "):
                 if in_list:
                     html_lines.append("</ul>")
                     in_list = False
-                html_lines.append(f"<h1>{stripped[2:]}</h1>")
+                html_lines.append(f"<h1>{escape_html(stripped[2:])}</h1>")
             elif stripped.startswith("- ") or stripped.startswith("* "):
                 if not in_list:
                     html_lines.append("<ul>")
                     in_list = True
-                html_lines.append(f"<li>{stripped[2:]}</li>")
+                html_lines.append(f"<li>{escape_html(stripped[2:])}</li>")
             elif stripped.startswith("> "):
                 if in_list:
                     html_lines.append("</ul>")
                     in_list = False
-                html_lines.append(f"<blockquote>{stripped[2:]}</blockquote>")
+                html_lines.append(f"<blockquote>{escape_html(stripped[2:])}</blockquote>")
             elif stripped:
                 if in_list:
                     html_lines.append("</ul>")
                     in_list = False
                 # Inline formatting
-                content = stripped
+                content = escape_html(stripped)
                 content = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", content)
                 content = re.sub(r"\*(.+?)\*", r"<em>\1</em>", content)
                 content = re.sub(r"`(.+?)`", r"<code>\1</code>", content)
