@@ -1,0 +1,158 @@
+✖ UX01 forget during actual processing cannot overwrite cleared document (3795.738473ms)
+✖ UX02 forget during actual upload leaves no owned option or stale status (1822.133566ms)
+✖ UX03 hidden correction controls cannot receive keyboard focus (794.181482ms)
+✖ UX04 keyboard tabs expose selected state and arrow navigation (1504.168407ms)
+✖ UX05 correction traps keyboard, Escape returns focus, labels resolve (1365.451288ms)
+✖ UX06 conflict retains draft and updates displayed original before explicit retry (1871.298239ms)
+✖ UX07 delayed save from closed editor cannot close a newer editor (2126.981091ms)
+✖ UX08 modal fits 320px viewport with keyboard-height constraint (1270.992611ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 0
+ℹ fail 8
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 15871.17119
+
+✖ failing tests:
+
+test at tests/browser/ux-hardening.e2e.cjs:62:1
+✖ UX01 forget during actual processing cannot overwrite cleared document (3795.738473ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'Unable to process document: Connection changed; result discarded'
+  - 'Select a document and run the pipeline.'
+  
+      at TestContext.<anonymous> (/data/axiom-fourth/ux/tests/browser/ux-hardening.e2e.cjs:69:16)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Unable to process document: Connection changed; result discarded',
+    expected: 'Select a document and run the pipeline.',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/browser/ux-hardening.e2e.cjs:73:1
+✖ UX02 forget during actual upload leaves no owned option or stale status (1822.133566ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(!(await p.locator('#upload-status').innerText()).includes('failed'))
+  
+      at TestContext.<anonymous> (/data/axiom-fourth/ux/tests/browser/ux-hardening.e2e.cjs:80:16)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at tests/browser/ux-hardening.e2e.cjs:83:1
+✖ UX03 hidden correction controls cannot receive keyboard focus (794.181482ms)
+  AssertionError [ERR_ASSERTION]: Expected "actual" to be strictly unequal to:
+  
+  'modal-corrected'
+      at TestContext.<anonymous> (/data/axiom-fourth/ux/tests/browser/ux-hardening.e2e.cjs:86:16)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'modal-corrected',
+    expected: 'modal-corrected',
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/browser/ux-hardening.e2e.cjs:89:1
+✖ UX04 keyboard tabs expose selected state and arrow navigation (1504.168407ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  null !== 'tab'
+  
+      at TestContext.<anonymous> (/data/axiom-fourth/ux/tests/browser/ux-hardening.e2e.cjs:91:16)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: 'tab',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/browser/ux-hardening.e2e.cjs:97:1
+✖ UX05 correction traps keyboard, Escape returns focus, labels resolve (1365.451288ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  null !== 'dialog'
+  
+      at TestContext.<anonymous> (/data/axiom-fourth/ux/tests/browser/ux-hardening.e2e.cjs:99:16)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: 'dialog',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/browser/ux-hardening.e2e.cjs:106:1
+✖ UX06 conflict retains draft and updates displayed original before explicit retry (1871.298239ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'FROM: Office of the Director, Central Analysis Group (CAG)AUTHOR: Dr. Margaret Chen, Senior AnalystDATE OF INFORMATION: 15 March 2003SUBJECT: Assessment of Weapons Procurement Networks in Eastern Mediterranean Region'
+  - 'Other reviewer value'
+  
+      at TestContext.<anonymous> (/data/axiom-fourth/ux/tests/browser/ux-hardening.e2e.cjs:112:16)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'FROM: Office of the Director, Central Analysis Group (CAG)AUTHOR: Dr. Margaret Chen, Senior AnalystDATE OF INFORMATION: 15 March 2003SUBJECT: Assessment of Weapons Procurement Networks in Eastern Mediterranean Region',
+    expected: 'Other reviewer value',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/browser/ux-hardening.e2e.cjs:117:1
+✖ UX07 delayed save from closed editor cannot close a newer editor (2126.981091ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  false !== true
+  
+      at TestContext.<anonymous> (/data/axiom-fourth/ux/tests/browser/ux-hardening.e2e.cjs:122:16)
+      at runNextTicks (node:internal/process/task_queues:65:5)
+      at process.processImmediate (node:internal/timers:472:9)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/browser/ux-hardening.e2e.cjs:126:1
+✖ UX08 modal fits 320px viewport with keyboard-height constraint (1270.992611ms)
+  AssertionError [ERR_ASSERTION]: {"x":16,"y":-51.875,"width":256,"height":583.75}
+      at TestContext.<anonymous> (/data/axiom-fourth/ux/tests/browser/ux-hardening.e2e.cjs:128:74)
+      at runNextTicks (node:internal/process/task_queues:65:5)
+      at process.processImmediate (node:internal/timers:472:9)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

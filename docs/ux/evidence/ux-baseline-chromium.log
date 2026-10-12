@@ -1,0 +1,17 @@
+✔ real document pipeline, tabs and source evidence render without browser exceptions (6289.224445ms)
+✔ 100 synchronous rapid clicks send exactly one real pipeline request (883.71394ms)
+✔ missing document surfaces HTTP failure and restores controls (1100.52835ms)
+✔ real correction records markup as text; native desktop action is explicitly gated (2373.856861ms)
+✔ isolated response-fuzz: hostile fields, identifiers and trace outputs cannot create HTML (1262.609564ms)
+✔ mid-flight page abandonment does not prevent the next real session (2131.352951ms)
+✔ actual owned upload completes preview, source and repeated review CAS (3220.695668ms)
+✔ actual conflicting review reloads current revision before explicit retry (2280.18583ms)
+✔ owned upload and process controls stay reachable at mobile and desktop widths (1595.540189ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 22514.075498

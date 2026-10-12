@@ -171,7 +171,7 @@ Kairo Phantom enforces access control at three levels:
 **Uptime Guarantees**
 - No shared infrastructure — runs on customer hardware
 - No single point of failure (no central server)
-- Memory sync optional via LAN P2P (`kairo memory sync serve`)
+- LAN memory sync is unavailable pending authenticated, encrypted peer pairing.
 
 ---
 

@@ -1,0 +1,55 @@
+...................FFF.....                                              [100%]
+=================================== FAILURES ===================================
+__________ test_corrupt_upload_size_refused_for_read_and_quota[-100] ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-vercel-sandbox/pytest-9/test_corrupt_upload_size_refus0')
+bad_bytes = -100
+
+    @pytest.mark.parametrize('bad_bytes', [-100, 1, 'wrong'])
+    def test_corrupt_upload_size_refused_for_read_and_quota(tmp_path, bad_bytes):
+        store = DocumentStore(tmp_path/'owned', max_bytes=16)
+        ref = store.save('local', 'safe.txt', b'owned')
+        with store._db: store._db.execute('UPDATE uploads SET bytes=?', (bad_bytes,))
+        try:
+>           with pytest.raises((ValueError, sqlite3.DatabaseError)):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE any of (ValueError, DatabaseError)
+
+tests/security/test_storage_boundaries.py:181: Failed
+____________ test_corrupt_upload_size_refused_for_read_and_quota[1] ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-vercel-sandbox/pytest-9/test_corrupt_upload_size_refus1')
+bad_bytes = 1
+
+    @pytest.mark.parametrize('bad_bytes', [-100, 1, 'wrong'])
+    def test_corrupt_upload_size_refused_for_read_and_quota(tmp_path, bad_bytes):
+        store = DocumentStore(tmp_path/'owned', max_bytes=16)
+        ref = store.save('local', 'safe.txt', b'owned')
+        with store._db: store._db.execute('UPDATE uploads SET bytes=?', (bad_bytes,))
+        try:
+>           with pytest.raises((ValueError, sqlite3.DatabaseError)):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE any of (ValueError, DatabaseError)
+
+tests/security/test_storage_boundaries.py:181: Failed
+__________ test_corrupt_upload_size_refused_for_read_and_quota[wrong] __________
+
+tmp_path = PosixPath('/tmp/pytest-of-vercel-sandbox/pytest-9/test_corrupt_upload_size_refus2')
+bad_bytes = 'wrong'
+
+    @pytest.mark.parametrize('bad_bytes', [-100, 1, 'wrong'])
+    def test_corrupt_upload_size_refused_for_read_and_quota(tmp_path, bad_bytes):
+        store = DocumentStore(tmp_path/'owned', max_bytes=16)
+        ref = store.save('local', 'safe.txt', b'owned')
+        with store._db: store._db.execute('UPDATE uploads SET bytes=?', (bad_bytes,))
+        try:
+>           with pytest.raises((ValueError, sqlite3.DatabaseError)):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE any of (ValueError, DatabaseError)
+
+tests/security/test_storage_boundaries.py:181: Failed
+=========================== short test summary info ============================
+FAILED tests/security/test_storage_boundaries.py::test_corrupt_upload_size_refused_for_read_and_quota[-100]
+FAILED tests/security/test_storage_boundaries.py::test_corrupt_upload_size_refused_for_read_and_quota[1]
+FAILED tests/security/test_storage_boundaries.py::test_corrupt_upload_size_refused_for_read_and_quota[wrong]
+3 failed, 24 passed in 0.66s

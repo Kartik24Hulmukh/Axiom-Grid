@@ -1,0 +1,9 @@
+# Frontend v5 bounded handoff
+
+Base e2b9d42. Four new before-edit browser contracts all failed (0/4 pass) and all passed (4/4) after exactly one new source cycle, cumulative two frontend cycles since prior UX remediation. New tests UX20–23 are real-page heading/landmarks, actual opaque action color contrast >=4.5, actual multiline CAS correction/readback at320x480, and explicitly labelled CSS-only motion-preference oracle. The last is not fabricated source evidence or a real assistive-technology trial.
+
+Source scope only overlay/templates/index.html; overlay.js unchanged. Changes: actual H1, H2, named connection form landmark; opaque primary color + readable hovered Accept/Edit/Reject text; readonly original/editable corrected textareas preserving newlines; reduced-motion disables pulse as well as transitions. No backend/auth/state schema/action contract changes, no production dependency.
+
+Contrast assertion checks computed opaque text/background or opaque gradient stops. Baseline primary contrast is invalid; it does not certify all composited backgrounds, gradient logo, disabled controls, color-contrast incomplete axe checks or WCAG conformance. AXE heading/region subset zero violations after source fix; final integrated full audit remains required. No screen-reader/human/OS keyboard certification. Modal Save reachability remains required at320x480; new multiline UI roundtrip uses actual backend200 then actual reopened persisted value.
+
+Focused logs ux-baseline4.log, ux-after4-cycle1.log retained unchanged. Baseline test file frozen hash and source hashes retained. Original19case regression, full AXE states and script safety MUST rerun at integrated runtime. Source freeze after one new cycle; no arbitrary workload sleep added. Existing test harness waits for bounded readiness; hover test awaits actual browser animation completion. No thresholds relaxed. Source+tests committed atomically; parent later report records exact commit SHA.

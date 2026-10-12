@@ -1,0 +1,38 @@
+{
+  "base": "e2b9d4236fc067241318b5ed56f5c4f495761c41",
+  "branch": "council/security-v5",
+  "sha256": {
+    "kernel/sidecar/evidence_store.py": "e37922a087d4ca808ccb967f6cf6af8a02026eee66cb1416fdb3264fa3c6db1c",
+    "kernel/sidecar/storage_security.py": "ae029204c03f9ed46b241bbe0e80f7eed5847686b6159e2855c76a2e60e05201",
+    "overlay/document_store.py": "aafd700161925df945e555f28a293c28555a3d263f2299a401f5717c82bbd1e8",
+    "tests/security/test_storage_boundaries.py": "a1d206fda76ea3bc4d7d411ce1266a543096d72a8e5868a59ad23cb1f9095bc7",
+    "docs/security/LOCAL_STORAGE_CUSTODY.md": "85b2c500e4424094121a30408d0877ad3749d65cf3d57dcbe55d02074118affe",
+    "docs/security/evidence/api-focused.txt": "1f0d289b7fb6383c085e70b92d93fa1a0df8302e11079151f9de69a2ab920f08",
+    "docs/security/evidence/baseline.txt": "d6d18180b2cfe0309eb1156b5c09dc78b4e0febeb82f096354a18533dbf52fc4",
+    "docs/security/evidence/cycle1-additional.txt": "c849f1786bfe3a3da48bb54dde42a815a578606b51b2e125dc076a5e1d373f95",
+    "docs/security/evidence/cycle1.txt": "6cdb7282fde144d95bda25d190ce02b51fa53d5816285b6d273060efa35bdfbe",
+    "docs/security/evidence/cycle2.txt": "d2c58842486b8fb732dbeaba20e50b7ef756e41d67f85552b663ad96b30f8ff6",
+    "docs/security/evidence/final-strict.txt": "75ae2582ff31d0cd22399a956fa721afca23cbcc9a6f4556d077c97f3d901c95",
+    "docs/security/evidence/lint-cycle1.txt": "f62c0a591165867b65683c3526ceb26a1bbb65e11600739893ff44f3f76bc64f",
+    "docs/security/evidence/lint-final.txt": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+    "docs/security/evidence/process-repeat.txt": "1ecdd1643bc82d14abb7343ca3eb8dd27f3a31e97c6229702f65020cc3f9aa2d"
+  },
+  "source_cycles": {
+    "kernel/sidecar/evidence_store.py": {
+      "previous": 3,
+      "current": 2,
+      "cumulative": 5
+    },
+    "overlay/document_store.py": {
+      "previous": 2,
+      "current": 2,
+      "cumulative": 4
+    },
+    "kernel/sidecar/storage_security.py": {
+      "previous": 0,
+      "current": 2,
+      "cumulative": 2
+    }
+  },
+  "tests": "new security regression module: four changes incl additional attacks, import lint, fixture-only close/new process tests"
+}
