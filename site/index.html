@@ -16,17 +16,18 @@
                 <a href="#verify">Verify</a>
                 <a href="#demo">Demo</a>
                 <a href="#receipt">Receipt</a>
-                <a href="https://github.com/Kartik24Hulmukh/Axiom-Grid-Phantom">GitHub</a>
+                <a href="https://github.com/Kartik24Hulmukh/Axiom-Grid">GitHub</a>
             </div>
         </nav>
     </header>
 
     <section class="hero">
-        <h1>The offline-first desktop agent that proves every action with a signed receipt.</h1>
-        <p class="tagline">No cloud. No bluff. Every answer is grounded in your source documents — and every action is cryptographically signed.</p>
+        <h1>Engineering preview: signed receipts for document-agent workflows.</h1>
+        <p class="tagline">Local read + suggest workflows with cited outputs and a verifier. This is not a general-availability desktop agent; review the open launch gates before deployment.</p>
         <div class="cta-group">
             <a href="#demo" class="btn btn-primary">See the Demo</a>
-            <a href="https://github.com/Kartik24Hulmukh/Axiom-Grid-Phantom" class="btn btn-secondary">View Source</a>
+            <a href="https://github.com/Kartik24Hulmukh/Axiom-Grid/blob/main/LAUNCH-BLOCKERS.md" class="btn btn-secondary">Launch blockers</a>
+            <a href="https://github.com/Kartik24Hulmukh/Axiom-Grid" class="btn btn-secondary">View Source</a>
         </div>
     </section>
 
@@ -39,11 +40,11 @@
             </div>
             <div class="feature-card">
                 <h3>🔒 Offline-First</h3>
-                <p>Runs entirely on your machine. Zero outbound network calls in sealed mode. No cloud dependency. No data leaves your device.</p>
+                <p>Local document preview and receipt verification do not require a provider. Optional model services and telemetry can use the network; sealed runtime checks are not an OS-wide zero-egress guarantee.</p>
             </div>
             <div class="feature-card">
                 <h3>✍️ Signed Receipts</h3>
-                <p>Every action produces an Ed25519-signed, Merkle-chained receipt. An independent verifier can validate any receipt without trusting Axiom-Grid.</p>
+                <p>Explicit trace exports produce Ed25519-signed observations in a linear SHA-256 hash chain. Verify against a pinned public key and retained checkpoint. Export adapters are not live every-action instrumentation.</p>
             </div>
             <div class="feature-card">
                 <h3>🛡️ Injection Defense</h3>
@@ -53,45 +54,13 @@
     </section>
 
     <section id="metrics" class="section section-alt">
-        <h2>Real Metrics (Reproducible)</h2>
-        <p class="section-note">Every number below is produced by a test you can run yourself. No invented metrics.</p>
+        <h2>Verification Metrics and Scope</h2>
+        <p class="section-note">NO-GO for general availability. Scripted load, local tests and signed observations do not certify production or human adoption.</p>
         <div class="metrics-grid">
-            <div class="metric-card">
-                <div class="metric-value">99.2%</div>
-                <div class="metric-label">Grounding Accuracy</div>
-                <div class="metric-detail">595/600 on UI-TARS 250-case subset (IoU ≥ 0.5)</div>
-                <div class="metric-source"><code>pytest tests/bench/test_grounding.py</code></div>
-            </div>
-            <div class="metric-card">
-                <div class="metric-value">25/25</div>
-                <div class="metric-label">Injection Block Rate</div>
-                <div class="metric-detail">Repo-reported red-team result. Enforced &amp; measured on a clean clone: 25/25 corpus attacks blocked, 0/15 false positives, 106 patterns; expanded guard blocks every generated payload (25 tests: 8 suite + 17 expanded)</div>
-                <div class="metric-source"><code>pytest tests/security/test_injection_suite.py tests/test_injection_guard_expanded.py -q</code></div>
-            </div>
-            <div class="metric-card">
-                <div class="metric-value">96.4%</div>
-                <div class="metric-label">Grounded Answer Rate</div>
-                <div class="metric-detail">83 invoice fixtures, false refusal 3.6%</div>
-                <div class="metric-source"><code>python -m bench.harness</code></div>
-            </div>
-            <div class="metric-card">
-                <div class="metric-value">17</div>
-                <div class="metric-label">Tamper-Detection Tests</div>
-                <div class="metric-detail">Sign → verify → tamper → DETECTED → revert → verify</div>
-                <div class="metric-source"><code>pytest tests/test_canary_break.py</code></div>
-            </div>
-            <div class="metric-card">
-                <div class="metric-value">33</div>
-                <div class="metric-label">Trust Layer Tests</div>
-                <div class="metric-detail">Flight recorder, timestamp anchor, policy engine, replay</div>
-                <div class="metric-source"><code>pytest tests/test_trust_layer_extended.py</code></div>
-            </div>
-            <div class="metric-card">
-                <div class="metric-value">0</div>
-                <div class="metric-label">Ungated Network Calls</div>
-                <div class="metric-detail">Sealed mode, air-gap verified, kill-proven</div>
-                <div class="metric-source"><code>pytest tests/test_airgap_zero_egress.py</code></div>
-            </div>
+            <div class="metric-card"><div class="metric-value">NO-GO</div><div class="metric-label">Load gates remain open</div><div class="metric-detail">Capacity shedding and worst-case error latency still fail the requested launch bounds.</div><div class="metric-source"><code>python scripts/launch_torture.py --output launch-evidence/tcp.json</code></div></div>
+            <div class="metric-card"><div class="metric-value">CLI</div><div class="metric-label">Explicit receipt export</div><div class="metric-detail">Pinned-key integrity checks, not proof of execution or completeness.</div><div class="metric-source"><code>python -m pytest kernel/tests/test_agent_receipts.py -q</code></div></div>
+            <div class="metric-card"><div class="metric-value">TRACE</div><div class="metric-label">Loopback gateway fault tests</div><div class="metric-detail">Local HTTP failover tests are not live provider/model-quality verification.</div><div class="metric-source"><code>python -m pytest kernel/tests/test_melious_local_http.py -q</code></div></div>
+            <div class="metric-card"><div class="metric-value">LOCAL</div><div class="metric-label">Lifecycle and policy checks</div><div class="metric-detail">Worker join and durable-state close in bounded local runs; no 24-hour soak claim.</div><div class="metric-source"><code>python -m pytest overlay/tests/test_request_policy_asgi.py -q</code></div></div>
         </div>
     </section>
 
@@ -103,104 +72,93 @@
                 <div class="step-number">1</div>
                 <div class="step-content">
                     <h3>Clone and set up</h3>
-                    <pre><code>git clone https://github.com/Kartik24Hulmukh/Axiom-Grid-Phantom.git
-cd Axiom-Grid-Phantom
-pip install -r requirements-test.txt</code></pre>
+                    <pre><code>git clone https://github.com/Kartik24Hulmukh/Axiom-Grid.git
+cd Axiom-Grid
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r docker/requirements-runtime.txt -r requirements-telemetry.txt
+pip install pytest pytest-asyncio hypothesis httpx psutil ruff cryptography</code></pre>
                 </div>
             </div>
             <div class="demo-step">
                 <div class="step-number">2</div>
                 <div class="step-content">
                     <h3>Run the Python suite</h3>
-                    <pre><code># Dependency-light subset — verified on a clean clone with only pytest installed: 28 passed
-pytest tests/test_landing_page.py tests/security/test_injection_suite.py -q
-
-# Full suite (CI-verified: 1,976 passed, 34 skipped, 0 failed — see BENCHMARKS.md for per-job breakdown)
-# (e2e PDF tests need a cached model2vec model; without it they error, not fail)
-pytest tests/ -q --ignore=tests/e2e</code></pre>
+                    <pre><code>python -m pytest tests/test_landing_page.py tests/security/test_injection_suite.py -q
+PYTHON=python3 bash ci/pre-push.sh
+# Full optional suites require their documented dependencies and assets</code></pre>
                 </div>
             </div>
             <div class="demo-step">
                 <div class="step-number">3</div>
                 <div class="step-content">
-                    <h3>Rust: same command CI runs</h3>
-                    <pre><code># Blocking steps in CI workflow "Tier 1 — Verify (CPU)": cargo fmt, clippy -D warnings, build, test
-cargo test --workspace --exclude phantom-overlay</code></pre>
-                    <p>phantom-overlay is excluded exactly as in CI (it needs Tauri system libraries). No Rust pass/fail counts are asserted here — CI enforces them as blocking steps.</p>
+                    <h3>Optional native runtime: verify separately</h3>
+                    <pre><code>cargo test --manifest-path axiom-runtime/Cargo.toml</code></pre>
+                    <p>This needs the intended Rust toolchain. A crate test does not certify desktop writes, signed installers or other operating systems.</p>
                 </div>
             </div>
         </div>
     </section>
 
     <section id="demo" class="section">
-        <h2>Scripted Demo (60 seconds)</h2>
-        <p class="section-note">This demo runs entirely offline. No network, no LLM, no cloud.</p>
+        <h2>Reproduce the Receipt Demo</h2>
+        <p class="section-note">Synthetic signed sample, offline verification. This is not a recorded human test or live OpenBot integration.</p>
         <div class="demo-steps">
-            <div class="demo-step">
-                <div class="step-number">1</div>
-                <div class="step-content">
-                    <h3>Redline a contract</h3>
-                    <pre><code>python -m axiom.cli redline fixtures/demo/sample_nda.docx fixtures/demo/nda_playbook.json --out demo_output</code></pre>
-                    <p>Produces real OOXML tracked changes (w:ins/w:del) on the NDA.</p>
-                </div>
-            </div>
-            <div class="demo-step">
-                <div class="step-number">2</div>
-                <div class="step-content">
-                    <h3>Seal the air-gap</h3>
-                    <pre><code>python -m axiom.cli redline fixtures/demo/sample_nda.docx fixtures/demo/nda_playbook.json --sealed --out demo_sealed</code></pre>
-                    <p>Activates sealed mode, blocks all outbound connections, writes air-gap report.</p>
-                </div>
-            </div>
-            <div class="demo-step">
-                <div class="step-number">3</div>
-                <div class="step-content">
-                    <h3>Verify the signed receipt</h3>
-                    <pre><code>python tools/verify_receipts_external.py demo_output/audit_log.json</code></pre>
-                    <p>Independently verifies the Ed25519-signed, Merkle-chained audit log — without trusting Axiom-Grid.</p>
-                </div>
-            </div>
+            <div class="demo-step"><div class="step-number">1</div><div class="step-content"><h3>Inspect the sample</h3><pre><code>python -m json.tool examples/receipts/sample.json</code></pre><p>The sample contains synthetic observations, not captured customer activity.</p></div></div>
+            <div class="demo-step"><div class="step-number">2</div><div class="step-content"><h3>Pin the signer and checkpoint</h3><pre><code>python scripts/axiom_receipts.py verify examples/receipts/sample.json \
+  --public-key examples/receipts/sample-public.pem \
+  --checkpoint examples/receipts/sample-checkpoint.json</code></pre><p>For real exports, provision your own key and obtain the public key out of band. Do not trust a replacement key embedded in an export.</p></div></div>
+            <div class="demo-step"><div class="step-number">3</div><div class="step-content"><h3>Exercise rejection cases</h3><pre><code>python -m pytest kernel/tests/test_agent_receipts.py -q</code></pre><p>Tests cover tampering, pinned trust and concurrent exports. A valid signature is not proof of execution, completeness, citation truth or legal compliance.</p></div></div>
         </div>
+        <h3>Separate legal-redline workflow</h3>
+        <pre><code>python -m kairo.cli redline fixtures/demo/sample_nda.docx fixtures/demo/nda_playbook.json --out demo_output</code></pre>
+        <p>This creates new local outputs under its own manifest format. It does not perform a desktop write or automatically emit the agent receipt format. Runtime sealed checks are separate from OS-wide egress enforcement.</p>
     </section>
 
     <section id="receipt" class="section section-alt">
         <h2>What a Signed Receipt Looks Like</h2>
-        <p class="section-note">Every action produces a receipt like this. Tamper a single byte — verification fails.</p>
+        <p class="section-note">First entry from the actual synthetic sample. This page does not verify signatures; run the CLI with a pinned key and checkpoint.</p>
         <div class="receipt-display">
             <pre class="receipt-json">{
-  "seq": 0,
-  "timestamp": 1783512345,
-  "agent_id": "d4a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1",
-  "action": "redline_contract",
-  "context": {"file": "sample_nda.docx", "playbook": "nda_playbook.json"},
-  "outcome": {"insertions": 3, "deletions": 1, "suggestions": 5},
-  "prev_hash": "genesis",
-  "self_hash": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2",
-  "signature": "e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2..."
+  &quot;entry_hash&quot;: &quot;9f77cde794e86fdd56ad07d9e0f0cd0ee1e0bb6891c4183a20030387220f2de4&quot;,
+  &quot;payload&quot;: {
+    &quot;action&quot;: &quot;mcp.call_succeeded&quot;,
+    &quot;event_id&quot;: &quot;36957a46081e4d2ebc52d192acdc2041&quot;,
+    &quot;evidence_sha256&quot;: &quot;0a8e31775bc98315fe3434923d500370a9c6dc07dd3470a79bb46667948e0f82&quot;,
+    &quot;observed_at&quot;: &quot;2026-09-30T21:17:54.090291+00:00&quot;,
+    &quot;outcome&quot;: &quot;observed&quot;,
+    &quot;prev_hash&quot;: &quot;&quot;,
+    &quot;sequence&quot;: 0,
+    &quot;session_id&quot;: &quot;synthetic-example-only&quot;,
+    &quot;source&quot;: &quot;openbot&quot;,
+    &quot;source_event_id&quot;: &quot;synthetic-read-1&quot;,
+    &quot;version&quot;: &quot;axiom.receipts/0.1&quot;
+  },
+  &quot;signature&quot;: &quot;549a84792f7e840316e7f50dc006c25a6ab2b63bddb27311a4a1f0fb5d6a8fcb427a77c4c0173c413f586239cbbb8c35961d206e7bd6ab5b94ae5f93fe1ec90f&quot;
 }</pre>
         </div>
         <div class="receipt-verification">
-            <span class="verify-ok">✅ verify(receipt) → VALID</span>
-            <span class="verify-fail">❌ verify(tampered_receipt) → INVALID (signature mismatch)</span>
+            <span class="verify-ok">Pinned public key + retained checkpoint required</span>
+            <span class="verify-fail">Signed observation ≠ execution witness</span>
         </div>
     </section>
 
     <section id="status" class="section">
         <h2>Honest Status — Verified vs. Pending</h2>
-        <p class="section-note">Everything below is implemented in code but needs specific hardware to verify. It is labeled Pending — not claimed as working. Source: README, &quot;Pending Hardware&quot;.</p>
+        <p class="section-note">Implementation, hardware, deployment and independent-review gates remain open. Pending is not a working-feature claim; see the launch-blockers ledger.</p>
         <table class="status-table">
             <thead>
                 <tr><th>What</th><th>Status</th><th>What&apos;s needed</th></tr>
             </thead>
             <tbody>
-                <tr><td>macOS ghost-typing</td><td>Pending</td><td>A Mac — AT-SPI2 done; CGEventPostToPid scaffolded</td></tr>
+                <tr><td>macOS ghost-typing</td><td>Pending</td><td>Native writer and independent read-back; preview writes fail closed</td></tr>
                 <tr><td>GPU benchmarks</td><td>Pending</td><td>CUDA GPU — faster-whisper + embed-anything implemented</td></tr>
                 <tr><td>Audio I/O (STT/TTS)</td><td>Pending</td><td>Real audio devices for I/O verification</td></tr>
-                <tr><td>Signed installers</td><td>Pending</td><td>Code-signing certificates — build pipeline ready</td></tr>
-                <tr><td>Docker integration</td><td>Pending</td><td>Docker runtime — configs ready</td></tr>
+                <tr><td>Signed installers</td><td>Pending</td><td>Certificates plus signed clean-host installation tests</td></tr>
+                <tr><td>Docker integration</td><td>Pending</td><td>Build/run the candidate topology; collector and restart tests remain unverified</td></tr>
             </tbody>
         </table>
-        <p class="claim-discipline-note">Claim discipline: this page shows no user counts, no customer claims, and no revenue numbers — there are none yet, and we don&apos;t invent them. Every metric above cites the command that produces it.</p>
+        <p class="claim-discipline-note">Claim discipline: this page shows no user counts, no customer claims, and no revenue numbers — there are none yet, and we don&apos;t invent them. Commands expose specific checks; they do not certify unmeasured accuracy, traction or production readiness.</p>
     </section>
 
     <section class="section">
@@ -210,13 +168,13 @@ cargo test --workspace --exclude phantom-overlay</code></pre>
             <li>Act as a multi-domain expert swarm or router</li>
             <li>Operate as a collaborative/cloud-by-default layer</li>
             <li>Auto-apply any suggestion without explicit human confirmation</li>
-            <li>Allow the model to self-certify a bounding box — the verifier independently re-checks every citation</li>
+            <li>Treat a generated bounding box, signature or retained text preview as independent proof of every citation</li>
         </ul>
     </section>
 
     <footer>
         <div class="footer-content">
-            <p>MIT License — <a href="https://github.com/Kartik24Hulmukh/Axiom-Grid-Phantom">github.com/Kartik24Hulmukh/Axiom-Grid-Phantom</a></p>
+            <p>MIT License — <a href="https://github.com/Kartik24Hulmukh/Axiom-Grid">github.com/Kartik24Hulmukh/Axiom-Grid</a></p>
             <p class="footer-tagline">Built local-first. Built to be audited. Built to never bluff.</p>
         </div>
     </footer>

@@ -1,9 +1,10 @@
 # PROVENANCE: original | clean-room full acceptance gauntlet per prompts/13_gauntlet_and_acceptance.md
-"""Full Acceptance Gauntlet — every Real capability, fixture-based, zero skips.
+"""Full Acceptance Gauntlet — fixture-based capability checks.
 
 Per prompts/13_gauntlet_and_acceptance.md + specs/DEFINITION_OF_DONE.md:
   >=200 realistic scenarios across all Real domains + trust stack + perception +
-  CUA, each asserted by its deterministic oracle. ZERO skips.
+  CUA, each asserted by its deterministic oracle. Missing required dependencies
+  remain explicit skips, not verified capability claims.
 
 HONEST SCOPE (matches STATUS.md exactly):
   Real (fixture-verified):
@@ -187,7 +188,7 @@ class TestExcelDomain:
 
     def test_excel_formula_values(self, tmp_path):
         """Create .xlsx with formulas → verify computed values match."""
-        from kairo.excel.engine import xlsx_recompute, independent_calc_financial_model
+        from kairo.excel.engine import xlsx_recompute, LibreOfficeUnavailableError
         import openpyxl
 
         out = str(tmp_path / "formulas.xlsx")
@@ -198,11 +199,22 @@ class TestExcelDomain:
         ws["A3"] = "=A1+A2"
         ws["A4"] = "=A3*2"
         wb.save(out)
+        wb.close()
+        # The oracle accepts independently calculated cell values and returns
+        # bool, not a calculator callback or an object with a .passed attribute.
+        expected = {"Sheet!A3": 100 + 200, "Sheet!A4": (100 + 200) * 2}
         try:
-            result = xlsx_recompute(out, independent_calc_financial_model)
-            assert result.passed
-        except Exception:
+            assert xlsx_recompute(out, expected) is True
+        except LibreOfficeUnavailableError:
             pytest.skip("LibreOffice not available — honest degradation")
+        # A conversion error or oracle mismatch must fail, never masquerade as
+        # a missing dependency. Confirm the actual cached values independently.
+        values = openpyxl.load_workbook(out, data_only=True)
+        try:
+            assert values.active["A3"].value == 300
+            assert values.active["A4"].value == 600
+        finally:
+            values.close()
 
 
 # ======================== 3. POWERPOINT (PPTX) ========================
@@ -261,6 +273,31 @@ class TestPowerPointDomain:
 class TestPDFDomain:
     """PDF domain — text extraction + form readback."""
 
+    @pytest.fixture
+    def pdf_form_fixture(self, tmp_path):
+        """Owned, generated AcroForm; not a recovered external release asset."""
+        pytest.importorskip(
+            "reportlab",
+            reason="PDF form fixture not available in this env — reportlab required",
+        )
+        pytest.importorskip("pikepdf", reason="PDF form engine unavailable — pikepdf required")
+        pytest.importorskip("pypdf", reason="Independent PDF form readback requires pypdf")
+        from reportlab.pdfgen import canvas
+        from pypdf import PdfReader
+
+        source = tmp_path / "owned-form.pdf"
+        pdf = canvas.Canvas(str(source), invariant=1)
+        pdf.drawString(72, 750, "Owned synthetic coverage form")
+        pdf.acroForm.textfield(name="reviewer", value="Unfilled", x=72, y=690)
+        pdf.acroForm.textfield(name="reference", value="Pending", x=72, y=630)
+        pdf.showPage()
+        pdf.save()
+        with source.open("rb") as stream:
+            fields = PdfReader(stream).get_fields()
+            assert fields["reviewer"]["/V"] == "Unfilled"
+            assert fields["reference"]["/V"] == "Pending"
+        return source
+
     def test_pdf_text_extraction(self, tmp_path):
         """Create a PDF → extract text → verify content."""
         from kairo.pdf.engine import extract_text_with_coords
@@ -280,9 +317,39 @@ class TestPDFDomain:
         except ImportError:
             pytest.skip("reportlab not available — honest degradation")
 
-    def test_pdf_form_fill_and_readback(self, tmp_path):
+    def test_pdf_form_fill_and_readback(self, tmp_path, pdf_form_fixture):
         """Fill a PDF form → read back values."""
-        pytest.skip("PDF form fixture not available in this env — honest degradation")
+        from kairo.pdf.engine import fill_form_fields, pdf_form_readback, read_form_fields
+        from pypdf import PdfReader
+
+        source = pdf_form_fixture
+        original = source.read_bytes()
+        expected = {"reviewer": "Fixture Reviewer", "reference": "COVERAGE-001"}
+        output = tmp_path / "filled-form.pdf"
+        edits = fill_form_fields(str(source), expected, str(output))
+        assert {edit.target for edit in edits} == set(expected)
+        assert read_form_fields(str(output)) == expected
+        # Use a different reader from the pikepdf writer/oracle.
+        with output.open("rb") as stream:
+            fields = PdfReader(stream).get_fields()
+            assert {name: fields[name]["/V"] for name in expected} == expected
+        passed, readback = pdf_form_readback(str(source), expected)
+        assert passed is True
+        assert readback == expected
+        assert source.read_bytes() == original
+
+    def test_pdf_form_oracle_rejects_unfilled_requested_field(self, pdf_form_fixture):
+        """A partly satisfiable request must not become a success claim."""
+        from kairo.pdf.engine import pdf_form_readback
+
+        original = pdf_form_fixture.read_bytes()
+        passed, readback = pdf_form_readback(
+            str(pdf_form_fixture), {"reviewer": "Fixture Reviewer", "absent": "Not filled"}
+        )
+        assert passed is False
+        assert readback["reviewer"] == "Fixture Reviewer"
+        assert "absent" not in readback
+        assert pdf_form_fixture.read_bytes() == original
 
 
 # ======================== 5. LEGAL REDLINE ========================

@@ -1,0 +1,7 @@
+{
+  "name": "axiom-grid-ux-accessibility-audit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Development-only axe-core audit; never shipped with overlay assets",
+  "devDependencies": { "axe-core": "4.11.0" }
+}

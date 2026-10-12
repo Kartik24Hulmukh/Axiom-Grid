@@ -250,9 +250,9 @@ class TestReadmeScopeSection:
 
     def test_original_content_preserved(self, readme):
         """README.md must still contain original content (not overwritten)."""
-        # The original README has the Kairo Phantom title
-        assert "Kairo Phantom" in readme, \
-            "README.md must preserve original content"
+        # The canonical product identity replaces the legacy Kairo branding.
+        assert "# Axiom-Grid" in readme and "## Quickstart" in readme, \
+            "README.md must preserve product identity and install guidance"
 
 
 # ---------------------------------------------------------------------------

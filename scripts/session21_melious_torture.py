@@ -1,10 +1,11 @@
 """Session-21 live Melious torture with runtime catalog resolution."""
 import concurrent.futures as cf
-import json, os, re, time, sys, urllib.request
+import json, os, time, sys, urllib.request
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-KEY = "sk-mel-1jDn6LrnN-j55WqoQr3ETKzmpU_Cnf0EjXZbOEQ9hnh4mER-RD1hnlQjTqucQZWKeW7rOMc-1drfMkgAmNldp9R3dWXsLAaIRJel_ametjS5PDFe6vadLsJkM"
-os.environ["MELIOUS_API_KEY"] = KEY
+KEY = os.environ.get("MELIOUS_API_KEY")
+if not KEY:
+    raise SystemExit("Set MELIOUS_API_KEY in the environment before running the live torture benchmark")
 from kernel.sidecar.melious_router import MeliousModelRouter, RouterError, SpendCeilingError, SpendGovernor
 
 

@@ -259,11 +259,11 @@ class TestByoKeyEgress:
 
         try:
             # Simulate a cloud inference call to the configured endpoint
-            s = RestrictedSocket()
-            try:
-                s.connect((configured_host, configured_port))
-            except ConnectionRefusedError:
-                pass  # Expected in test mode
+            with RestrictedSocket() as s:
+                try:
+                    s.connect((configured_host, configured_port))
+                except ConnectionRefusedError:
+                    pass  # Expected in test mode
 
             # Verify only the allowed endpoint was contacted
             for addr in connections:
@@ -273,9 +273,9 @@ class TestByoKeyEgress:
                 )
 
             # Now try a connection to a non-allowed endpoint — must fail
-            s2 = RestrictedSocket()
-            with pytest.raises(ConnectionRefusedError, match="EGRESS VIOLATION"):
-                s2.connect(("evil.com", 443))
+            with RestrictedSocket() as s2:
+                with pytest.raises(ConnectionRefusedError, match="EGRESS VIOLATION"):
+                    s2.connect(("evil.com", 443))
 
         finally:
             socket.socket = original_socket

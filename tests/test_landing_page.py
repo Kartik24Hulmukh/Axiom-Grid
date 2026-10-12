@@ -12,9 +12,9 @@ from __future__ import annotations
 
 import pathlib
 import re
+import shlex
+import subprocess
 import sys
-
-import pytest
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
@@ -85,12 +85,19 @@ class TestMetricClaimsAreSourced:
             assert "pytest" in source or "python" in source, (
                 f"Metric source must cite a reproducible command: {source}"
             )
+            arguments = shlex.split(source)
+            if "pytest" in arguments:
+                candidates = arguments[arguments.index("pytest") + 1:]
+                for relative in candidates:
+                    if not relative.startswith("-"):
+                        assert (REPO_ROOT / relative).exists(), relative
+            elif len(arguments) > 1 and arguments[1].endswith(".py"):
+                assert (REPO_ROOT / arguments[1]).is_file()
 
-    def test_grounding_accuracy_metric(self):
+    def test_unmeasured_accuracy_is_not_mandated_as_marketing_copy(self):
         html = INDEX_HTML.read_text()
-        assert "99.2%" in html or "595/600" in html, (
-            "Landing page must show grounding accuracy metric (99.2% or 595/600)"
-        )
+        assert "99.2%" not in html and "595/600" not in html
+        assert "NO-GO" in html
 
     def test_injection_block_rate_metric(self):
         html = INDEX_HTML.read_text()
@@ -104,9 +111,15 @@ class TestScriptedDemo:
 
     def test_demo_has_redline_command(self):
         html = INDEX_HTML.read_text()
-        assert "axiom.cli redline" in html, (
-            "Demo must reference the redline command (Axiom-Grid CLI)"
+        assert "kairo.cli redline" in html, (
+            "Demo must reference the implemented redline CLI module"
         )
+        result = subprocess.run(
+            [sys.executable, "-m", "kairo.cli", "redline", "--help"],
+            cwd=REPO_ROOT, capture_output=True, text=True, timeout=15,
+        )
+        assert result.returncode == 0, result.stderr
+        assert "contract" in result.stdout and "playbook" in result.stdout
 
     def test_demo_has_sealed_mode(self):
         html = INDEX_HTML.read_text()
@@ -116,8 +129,8 @@ class TestScriptedDemo:
 
     def test_demo_has_verify_command(self):
         html = INDEX_HTML.read_text()
-        assert "verify_receipts" in html, (
-            "Demo must include receipt verification command"
+        assert "scripts/axiom_receipts.py verify" in html, (
+            "Demo must include the implemented agent receipt verification command"
         )
 
     def test_demo_has_signed_receipt_display(self):
@@ -128,7 +141,6 @@ class TestScriptedDemo:
 
     def test_demo_commands_reference_real_files(self):
         """Demo commands must reference files that actually exist."""
-        html = INDEX_HTML.read_text()
         # Check that the demo NDA fixture exists
         assert (REPO_ROOT / "fixtures" / "demo" / "sample_nda.docx").exists(), (
             "Demo references sample_nda.docx but file doesn't exist"
@@ -136,9 +148,9 @@ class TestScriptedDemo:
         assert (REPO_ROOT / "fixtures" / "demo" / "nda_playbook.json").exists(), (
             "Demo references nda_playbook.json but file doesn't exist"
         )
-        assert (REPO_ROOT / "tools" / "verify_receipts_external.py").exists(), (
-            "Demo references verify_receipts_external.py but file doesn't exist"
-        )
+        for relative in ["scripts/axiom_receipts.py", "examples/receipts/sample.json",
+                         "examples/receipts/sample-public.pem", "examples/receipts/sample-checkpoint.json"]:
+            assert (REPO_ROOT / relative).exists()
 
 
 class TestNoUnverifiableClaims:
@@ -165,3 +177,11 @@ class TestNoUnverifiableClaims:
         assert "medical" not in html.lower() or "experimental" in html.lower(), (
             "Landing page must not claim Medical as Real without Experimental label"
         )
+
+    def test_receipt_boundary_is_explicit_and_never_animated_as_live_verification(self):
+        html = INDEX_HTML.read_text()
+        assert "Every action produces" not in html
+        assert "Merkle-chained" not in html
+        assert "synthetic" in html.lower()
+        assert "not proof of execution" in html
+        assert "does not verify signatures" in html

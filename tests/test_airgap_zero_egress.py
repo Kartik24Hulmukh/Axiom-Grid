@@ -101,9 +101,8 @@ def test_egress_monitor_catches_real_connection_attempt():
     with AirGapEgressMonitor() as monitor:
         try:
             # Attempt a real connection — this MUST be intercepted
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.connect(("127.0.0.1", 19999))  # unlikely to be open
-            sock.close()
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                sock.connect(("127.0.0.1", 19999))  # unlikely to be open
         except ConnectionError:
             pass  # Expected — the monitor blocks it
         except Exception:

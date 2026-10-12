@@ -1,0 +1,4 @@
+# Optional isolated focused-coverage dependency, already in requirements-test.txt.
+# PyPI metadata, MPL-2.0 LICENSE and bundled-library notices reviewed.
+# Linux x86_64 / CPython 3.13 manylinux wheel only; no sdist builds.
+pikepdf==10.16.0 --hash=sha256:e716fa800b4213a385084923ca75001fd107eed8ad29ea60ce4a3ad7c9a960b1

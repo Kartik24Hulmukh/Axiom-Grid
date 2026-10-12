@@ -1,3 +1,5 @@
+> **Archived, disputed readiness claims:** Statements below are retained as a historical record, not current operations guidance, booked pilots, model-quality proof or a GA certificate. Current launch/auto-merge decision is NO-GO; use [the council checkpoint](COUNCIL_HARDENING_CHECKPOINT.md) and [buyer qualification boundaries](FOUNDER_PILOT_QUALIFICATION.md), not the old “all met” table. Historical credential exposure requires owner revocation; removal or scan output is not revocation.
+
 # Axiom-Grid — Launch Handoff & Readiness Record
 
 **Date:** 2026-09-29 · **Branch:** main @ c9023154 · **Status: LAUNCH-READY**
