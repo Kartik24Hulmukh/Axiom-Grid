@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kairo Phantom — Provenance & Verification Overlay</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <title>Axiom-Grid — Provenance Engineering Preview</title>
     <style>
         :root {
             --bg-color: #0d0f14;
@@ -27,7 +26,7 @@
         }
 
         body {
-            font-family: 'Outfit', sans-serif;
+            font-family: system-ui, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-primary);
             overflow-x: hidden;
@@ -91,7 +90,7 @@
         main {
             flex: 1;
             display: grid;
-            grid-template-columns: 1.2fr 1fr;
+            grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
             overflow: hidden;
         }
 
@@ -107,6 +106,8 @@
 
         .viewer-header {
             display: flex;
+            flex-wrap: wrap;
+            gap: .75rem;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 1.5rem;
@@ -119,6 +120,9 @@
 
         .file-selector {
             display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            max-width: 100%;
             gap: 0.75rem;
         }
 
@@ -141,7 +145,8 @@
         }
 
         button.btn-primary {
-            background: linear-gradient(135deg, var(--accent-cyan), rgba(6, 182, 212, 0.7));
+            background: #0e7490;
+            color: #ffffff;
             border: none;
             font-weight: 500;
         }
@@ -177,7 +182,7 @@
             overflow-y: auto;
             position: relative;
             line-height: 1.6;
-            font-family: 'Outfit', sans-serif;
+            font-family: system-ui, sans-serif;
             font-size: 0.95rem;
         }
 
@@ -374,7 +379,7 @@
 
         .btn-accept:hover {
             background: var(--accent-green);
-            color: white;
+            color: var(--bg-color);
         }
 
         .btn-edit {
@@ -385,7 +390,7 @@
 
         .btn-edit:hover {
             background: var(--accent-orange);
-            color: white;
+            color: var(--bg-color);
         }
 
         .btn-reject {
@@ -396,7 +401,7 @@
 
         .btn-reject:hover {
             background: var(--accent-red);
-            color: white;
+            color: var(--bg-color);
         }
 
         .action-status {
@@ -501,6 +506,8 @@
             transition: opacity 0.3s ease;
         }
 
+        .modal[hidden] { display: none; }
+
         .modal.open {
             opacity: 1;
             pointer-events: auto;
@@ -513,6 +520,8 @@
             padding: 2rem;
             width: 100%;
             max-width: 450px;
+            max-height: calc(100dvh - 2rem);
+            overflow-y: auto;
             display: flex;
             flex-direction: column;
             gap: 1.25rem;
@@ -556,40 +565,70 @@
             gap: 0.75rem;
             margin-top: 0.5rem;
         }
+        input, select, textarea { max-width: 100%; min-width: 0; }
+        .source-evidence { overflow: auto; max-width: 100%; }
+        .card-value, #upload-status, .request-error { overflow-wrap: anywhere; }
+        button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible {
+            outline: 3px solid var(--accent-cyan); outline-offset: 3px;
+        }
+        @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+        @media (max-width: 800px) {
+            body { height: auto; min-height: 100vh; overflow: auto; }
+            header { flex-wrap: wrap; gap: .75rem; padding: 1rem; }
+            main { display: block; overflow: visible; }
+            .document-viewer, .workspace { padding: 1rem; min-width: 0; }
+            .doc-page-container { padding: .75rem; }
+            .doc-page-content { padding: 1rem; overflow-wrap: anywhere; }
+            .file-selector { justify-content: flex-start; }
+            .modal { padding: 1rem; width: 100%; }
+            .modal-content { padding: 1rem; }
+        }
     </style>
 </head>
 <body>
     <header>
-        <div class="logo">KAIRO <span>PHANTOM</span></div>
-        <div class="status-badge" id="sidecar-status">Connected</div>
+        <h1 class="logo">AXIOM <span>GRID</span></h1>
+        <div class="status-badge" id="sidecar-status">Checking connection…</div>
     </header>
+    <form id="connection-form" aria-label="Deployment connection" class="form-group" style="margin: 1rem 2rem;">
+        <label for="connection-key">Axiom-Grid deployment API key (not a model-provider key)</label>
+        <input id="connection-key" type="password" autocomplete="off" maxlength="4096"
+               placeholder="Required only when deployment authentication is enabled">
+        <button id="connect-btn" type="submit">Connect</button>
+        <button id="disconnect-btn" type="button">Forget key</button>
+        <span id="connection-status" role="status">Key stays in this tab’s memory only. Use HTTPS outside localhost.</span>
+    </form>
 
     <main>
         <section class="document-viewer">
             <div class="viewer-header">
-                <div class="viewer-title">Active Classified Memo</div>
+                <h2 class="viewer-title">Active Classified Memo</h2>
                 <div class="file-selector">
-                    <select id="fixture-select">
+                    <select id="fixture-select" aria-label="Document to process">
                         <option value="sample_memo_01.txt">sample_memo_01.txt (SECRET)</option>
                         <option value="sample_memo_02.txt">sample_memo_02.txt (CONFIDENTIAL)</option>
                     </select>
+                    <label for="document-upload">Upload your document (max 2 MiB)</label>
+                    <input type="file" id="document-upload" accept=".txt,.md,.pdf,.docx,.pptx">
+                    <button type="button" id="upload-btn">Upload owned copy</button>
+                    <span id="upload-status" role="status">API access expires after one hour. Local cleanup is deferred; not encrypted at rest.</span>
                     <button class="btn-primary" id="run-pipeline-btn">Process Document</button>
                 </div>
             </div>
             <div class="doc-page-container">
-                <div class="doc-page-content" id="doc-content">
+                <div class="doc-page-content" id="doc-content" role="status" aria-live="polite" aria-busy="false">
                     Select a document and run the pipeline to view text and source highlights.
                 </div>
             </div>
         </section>
 
         <section class="workspace-panel">
-            <div class="tabs">
-                <div class="tab active" id="tab-suggestions">Suggestions & Provenance</div>
-                <div class="tab" id="tab-trace">Pipeline Trace</div>
+            <div class="tabs" role="tablist" aria-label="Inspection panels">
+                <button type="button" class="tab active" id="tab-suggestions" role="tab" aria-selected="true" aria-controls="panel-suggestions">Suggestions & Provenance</button>
+                <button type="button" class="tab" id="tab-trace" role="tab" aria-selected="false" aria-controls="panel-trace" tabindex="-1">Pipeline Trace</button>
             </div>
 
-            <div class="panel-content" id="panel-suggestions">
+            <div class="panel-content" id="panel-suggestions" role="tabpanel" aria-labelledby="tab-suggestions">
                 <div class="suggestions-list" id="suggestions-container">
                     <div style="color: var(--text-secondary); text-align: center; margin-top: 3rem;">
                         No suggestions active. Run the pipeline on a document to extract fields.
@@ -597,7 +636,7 @@
                 </div>
             </div>
 
-            <div class="panel-content" id="panel-trace" style="display: none;">
+            <div class="panel-content" id="panel-trace" role="tabpanel" aria-labelledby="tab-trace" hidden style="display: none;">
                 <div class="pipeline-trace" id="trace-container">
                     <div style="color: var(--text-secondary); text-align: center; margin-top: 3rem;">
                         No trace loaded. Run the pipeline to inspect execution blocks.
@@ -608,25 +647,26 @@
     </main>
 
     <!-- Edit/Correct Modal -->
-    <div class="modal" id="edit-modal">
+    <div class="modal" id="edit-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
         <div class="modal-content">
-            <div class="modal-title">Correction / Flywheel Feedback</div>
+            <div class="modal-title" id="modal-title">Correction / Flywheel Feedback</div>
             <div class="form-group">
-                <label>Field Name</label>
+                <label for="modal-field">Field Name</label>
                 <input type="text" id="modal-field" readonly style="opacity: 0.7;">
             </div>
             <div class="form-group">
-                <label>Original Value</label>
-                <input type="text" id="modal-original" readonly style="opacity: 0.7;">
+                <label for="modal-original">Original Value</label>
+                <textarea id="modal-original" rows="3" readonly aria-readonly="true"></textarea>
             </div>
             <div class="form-group">
-                <label>Corrected Value</label>
-                <input type="text" id="modal-corrected">
+                <label for="modal-corrected">Corrected Value</label>
+                <textarea id="modal-corrected" rows="3" maxlength="131072"></textarea>
             </div>
             <div class="form-group">
-                <label>Reason for correction (Flywheel feedback)</label>
+                <label for="modal-reason">Reason for correction (Flywheel feedback)</label>
                 <textarea id="modal-reason" rows="2" placeholder="e.g. Include portion markings, fix name spelling..."></textarea>
             </div>
+            <div id="modal-error" class="request-error" role="alert"></div>
             <div class="modal-buttons">
                 <button id="modal-cancel-btn">Cancel</button>
                 <button class="btn-primary" id="modal-submit-btn">Save Correction</button>
@@ -634,341 +674,6 @@
         </div>
     </div>
 
-    <script>
-        // State
-        let currentDocumentData = null;
-        let currentTrace = null;
-        let activeEditCard = null;
-
-        // Elements
-        const fixtureSelect = document.getElementById('fixture-select');
-        const runBtn = document.getElementById('run-pipeline-btn');
-        const docContent = document.getElementById('doc-content');
-        const suggestionsContainer = document.getElementById('suggestions-container');
-        const traceContainer = document.getElementById('trace-container');
-        const sidecarStatus = document.getElementById('sidecar-status');
-        
-        // Modal elements
-        const editModal = document.getElementById('edit-modal');
-        const modalField = document.getElementById('modal-field');
-        const modalOriginal = document.getElementById('modal-original');
-        const modalCorrected = document.getElementById('modal-corrected');
-        const modalReason = document.getElementById('modal-reason');
-        const modalCancelBtn = document.getElementById('modal-cancel-btn');
-        const modalSubmitBtn = document.getElementById('modal-submit-btn');
-
-        // Tabs
-        const tabSug = document.getElementById('tab-suggestions');
-        const tabTrace = document.getElementById('tab-trace');
-        const panelSug = document.getElementById('panel-suggestions');
-        const panelTrace = document.getElementById('panel-trace');
-
-        tabSug.addEventListener('click', () => {
-            tabSug.classList.add('active');
-            tabTrace.classList.remove('active');
-            panelSug.style.display = 'block';
-            panelTrace.style.display = 'none';
-        });
-
-        tabTrace.addEventListener('click', () => {
-            tabTrace.classList.add('active');
-            tabSug.classList.remove('active');
-            panelTrace.style.display = 'block';
-            panelSug.style.display = 'none';
-        });
-
-        // Pipeline execution
-        runBtn.addEventListener('click', async () => {
-            runBtn.disabled = true;
-            runBtn.innerText = "Processing...";
-            docContent.innerHTML = `<div style="text-align: center; color: var(--text-secondary); width: 100%; margin-top: 3rem;">Running context capture, safety scan, intent routing, and extraction...</div>`;
-            
-            try {
-                const response = await fetch('/demo', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ file: fixtureSelect.value })
-                });
-                
-                const data = await response.json();
-                if (data.error) {
-                    docContent.innerHTML = `<div style="color: var(--accent-red); text-align: center; width: 100%; margin-top: 3rem;">Error: ${data.error}</div>`;
-                    runBtn.disabled = false;
-                    runBtn.innerText = "Process Document";
-                    return;
-                }
-
-                currentDocumentData = data;
-                renderDocument(data.document_text);
-                renderSuggestions(data.suggestions);
-                renderTrace(data.trace);
-
-            } catch (err) {
-                docContent.innerHTML = `<div style="color: var(--accent-red); text-align: center; width: 100%; margin-top: 3rem;">Failed to communicate with overlay sidecar.</div>`;
-            }
-            
-            runBtn.disabled = false;
-            runBtn.innerText = "Process Document";
-        });
-
-        function renderDocument(text) {
-            // Escape HTML tags to prevent formatting breakage
-            const escaped = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-            docContent.innerHTML = `<pre style="white-space: pre-wrap; font-family: inherit; font-size: inherit;">${escaped}</pre>`;
-        }
-
-        function renderSuggestions(suggestions) {
-            if (!suggestions || suggestions.length === 0) {
-                suggestionsContainer.innerHTML = `<div style="color: var(--text-secondary); text-align: center; margin-top: 3rem;">No suggestions. The document might have been blocked or no fields matched.</div>`;
-                return;
-            }
-
-            suggestionsContainer.innerHTML = '';
-            suggestions.forEach(sugg => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.id = `card-${sugg.ext_id}`;
-
-                const confidenceClass = sugg.confidence >= 0.8 ? 'confidence-high' :
-                                        sugg.confidence >= 0.5 ? 'confidence-medium' : 'confidence-low';
-                
-                const confPercent = Math.round(sugg.confidence * 100);
-
-                let parsedValue = sugg.value;
-                try {
-                    // Beautify lists/dicts
-                    const val = JSON.parse(sugg.value);
-                    if (Array.isArray(val)) {
-                        parsedValue = val.map(item => typeof item === 'object' ? JSON.stringify(item) : item).join(', ');
-                    }
-                } catch(e) {}
-
-                card.innerHTML = `
-                    <div class="card-header">
-                        <div class="field-name">${sugg.field_name}</div>
-                        <div class="confidence-badge ${confidenceClass}">${confPercent}% Conf</div>
-                    </div>
-                    <div class="card-value">${parsedValue}</div>
-                    <div>
-                        <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Provenance Chain:</div>
-                        <div class="provenance-chips">
-                            <div class="chip" onclick="viewSource('${sugg.ext_id}')">
-                                <span class="chip-icon">📍</span> Document Page ${sugg.page} [bbox]
-                            </div>
-                            <div class="chip">
-                                <span class="chip-icon">🤖</span> Chunk ID: ${sugg.chunk_id.slice(0, 8)}...
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-actions" id="actions-${sugg.ext_id}">
-                        <button class="btn-card btn-accept" onclick="acceptSuggestion('${sugg.ext_id}')">Accept</button>
-                        <button class="btn-card btn-edit" onclick="openEditModal('${sugg.ext_id}', '${sugg.field_name}', '${sugg.value.replace(/'/g, "\\'")}')">Edit</button>
-                        <button class="btn-card btn-reject" onclick="rejectSuggestion('${sugg.ext_id}', '${sugg.field_name}', '${sugg.value.replace(/'/g, "\\'")}')">Reject</button>
-                    </div>
-                `;
-
-                suggestionsContainer.appendChild(card);
-            });
-        }
-
-        async function viewSource(extId) {
-            try {
-                const response = await fetch(`/source/${extId}`);
-                if (!response.ok) {
-                    alert("Source provenance not found or incomplete");
-                    return;
-                }
-                const data = await response.json();
-                highlightBbox(data.bbox.x0, data.bbox.y0, data.bbox.x1, data.bbox.y1);
-            } catch (e) {
-                console.error("Failed to fetch source:", e);
-            }
-        }
-
-        function highlightBbox(x0, y0, x1, y1) {
-            // Remove existing highlight
-            const oldHighlight = document.getElementById('bbox-hl');
-            if (oldHighlight) oldHighlight.remove();
-
-            // Create highlight overlay
-            // In a real viewer, this maps to coordinates on a PDF canvas.
-            // Since this is a text viewer, we highlight the text box or overlay it over the container.
-            const container = document.querySelector('.doc-page-container');
-            const hl = document.createElement('div');
-            hl.id = 'bbox-hl';
-            hl.className = 'highlight-bbox';
-            
-            // Map coordinates [0, 1] relative to container size
-            const rect = container.getBoundingClientRect();
-            const width = rect.width * 0.7;
-            const height = rect.height * 0.7;
-            
-            hl.style.left = `${(rect.width - width) / 2 + x0 * width}px`;
-            hl.style.top = `${(rect.height - height) / 2 + y0 * height}px`;
-            hl.style.width = `${(x1 - x0) * width}px`;
-            hl.style.height = `${(y1 - y0) * height}px`;
-
-            container.appendChild(hl);
-
-            // Add active styling to card
-            document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
-        }
-
-        async function acceptSuggestion(extId) {
-            const actionContainer = document.getElementById(`actions-${extId}`);
-            actionContainer.innerHTML = `<div style="text-align: center; width: 100%;">Applying CUA...</div>`;
-
-            try {
-                const response = await fetch('/apply', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ext_id: extId, accept: true })
-                });
-                const res = await response.json();
-                
-                if (res.success) {
-                    actionContainer.outerHTML = `<div class="action-status applied">Verified Applied (CUA confirmed)</div>`;
-                } else {
-                    actionContainer.innerHTML = `<div style="color: var(--accent-red); font-size: 0.85rem;">Failed: ${res.error}</div>`;
-                }
-            } catch (err) {
-                actionContainer.innerHTML = `<div style="color: var(--accent-red); font-size: 0.85rem;">Error executing CUA.</div>`;
-            }
-        }
-
-        function openEditModal(extId, field, originalValue) {
-            activeEditCard = extId;
-            modalField.value = field;
-            modalOriginal.value = originalValue;
-            modalCorrected.value = originalValue;
-            modalReason.value = '';
-            editModal.classList.add('open');
-        }
-
-        modalCancelBtn.addEventListener('click', () => {
-            editModal.classList.remove('open');
-            activeEditCard = null;
-        });
-
-        modalSubmitBtn.addEventListener('click', async () => {
-            const extId = activeEditCard;
-            const field = modalField.value;
-            const original = modalOriginal.value;
-            const corrected = modalCorrected.value;
-            const reason = modalReason.value;
-
-            editModal.classList.remove('open');
-
-            const actionContainer = document.getElementById(`actions-${extId}`);
-            actionContainer.innerHTML = `<div style="text-align: center; width: 100%;">Writing correction to flywheel...</div>`;
-
-            try {
-                const response = await fetch('/correct', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        ext_id: extId,
-                        field_name: field,
-                        original: original,
-                        corrected: corrected,
-                        reason: reason
-                    })
-                });
-                const res = await response.json();
-                
-                if (res.success) {
-                    actionContainer.outerHTML = `<div class="action-status applied">Flywheel Correction Saved! Value updated: ${corrected}</div>`;
-                    // Update value in display
-                    const card = document.getElementById(`card-${extId}`);
-                    card.querySelector('.card-value').innerText = corrected;
-                } else {
-                    actionContainer.innerHTML = `<div style="color: var(--accent-red); font-size: 0.85rem;">Failed correction: ${res.error}</div>`;
-                }
-            } catch (err) {
-                actionContainer.innerHTML = `<div style="color: var(--accent-red); font-size: 0.85rem;">Error saving correction.</div>`;
-            }
-
-            activeEditCard = null;
-        });
-
-        async function rejectSuggestion(extId, field, originalValue) {
-            const actionContainer = document.getElementById(`actions-${extId}`);
-            actionContainer.innerHTML = `<div style="text-align: center; width: 100%;">Rejecting & logging correction...</div>`;
-
-            try {
-                const response = await fetch('/correct', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        ext_id: extId,
-                        field_name: field,
-                        original: originalValue,
-                        corrected: "",  # Rejected/Removed
-                        reason: "User rejected suggestion"
-                    })
-                });
-                const res = await response.json();
-                
-                if (res.success) {
-                    actionContainer.outerHTML = `<div class="action-status rejected">Rejected & Removed</div>`;
-                } else {
-                    actionContainer.innerHTML = `<div style="color: var(--accent-red); font-size: 0.85rem;">Failed reject: ${res.error}</div>`;
-                }
-            } catch (err) {
-                actionContainer.innerHTML = `<div style="color: var(--accent-red); font-size: 0.85rem;">Error rejecting.</div>`;
-            }
-        }
-
-        function renderTrace(trace) {
-            if (!trace || !trace.stages) {
-                traceContainer.innerHTML = `<div style="color: var(--text-secondary); text-align: center; margin-top: 3rem;">No trace details available.</div>`;
-                return;
-            }
-
-            traceContainer.innerHTML = '';
-            trace.stages.forEach(stage => {
-                const node = document.createElement('div');
-                node.className = `trace-node ${stage.status === 'halted' ? 'halted' : 'ok'}`;
-
-                const durationStr = stage.duration_ms ? `${stage.duration_ms.toFixed(1)}ms` : '0ms';
-                
-                node.innerHTML = `
-                    <div class="trace-title">${stage.name.toUpperCase().replace('_', ' ')}</div>
-                    <div class="trace-meta">Duration: ${durationStr} | Status: ${stage.status}</div>
-                    <div class="trace-meta" style="margin-top: 0.25rem;">Input:</div>
-                    <div class="trace-data">${JSON.stringify(stage.input_data, null, 2)}</div>
-                    <div class="trace-meta" style="margin-top: 0.25rem;">Output:</div>
-                    <div class="trace-data">${JSON.stringify(stage.output_data, null, 2)}</div>
-                `;
-
-                traceContainer.appendChild(node);
-            });
-        }
-
-        // Check for ?file= query parameter
-        const urlParams = new URLSearchParams(window.location.search);
-        const fileParam = urlParams.get('file');
-        if (fileParam) {
-            // Check if option already exists
-            let optionExists = false;
-            for (let i = 0; i < fixtureSelect.options.length; i++) {
-                if (fixtureSelect.options[i].value === fileParam) {
-                    fixtureSelect.selectedIndex = i;
-                    optionExists = true;
-                    break;
-                }
-            }
-            if (!optionExists) {
-                // Add new option dynamically
-                const opt = document.createElement('option');
-                opt.value = fileParam;
-                opt.text = fileParam;
-                fixtureSelect.add(opt);
-                fixtureSelect.value = fileParam;
-            }
-            // Auto-click "Process Document"
-            runBtn.click();
-        }
-    </script>
+    <script src="/assets/overlay.js" defer></script>
 </body>
 </html>

@@ -38,18 +38,17 @@ def _child_entry(filepath: str, queue) -> None:
     _set_limits()
     try:
         from kernel.sidecar.ingestor import IngestorImpl
-        chunks, _, _ = IngestorImpl().ingest(filepath)
-        queue.put(("ok", [chunk.text for chunk in chunks]))
+        queue.put(("ok", IngestorImpl().ingest(filepath)))
     except (ValueError, RuntimeError) as exc:
         queue.put(("reject", f"{type(exc).__name__}: {exc}"))
     except MemoryError:
         queue.put(("resource", "address-space limit exceeded"))
-    except BaseException as exc:  # parser internals may raise anything
+    except BaseException as exc:  # noqa: BLE001 -- contain arbitrary parser failures inside the child
         queue.put(("reject", f"{type(exc).__name__}: {exc}"))
 
 
-def ingest_isolated(filepath: str, timeout: float):
-    """Parse a binary document in a spawned child; return list of chunk texts.
+def ingest_isolated_document(filepath: str, timeout: float):
+    """Parse once in a spawned child; return chunks, document and pages.
 
     Raises IsolatedIngestDeadline (504) if the deadline passes, ValueError
     (422) for unsupported/invalid documents, IsolatedIngestResourceError
@@ -58,30 +57,75 @@ def ingest_isolated(filepath: str, timeout: float):
     ctx = _mp.get_context("spawn")
     queue = ctx.Queue()
     proc = ctx.Process(target=_child_entry, args=(str(filepath), queue), daemon=True)
-    proc.start()
-    # Do NOT close() the parent end before reading: close() discards buffered
-    # data the child already put. join_thread() after kill prevents feeder
-    # thread hangs when the child died with a full pipe.
-    proc.join(timeout)
-    if proc.is_alive():
-        proc.kill()
-        proc.join()
+    try:
+        proc.start()
+    except BaseException:
         queue.close()
         queue.join_thread()
-        raise IsolatedIngestDeadline(f"isolated ingest exceeded {timeout:.1f}s deadline")
+        proc.close()
+        raise
+    # Drain BEFORE joining: a child's Queue feeder cannot flush a multi-MiB
+    # result into an undrained pipe, so join-before-get deadlocks valid inputs.
+    import queue as queue_module
+    import time
+    deadline = time.monotonic() + timeout
     try:
-        status, payload = queue.get(timeout=1.0)
+        while True:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise IsolatedIngestDeadline(f"isolated ingest exceeded {timeout:.1f}s deadline")
+            try:
+                status, payload = queue.get(timeout=min(.05, remaining))
+                break
+            except queue_module.Empty as exc:
+                if not proc.is_alive():
+                    raise IsolatedIngestResourceError(
+                        f"isolated ingest child died without a result (exitcode={proc.exitcode})") from exc
+        proc.join(max(0, deadline - time.monotonic()))
+        if proc.is_alive():
+            raise IsolatedIngestDeadline(f"isolated ingest exceeded {timeout:.1f}s deadline")
+    except queue_module.Empty as exc:
+        if not proc.is_alive():
+            raise IsolatedIngestResourceError(
+                f"isolated ingest child died without a result (exitcode={proc.exitcode})") from exc
+        raise IsolatedIngestDeadline(f"isolated ingest exceeded {timeout:.1f}s deadline") from exc
+    except IsolatedIngestDeadline:
+        raise
+    except IsolatedIngestResourceError:
+        raise
     except Exception as exc:
         raise IsolatedIngestResourceError(
             f"isolated ingest child died without a result (exitcode={proc.exitcode})") from exc
     finally:
+        if proc.is_alive():
+            proc.kill()
+        proc.join()
         queue.close()
         queue.join_thread()
+        proc.close()
     if status == "ok":
         return payload
     if status == "resource":
         raise IsolatedIngestResourceError(payload)
     raise ValueError(payload)
+
+
+def ingest_isolated(filepath: str, timeout: float):
+    """Compatibility text-only projection of a complete isolated parse."""
+    chunks, _, _ = ingest_isolated_document(filepath, timeout)
+    return [chunk.text for chunk in chunks]
+
+
+class ParsedDocumentIngestor:
+    """Pass the already isolated parse to the pipeline without reparsing."""
+    def __init__(self, filepath, parsed):
+        self.filepath = str(filepath)
+        self.parsed = parsed
+
+    def ingest(self, filepath):
+        if str(filepath) != self.filepath:
+            raise ValueError("Parsed document belongs to a different source path")
+        return self.parsed
 
 
 def isolation_enabled() -> bool:

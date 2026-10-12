@@ -72,7 +72,7 @@ class RetrievalIndex:
                 # Repo-root / editable layouts without sidecar package on path:
                 # resolve the vendored directory relative to this file / CWD.
                 from pathlib import Path
-                from model2vec import StaticModel
+                from kairo.core.model2vec_assets import load_local_static_model
 
                 os.environ["HF_HUB_OFFLINE"] = "1"
                 os.environ["TRANSFORMERS_OFFLINE"] = "1"
@@ -106,9 +106,7 @@ class RetrievalIndex:
                     raise FileNotFoundError(
                         "vendored potion-base-8M model not found locally"
                     )
-                model = StaticModel.from_pretrained(
-                    str(model_dir), force_download=False
-                )
+                model = load_local_static_model(model_dir)
 
             def model2vec_embed(text: str) -> List[float]:
                 emb = model.encode([text])

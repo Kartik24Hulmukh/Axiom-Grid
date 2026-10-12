@@ -81,7 +81,7 @@ def load_potion_base_8m_static_model():
     Forces HF offline env vars for the duration of the load so huggingface_hub
     cannot phone home even if a code path tries.
     """
-    from model2vec import StaticModel
+    from kairo.core.model2vec_assets import load_local_static_model
 
     model_dir = resolve_potion_base_8m_path()
 
@@ -91,7 +91,7 @@ def load_potion_base_8m_static_model():
     os.environ["HF_HUB_OFFLINE"] = "1"
     os.environ["TRANSFORMERS_OFFLINE"] = "1"
     try:
-        return StaticModel.from_pretrained(str(model_dir), force_download=False)
+        return load_local_static_model(model_dir)
     finally:
         # Restore prior values only if we overwrote something that was unset
         # differently — keep offline sticky once set (product default).

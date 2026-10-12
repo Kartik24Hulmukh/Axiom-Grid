@@ -170,9 +170,8 @@ class TestKillProofs:
         """Direct test: SocketEgressInterceptor catches socket.connect to external."""
         with SocketEgressInterceptor() as interceptor:
             with pytest.raises(ConnectionError, match="AIR-GAP VIOLATION"):
-                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                s.connect(("93.184.216.34", 80))
-                s.close()
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                    s.connect(("93.184.216.34", 80))
         assert len(interceptor.attempts) > 0
         assert interceptor.attempts[0].blocked is True
 

@@ -1,0 +1,118 @@
+name: Axiom-Grid launch evidence (not GA certification)
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: launch-evidence-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  receipt-browser-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install pinned runtime and test-only tools
+        run: >-
+          python -m pip install -r docker/requirements-runtime.txt
+          -r requirements-telemetry.txt
+          pytest pytest-asyncio hypothesis httpx psutil ruff cryptography
+      - name: Validate focused runtime and receipt trust boundaries
+        run: |
+          bash ci/pre-push.sh
+          python -m ruff check --select E9,F scripts/axiom_receipts.py scripts/launch_torture.py
+          python scripts/axiom_receipts.py verify examples/receipts/sample.json --public-key examples/receipts/sample-public.pem --checkpoint examples/receipts/sample-checkpoint.json
+      - name: Real multi-worker ownership and known-ID CAS probe
+        run: python scripts/scoped_evidence_probe.py --output launch-evidence/scoped-evidence.json
+      - name: Real browser workflows and explicitly isolated response-fuzz oracle
+        run: |
+          npm --prefix tests/browser ci
+          (cd tests/browser && npx playwright install --with-deps chromium)
+          PYTHON=python3 npm --prefix tests/browser test
+          AXIOM_BROWSER_AUTH_TEST=1 PYTHON=python3 npm --prefix tests/browser test
+      - name: Owned journey races, keyboard/mobile controls and dev-only axe audit
+        run: |
+          npm --prefix tests/browser/ux-a11y ci --ignore-scripts
+          PYTHON=python3 node --test tests/browser/ux-hardening.e2e.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: scoped-functional-evidence-${{ github.sha }}
+          path: launch-evidence/
+          retention-days: 14
+  requested-load-bounds:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: python -m pip install -r docker/requirements-runtime.txt httpx psutil
+      - name: Strict loopback bounds (expected to fail until load blockers close)
+        run: python scripts/launch_torture.py --concurrency 100 --output launch-evidence/tcp.json
+      - name: Independent native client, including untimed server errors and drain
+        if: always()
+        run: PYTHON=python3 node scripts/benchmark_ingress.mjs --full --concurrency 100 --output launch-evidence/native.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: loopback-load-evidence-${{ github.sha }}
+          path: launch-evidence/
+          retention-days: 14
+
+  frozen-offline-semantic-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: >-
+          python -m pip install -r docker/requirements-runtime.txt
+          pytest model2vec==0.9.0 cryptography
+      - name: Frozen real vendored model and PDF answers (no hash fallback)
+        env:
+          HF_HUB_OFFLINE: '1'
+          TRANSFORMERS_OFFLINE: '1'
+          KAIRO_NO_NET: '1'
+        run: python -m pytest tests/e2e/test_ask_your_docs_pdf.py -q
+
+  local-format-oracles:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Real spreadsheet converter (not a dependency skip)
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y libreoffice-calc
+          soffice --version
+      - name: Owned format fixtures and hash-pinned optional PDF dependency
+        run: |
+          python -m pip install -r docker/requirements-runtime.txt pytest cryptography openpyxl reportlab pypdf Pillow lxml packaging
+          python -m pip install --no-deps --only-binary=:all: --require-hashes -r tests/support/coverage-pikepdf-linux-cp313.lock
+      - name: Real recomputation, PDF fill/readback and negative oracle contracts
+        env:
+          KAIRO_NO_NET: '1'
+        run: >-
+          python -m pytest -q -rs
+          -W error::ResourceWarning -W error::pytest.PytestUnraisableExceptionWarning
+          tests/test_coverage_skip_guards.py
+          tests/test_acceptance_gauntlet.py::TestExcelDomain
+          tests/test_acceptance_gauntlet.py::TestPDFDomain

@@ -39,16 +39,22 @@ def test_request_id_sanitized_against_log_injection():
 
 # ---- SEC-009: error responses must not leak internals --------------------
 
-def test_extract_document_read_error_does_not_leak_path_or_exception(tmp_path):
-    # A file inside an allowed root (temp dir) that exists as a *directory*
-    # forces an OSError on read while passing the sandbox resolver.
+def test_extract_document_read_error_does_not_leak_path_or_exception(tmp_path, monkeypatch):
+    # chmod(0) is not reliable on root/CAP_DAC_OVERRIDE or virtualized FS.
+    # Keep path validation real, but inject a deterministic read failure.
+    import builtins
     d = tmp_path / "wave8_unreadable.txt"
     d.write_text("SECRET_INTERNAL_CONTENT", encoding="utf-8")
-    d.chmod(0o000)
-    try:
+    real_open = builtins.open
+
+    def denied_open(file, mode="r", *args, **kwargs):
+        if str(file) == str(d) and mode == "rb":
+            raise PermissionError("SECRET_INTERNAL_CONTENT")
+        return real_open(file, mode, *args, **kwargs)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(builtins, "open", denied_open)
         r = client.post("/api/extract-document", json={"file": str(d)})
-    finally:
-        d.chmod(0o644)
     assert r.status_code == 422
     assert r.json()["detail"] == "Unable to read document"
     assert str(tmp_path) not in r.text and "PermissionError" not in r.text
@@ -57,6 +63,8 @@ def test_extract_document_read_error_does_not_leak_path_or_exception(tmp_path):
 # ---- OPS-004: extraction-pool backpressure --------------------------------
 
 def test_extraction_pool_sheds_load_fast_when_saturated(monkeypatch):
+    # Exercise full queue policy, not the default asynchronous waiting policy.
+    monkeypatch.setattr(s, "_admission", s.AdmissionGate(max_waiters=0))
     monkeypatch.setattr(s, "_extraction_slots", threading.BoundedSemaphore(1))
     entered, release = threading.Event(), threading.Event()
     original = s.OrchestratorImpl.run

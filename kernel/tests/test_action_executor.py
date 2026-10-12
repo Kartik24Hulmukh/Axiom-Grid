@@ -82,8 +82,8 @@ def test_apply_mismatched_payload_fails():
     assert "Verification failed" in res.error
 
 
-def test_apply_success():
-    """Test successful application and verification of action."""
+def test_apply_without_native_writer_never_claims_execution():
+    """Matching values in memory cannot prove an action happened in an app."""
     prov = ProvenanceLogImpl()
     doc = Document(doc_id="doc-1", source_path="memo.txt", sha256="abc", page_count=1)
     chunk = Chunk(chunk_id="chunk-1", doc_id="doc-1", page=1, bbox=BBox(0,0,1,1), text="Dr. Margaret Chen")
@@ -97,7 +97,8 @@ def test_apply_success():
 
     executor = ActionExecutorImpl(prov)
     res = executor.apply(action, human_confirm=True)
-    assert res.success
+    assert not res.success
     assert res.post_state is not None
-    assert res.post_state["status"] == "verified"
+    assert res.post_state["status"] == "not_executed"
     assert res.post_state["app"] == "notepad"
+    assert "native writer" in res.error

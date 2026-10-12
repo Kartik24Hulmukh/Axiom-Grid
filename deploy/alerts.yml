@@ -27,7 +27,7 @@ groups:
         expr: sum(rate(axiom_extraction_shed_total[5m])) / sum(rate(axiom_requests_total[5m])) > 0.05
         for: 10m
         labels: { severity: ticket }
-        annotations: { summary: "> 5% of extraction traffic shed (429) — add replicas or raise WEB_CONCURRENCY" }
+        annotations: { summary: "> 5% of extraction traffic shed (503) — hold traffic and investigate bounded extraction capacity" }
       - alert: AxiomAuthAbuse
         expr: sum(rate(axiom_auth_rejections_total[5m])) > 5
         for: 5m
@@ -39,7 +39,9 @@ groups:
         labels: { severity: ticket }
         annotations: { summary: "Structured log queue overflowed; raise AXIOM_LOG_QUEUE_MAX or ship logs faster" }
       - alert: AxiomMemoryCeiling
-        expr: container_memory_working_set_bytes{container="api"} > 0.85 * container_spec_memory_limit_bytes{container="api"}
+        # 85% of the candidate deployment's explicit 768-MiB limit. This
+        # application-owned series exists without an external container exporter.
+        expr: max(axiom_process_resident_memory_bytes) > 684510412
         for: 5m
         labels: { severity: page }
-        annotations: { summary: "API replica within 15% of memory limit (OOM risk); requires cAdvisor" }
+        annotations: { summary: "API replica within 15% of the 768-MiB memory limit (OOM risk)" }

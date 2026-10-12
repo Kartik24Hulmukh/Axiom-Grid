@@ -1,19 +1,30 @@
-# Axiom-Grid production topology (single node; scale `api` horizontally behind `edge`).
-# Usage: AXIOM_API_KEYS=$(openssl rand -hex 32) docker compose -f deploy/docker-compose.prod.yml up -d --scale api=2
+# Axiom-Grid candidate deployment topology — not a production certification.
+# One API replica/worker only: preview provenance is process-local.
+# Usage: provision a read-only key file outside the repository, set
+# AXIOM_API_KEYS_FILE_HOST to that path, then start this compose file.
 # Design rules enforced here:
 #   - api is NEVER exposed directly: only `edge` publishes a port. /metrics is restricted to the internal network.
-#   - hard CPU/memory limits; WEB_CONCURRENCY == CPU limit (~800 RPS per vCPU at 1.2 ms service time).
+#   - hard CPU/memory limits; no RPS guarantee or verified multi-replica scaling.
 #   - OTel spans are exported to a local collector; the collector applies tail sampling + memory limits.
-#   - keys are injected at runtime (fail-closed). Never bake credentials into images or this file.
+#   - keys are mounted as a runtime secret (fail-closed). Never bake credentials into images or this file.
 services:
   api:
     build: { context: .., dockerfile: docker/Dockerfile.overlay }
     image: axiom-grid:${AXIOM_VERSION:-latest}
     environment:
-      AXIOM_API_KEYS: ${AXIOM_API_KEYS:?set AXIOM_API_KEYS (fail-closed)}
+      AXIOM_API_KEYS_FILE: /run/secrets/axiom_api_keys
       AXIOM_REQUIRE_AUTH: "1"
+      AXIOM_EXTRACTION_ISOLATION: process
+      # Keep native concurrency inside the declared 2-CPU/768-MiB envelope.
+      # Do not derive these values from the host's visible CPU count.
+      AXIOM_EXTRACTION_WORKERS: "2"
+      AXIOM_PIPELINE_CONCURRENCY: "2"
+      AXIOM_EXTRACTION_QUEUE_DEPTH: "4"
+      AXIOM_EVIDENCE_WORKERS: "2"
+      AXIOM_INGEST_RSS_BYTES: "268435456"
+      AXIOM_INGEST_CPU_SECONDS: "25"
       AXIOM_STATE_DIR: /var/lib/axiom
-      WEB_CONCURRENCY: "2"
+      WEB_CONCURRENCY: "1"
       AXIOM_OTEL_ENABLED: "1"
       AXIOM_TRUST_PROXY: "1"
       AXIOM_LOG_FORMAT: json
@@ -28,8 +39,11 @@ services:
       resources:
         limits: { cpus: "2.0", memory: 768M }
         reservations: { cpus: "1.0", memory: 256M }
-    stop_grace_period: 25s
+    # Must exceed the 40s Uvicorn grace period, which itself exceeds the
+    # application's 30s extraction deadline.
+    stop_grace_period: 45s
     volumes: [axiom-state:/var/lib/axiom]
+    secrets: [axiom_api_keys]
     read_only: true
     tmpfs: [/tmp]
     security_opt: [no-new-privileges:true]
@@ -80,3 +94,7 @@ networks:
 
 volumes:
   axiom-state: {}
+
+secrets:
+  axiom_api_keys:
+    file: ${AXIOM_API_KEYS_FILE_HOST:?set AXIOM_API_KEYS_FILE_HOST to a read-only key file}

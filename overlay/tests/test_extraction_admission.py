@@ -8,6 +8,7 @@ from overlay import server
 
 
 def test_saturated_extraction_does_not_resolve_or_read_document(monkeypatch):
+    monkeypatch.setattr(server, "_admission", server.AdmissionGate(max_waiters=0))
     slots = threading.BoundedSemaphore(1)
     assert slots.acquire(blocking=False)
     monkeypatch.setattr(server, "_extraction_slots", slots)
@@ -24,6 +25,7 @@ def test_saturated_extraction_does_not_resolve_or_read_document(monkeypatch):
 
 
 def test_oversize_document_rejected_and_admission_reusable(monkeypatch, tmp_path):
+    monkeypatch.setattr(server, "_admission", server.AdmissionGate(max_waiters=0))
     slots = threading.BoundedSemaphore(1)
     monkeypatch.setattr(server, "_extraction_slots", slots)
     monkeypatch.setattr(server, "MAX_UPLOAD_BYTES", 256)
@@ -39,6 +41,7 @@ def test_oversize_document_rejected_and_admission_reusable(monkeypatch, tmp_path
 
 
 def test_missing_document_releases_admission(monkeypatch):
+    monkeypatch.setattr(server, "_admission", server.AdmissionGate(max_waiters=0))
     slots = threading.BoundedSemaphore(1)
     monkeypatch.setattr(server, "_extraction_slots", slots)
     with TestClient(server.app) as client:
@@ -52,6 +55,7 @@ def test_missing_document_releases_admission(monkeypatch):
 async def test_cancelled_waiter_keeps_capacity_until_real_worker_finishes(monkeypatch):
     import asyncio
 
+    monkeypatch.setattr(server, "_admission", server.AdmissionGate(max_waiters=0))
     slots = threading.BoundedSemaphore(1)
     monkeypatch.setattr(server, "_extraction_slots", slots)
     entered, release, finished = threading.Event(), threading.Event(), threading.Event()

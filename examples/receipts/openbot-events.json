@@ -1,0 +1,4 @@
+[
+  {"id":"synthetic-read-1","actorUserId":null,"initiatorKind":"bot","initiatorId":"synthetic-bot","eventType":"mcp.call_succeeded","targetType":"tool","targetId":"read_document","payload":{"tool":"read_document","fixture":true},"createdAt":"2026-10-01T00:00:00Z"},
+  {"id":"synthetic-refusal-2","actorUserId":null,"initiatorKind":"bot","initiatorId":"synthetic-bot","eventType":"mcp.call_rejected","targetType":"tool","targetId":"write_document","payload":{"reason":"synthetic policy refusal","fixture":true},"createdAt":"2026-10-01T00:00:01Z"}
+]

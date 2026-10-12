@@ -3,8 +3,12 @@
 # ClassifiedMemoPack wedge, SEC-001..SEC-006 hardening, ops probes).
 #
 # SEC-006: this image FAILS CLOSED. Protected routes return 503 until you
-# inject at least one API key at runtime (never bake keys into the image):
-#   docker run --rm -p 8765:8765 -e AXIOM_API_KEYS=$(openssl rand -hex 32) axiom-grid
+# mount at least one API key at runtime (never bake keys into the image):
+#   printf '%s\n' '<generated-key>' > /secure/axiom.keys
+#   chmod 400 /secure/axiom.keys
+#   docker run --rm -p 8765:8765 \
+#     --mount type=bind,src=/secure/axiom.keys,dst=/run/secrets/axiom_api_keys,readonly \
+#     -e AXIOM_API_KEYS_FILE=/run/secrets/axiom_api_keys axiom-grid
 # Clients then send:  Authorization: Bearer <key>   (or X-API-Key: <key>)
 # For a same-origin desktop/localhost sidecar set AXIOM_REQUIRE_AUTH=0.
 #
@@ -18,14 +22,21 @@ FROM python:3.11-slim
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    KAIRO_GATEWAY_TEST_MODE=true \
+    KAIRO_GATEWAY_TEST_MODE=false \
     KAIRO_AIR_GAP=true \
+    AXIOM_EXTRACTION_ISOLATION=process \
     AXIOM_MAX_UPLOAD_BYTES=2097152 \
     AXIOM_REQUIRE_AUTH=1 \
     AXIOM_RATE_LIMIT_PER_MIN=300 \
     AXIOM_RATE_LIMIT_PER_MIN_AUTH=3000 \
-    WEB_CONCURRENCY=4 \
-    UVICORN_TIMEOUT_GRACEFUL_SHUTDOWN=20 \
+    AXIOM_EXTRACTION_WORKERS=2 \
+    AXIOM_PIPELINE_CONCURRENCY=2 \
+    AXIOM_EXTRACTION_QUEUE_DEPTH=4 \
+    AXIOM_EVIDENCE_WORKERS=2 \
+    AXIOM_INGEST_RSS_BYTES=268435456 \
+    AXIOM_INGEST_CPU_SECONDS=25 \
+    WEB_CONCURRENCY=1 \
+    UVICORN_TIMEOUT_GRACEFUL_SHUTDOWN=40 \
     PYTHONPATH=/app
 
 WORKDIR /app
@@ -56,8 +67,8 @@ USER axiom
 EXPOSE 8765
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD python3 -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8765/healthz').status==200 else 1)"
+    CMD python3 -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8765/readyz').status==200 else 1)"
 
-# Worker count comes from WEB_CONCURRENCY (uvicorn native). Size it to the container CPU limit:
-# ~800 RPS per vCPU measured at 1.2 ms service time; set WEB_CONCURRENCY == cpu limit.
-CMD ["opentelemetry-instrument", "python3", "-m", "uvicorn", "overlay.server:app", "--host", "0.0.0.0", "--port", "8765", "--proxy-headers", "--timeout-keep-alive", "15", "--timeout-graceful-shutdown", "20", "--limit-concurrency", "128"]
+# Provenance previews are worker-local: keep one worker until shared evidence
+# storage and multi-worker source-link verification exist. No RPS guarantee.
+CMD ["opentelemetry-instrument", "python3", "-m", "uvicorn", "overlay.server:app", "--host", "0.0.0.0", "--port", "8765", "--proxy-headers", "--timeout-keep-alive", "15", "--timeout-graceful-shutdown", "40", "--limit-concurrency", "128"]

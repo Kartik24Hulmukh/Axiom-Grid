@@ -11,7 +11,6 @@ The kernel imports NOTHING from /domains or /legacy.
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
 from typing import Final
 
 from kernel.core.contracts import ApplyResult
@@ -63,10 +62,11 @@ class ActionExecutorImpl:
             display_text=display_text,
         )
 
-    def apply(self, action: Action, human_confirm: bool = True) -> ApplyResult:
+    def apply(self, action: Action, human_confirm: bool = False) -> ApplyResult:
         """Apply a suggestion. Requires explicit human confirmation.
 
-        Kairo only does READ+SUGGEST and verified simulated execution.
+        This executor validates proposals only. No native desktop writer or
+        independent read-back adapter is installed, so it must fail closed.
         """
         # 1. Enforce human confirmation rule
         if not human_confirm:
@@ -85,8 +85,7 @@ class ActionExecutorImpl:
                 error=f"CUA Refused: App '{action.target_app}' is not in the allowed application set."
             )
 
-        # 3. Simulate execution and verify post-state
-        # SPEC: "re-reads field to verify post-state"
+        # 3. Validate proposal provenance; this is NOT execution evidence.
         chain = self._provenance.get_provenance(action.ext_id)
         if not chain.is_complete:
             return ApplyResult(
@@ -94,21 +93,18 @@ class ActionExecutorImpl:
                 error="Verification failed: incomplete provenance chain."
             )
 
-        # Check expected vs actual (re-read mock)
         expected_value = chain.extraction.value if chain.extraction else ""
         payload_value = action.payload.get("value", "")
 
-        # Simulate read-verify
-        # In a real environment, Kairo would read the app window here.
-        # Since this is local-first headless, we verify the memory/payload matchup.
         if expected_value and payload_value and expected_value != payload_value:
             return ApplyResult(
                 success=False,
-                error=f"Verification failed: extraction value '{expected_value}' does not match action payload '{payload_value}'."
+                error="Verification failed: extraction and action payload do not match."
             )
 
-        logger.info("CUA Applied and Verified: %s", action.action_id)
+        logger.info("Desktop execution refused: native writer unavailable")
         return ApplyResult(
-            success=True,
-            post_state={"status": "verified", "app": app_name, "verified_at": datetime.now(timezone.utc).isoformat()}
+            success=False,
+            error="Desktop execution unavailable: no native writer and independent read-back adapter.",
+            post_state={"status": "not_executed", "app": app_name}
         )

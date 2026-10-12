@@ -26,12 +26,11 @@ import sys
 import tempfile
 import threading
 import time
-import uuid
 from collections import deque
 from typing import Self
 from urllib.parse import urlsplit
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -129,20 +128,35 @@ from kernel.core.data_model import (
     Action,
     ActionKind,
     ActionStatus,
-    Correction,
     Document,
     ExtractionStatus,
+    GroundingMethod,
 )
 from kernel.core.provenance import ProvenanceLogImpl
 from kernel.sidecar.action_executor import ActionExecutorImpl
+from kernel.sidecar.evidence_store import (
+    EvidenceBudgetExceeded,
+    EvidenceStore,
+    ReviewConflict,
+    ScopedReviewLookup,
+)
 from kernel.sidecar.inference_gateway import TieredInferenceGateway
 from kernel.sidecar.ingestor import IngestorImpl
 from kernel.sidecar.memory_store import MemoryStoreImpl
 from kernel.sidecar.orchestrator import OrchestratorImpl
 from kernel.sidecar.quality_gate import LocalQualityGate
 from kernel.sidecar.security_filter import LocalSecurityFilter
+from overlay.admission import (
+    AdmissionFull,
+    AdmissionGate,
+    ClientDisconnected,
+    until_disconnect,
+)
 from overlay.body_limit import BodyLimitMiddleware
+from overlay.document_store import DocumentStore, UploadBudgetExceeded, UploadConflict
+from overlay.request_policy import RequestPolicyMiddleware
 from overlay.telemetry import install_tracing, log_context
+from overlay.tenant_context import current_tenant
 from packs.contract.pack import ContractPack
 from packs.generic.pack import GenericPack
 from packs.invoice.pack import InvoicePack
@@ -153,9 +167,14 @@ from packs.paper.pack import PaperPack
 # Initialize FastAPI
 @contextlib.asynccontextmanager
 async def _lifespan(_app: FastAPI):
-    """Reopen durable state and join extraction workers before closing SQLite."""
-    global _extraction_pool
+    """Reopen durable state and join both bounded lanes before closing SQLite."""
+    global _document_metadata_pool, _extraction_pool, _evidence_pool
+    lifecycle_file = os.environ.get("AXIOM_LIFECYCLE_FILE")
+    if lifecycle_file:
+        pathlib.Path(lifecycle_file).unlink(missing_ok=True)
     memory_store.reopen()
+    evidence_store.reopen()
+    document_store.reopen()
     if _extraction_pool._shutdown:
         # Recreate at the CONFIGURED capacity, not a hard-coded four: silently
         # reverting to four workers after a restart collapses extraction
@@ -163,14 +182,38 @@ async def _lifespan(_app: FastAPI):
         _extraction_pool = concurrent.futures.ThreadPoolExecutor(
             max_workers=EXTRACTION_WORKERS, thread_name_prefix="axiom-extract"
         )
+    if _document_metadata_pool._shutdown:
+        _document_metadata_pool = concurrent.futures.ThreadPoolExecutor(
+            max_workers=DOCUMENT_METADATA_WORKERS, thread_name_prefix="axiom-metadata"
+        )
+    if _evidence_pool._shutdown:
+        _evidence_pool = concurrent.futures.ThreadPoolExecutor(
+            max_workers=EVIDENCE_WORKERS, thread_name_prefix="axiom-evidence"
+        )
     try:
         yield
     finally:
         # ASGI server has drained ingress; do not close state while work runs.
         # Running Python threads cannot be forcibly stopped: supervisors still
         # need a termination grace period for a genuinely hung native parser.
+        # Stop metadata submission first. Its completion callbacks may hand
+        # validated requests to the extraction pool, which must remain alive
+        # until every metadata stage has reached a terminal state.
+        await asyncio.to_thread(_document_metadata_pool.shutdown, wait=True, cancel_futures=True)
         await asyncio.to_thread(_extraction_pool.shutdown, wait=True, cancel_futures=True)
+        await asyncio.to_thread(_evidence_pool.shutdown, wait=True, cancel_futures=True)
         memory_store.close()
+        evidence_store.close()
+        document_store.close()
+        # Optional supervisor evidence independent of daemon log delivery.
+        # Written only after worker join and durable-state close, atomically,
+        # so a dropped final log or re-raised SIGTERM cannot fabricate failure
+        # (or hide an unfinished application shutdown).
+        if lifecycle_file:
+            marker = pathlib.Path(lifecycle_file)
+            temporary = marker.with_suffix(marker.suffix + ".tmp")
+            temporary.write_text(json.dumps({"workers_joined": True, "state_closed": True}))
+            temporary.replace(marker)
 
 
 app = FastAPI(title="Axiom-Grid Overlay API", lifespan=_lifespan, default_response_class=JSONResponse)
@@ -321,7 +364,6 @@ def _origin_allowed(origin: str) -> bool:
     )
 
 
-@app.middleware("http")
 async def enforce_origin_gate(request, call_next):
     origin = request.headers.get("origin")
     if origin is not None and not _origin_allowed(origin):
@@ -348,6 +390,14 @@ _extraction_pool = concurrent.futures.ThreadPoolExecutor(
     max_workers=EXTRACTION_WORKERS, thread_name_prefix="axiom-extract"
 )
 
+# Path existence/ownership/expiry checks must not queue behind CPU-heavy
+# parsing. This executor is still bounded by the single extraction permit
+# acquired before submission; it cannot expand admitted work or read bytes.
+DOCUMENT_METADATA_WORKERS = max(1, min(4, EXTRACTION_WORKERS))
+_document_metadata_pool = concurrent.futures.ThreadPoolExecutor(
+    max_workers=DOCUMENT_METADATA_WORKERS, thread_name_prefix="axiom-metadata"
+)
+
 # OPS-004: backpressure on the extraction pool. A ThreadPoolExecutor queue is
 # unbounded, so under a spike far beyond 4 workers requests pile up, latency
 # balloons past any SLO, and clients time out while the server still burns
@@ -356,6 +406,18 @@ _extraction_pool = concurrent.futures.ThreadPoolExecutor(
 _EXTRACTION_QUEUE_DEPTH = int(os.environ.get("AXIOM_EXTRACTION_QUEUE_DEPTH", "16"))
 _extraction_slots = threading.BoundedSemaphore(EXTRACTION_WORKERS + _EXTRACTION_QUEUE_DEPTH)
 _EXTRACTION_CAPACITY = EXTRACTION_WORKERS + _EXTRACTION_QUEUE_DEPTH
+
+# Source lookup and review CAS must not queue behind document parsing. This
+# bulkhead is still bounded, context-propagating and completion-owned; it is
+# not an unbounded default-executor escape from backpressure. SQLite operations
+# remain protected by the durable store's lock/transactions.
+EVIDENCE_WORKERS = int(os.environ.get("AXIOM_EVIDENCE_WORKERS", "4"))
+if not 1 <= EVIDENCE_WORKERS <= 32:
+    raise ValueError("AXIOM_EVIDENCE_WORKERS must be between 1 and 32")
+_evidence_pool = concurrent.futures.ThreadPoolExecutor(
+    max_workers=EVIDENCE_WORKERS, thread_name_prefix="axiom-evidence"
+)
+_evidence_slots = threading.BoundedSemaphore(EVIDENCE_WORKERS)
 
 OPS_METRICS = {
     "started_at": time.time(),
@@ -383,77 +445,6 @@ EXTRACTION_DEADLINE_SECONDS = float(os.environ.get("AXIOM_EXTRACTION_DEADLINE_SE
 _REQUEST_ID_MAX_LEN = 64
 
 
-@app.middleware("http")
-async def request_id_middleware(request, call_next):
-    rid = request.headers.get("x-request-id", "").strip()
-    if not rid or len(rid) > _REQUEST_ID_MAX_LEN:
-        rid = uuid.uuid4().hex
-    # Sanitize: correlation ids must never carry CR/LF into log streams
-    # (log-injection / response-splitting guard).
-    rid = "".join(ch for ch in rid if ch.isascii() and (ch.isalnum() or ch in "-_.")) or uuid.uuid4().hex
-    request.state.request_id = rid
-    response = await call_next(request)
-    response.headers["X-Request-Id"] = rid
-    return response
-
-
-@app.middleware("http")
-async def security_headers_middleware(request, call_next):
-    """SEC-003: lock every response down with defense-in-depth security headers."""
-    response = await call_next(request)
-    response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["X-Frame-Options"] = "DENY"
-    response.headers["Referrer-Policy"] = "no-referrer"
-    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
-    if request.url.path == "/" or request.url.path.endswith(".html"):
-        response.headers["Content-Security-Policy"] = (
-            "default-src 'self'; script-src 'self' 'unsafe-inline'; "
-            "style-src 'self' 'unsafe-inline'; img-src 'self' data:; "
-            "connect-src 'self'; frame-ancestors 'none'; base-uri 'self'"
-        )
-    return response
-
-
-@app.middleware("http")
-async def request_governor_middleware(request, call_next):
-    """OPS-001/SEC-004: per-request metrics + body size + CPU-budget guards."""
-    t0 = time.perf_counter()
-
-    # SEC-004: reject oversized request bodies before parsing (DoS guard)
-    content_length = request.headers.get("content-length")
-    if content_length is not None:
-        try:
-            if not content_length.isascii() or not content_length.isdecimal():
-                raise ValueError("invalid length")
-            if int(content_length) > MAX_UPLOAD_BYTES:
-                return JSONResponse(status_code=413, content={"detail": "Payload too large"})
-        except ValueError:
-            return JSONResponse(status_code=400, content={"detail": "Invalid Content-Length"})
-
-    response = await call_next(request)
-
-    dt_ms = (time.perf_counter() - t0) * 1000
-    logger.info(
-        "request completed",
-        extra={
-            "request_id": getattr(request.state, "request_id", ""),
-            "path": request.url.path,
-            "status": response.status_code,
-            "latency_ms": round(dt_ms, 2),
-            "client": request.client.host if request.client else "unknown",
-        },
-    )
-    OPS_METRICS["requests_total"] += 1
-    OPS_METRICS["latency_ms_total"] += dt_ms
-    OPS_METRICS["latency_samples"].append(dt_ms)
-    OPS_METRICS["latency_ms_max"] = max(OPS_METRICS["latency_ms_max"], round(dt_ms, 2))
-    sc = str(response.status_code)
-    OPS_METRICS["status_counts"][sc] = OPS_METRICS["status_counts"].get(sc, 0) + 1
-    if response.status_code >= 500:
-        OPS_METRICS["errors_total"] += 1
-    return response
-
-
 # ------------------------------------------------------------------
 # SEC-006: bearer / API-key authentication for the public API surface
 # ------------------------------------------------------------------
@@ -463,7 +454,12 @@ async def request_governor_middleware(request, call_next):
 # network API every mutating endpoint (/demo, /apply, /correct, /api/*) is
 # callable by anyone who can reach the socket. SEC-006 closes that.
 #
-#   AXIOM_API_KEYS      comma-separated list of accepted keys. When set, every
+#   AXIOM_API_KEYS_FILE preferred production source: a bounded, read-only file
+#                       containing one accepted key per line (commas also work).
+#   AXIOM_API_KEYS      compatibility source for local/CI use. The variable is
+#                       removed from this process environment immediately after
+#                       loading. Do not use it in production container manifests.
+#                       When configured, every
 #                       non-exempt route requires `Authorization: Bearer <key>`
 #                       or `X-API-Key: <key>`. Unset => local-first mode
 #                       (auth disabled, origin gate still enforced).
@@ -472,21 +468,39 @@ async def request_governor_middleware(request, call_next):
 #                       routes instead of silently running open.
 #
 # Keys are compared via sha256 digests with hmac.compare_digest (constant-time,
-# length-independent). The digest prefix doubles as a stable per-tenant id so
+# length-independent). The full digest doubles as a stable per-tenant id so
 # the rate limiter (SEC-005) can apply a per-key quota tier instead of per-IP.
 
-_AUTH_EXEMPT_PATHS = {"/", "/healthz", "/api/health", "/livez", "/readyz", "/metrics", "/dashboard", "/docs", "/openapi.json", "/redoc"}
+_AUTH_EXEMPT_PATHS = {"/", "/assets/overlay.js", "/healthz", "/api/health", "/livez", "/readyz", "/metrics", "/dashboard", "/docs", "/openapi.json", "/redoc"}
 _AUTH_EXEMPT_PREFIXES: tuple[str, ...] = ()
 
 
 def _load_api_key_digests() -> dict[str, str]:
-    raw = os.environ.get("AXIOM_API_KEYS", "")
+    key_file = os.environ.get("AXIOM_API_KEYS_FILE", "").strip()
+    inline = os.environ.get("AXIOM_API_KEYS", "")
+    if key_file and inline:
+        raise RuntimeError("configure AXIOM_API_KEYS_FILE or AXIOM_API_KEYS, not both")
+    if key_file:
+        path = pathlib.Path(key_file)
+        try:
+            stat = path.stat()
+            if not path.is_file() or stat.st_size > 65536:
+                raise RuntimeError("API key file must be a regular file no larger than 64 KiB")
+            if stat.st_mode & 0o222:
+                raise RuntimeError("API key file must be read-only")
+            if stat.st_uid not in {0, os.geteuid()}:
+                raise RuntimeError("API key file must be owned by root or the runtime user")
+            raw = path.read_text(encoding="utf-8")
+        except OSError as exc:
+            raise RuntimeError("unable to read API key file") from exc
+    else:
+        raw = os.environ.pop("AXIOM_API_KEYS", "")
     digests: dict[str, str] = {}
-    for k in raw.split(","):
+    for k in raw.replace("\n", ",").split(","):
         k = k.strip()
         if len(k) >= 16:  # refuse trivially short keys
             d = hashlib.sha256(k.encode("utf-8")).hexdigest()
-            digests[d] = d[:12]
+            digests[d] = d
     return digests
 
 
@@ -526,7 +540,6 @@ def _authenticate(request) -> str | None:
     return match
 
 
-@app.middleware("http")
 async def api_key_auth_middleware(request, call_next):
     """SEC-006: bearer/API-key gate. 401 + WWW-Authenticate on bad/missing key,
     503 when production posture is demanded but no keys are configured
@@ -593,7 +606,6 @@ def _client_key(request) -> str:
     return client.host if client else "unknown"
 
 
-@app.middleware("http")
 async def rate_limit_middleware(request, call_next):
     """SEC-005: sliding-window per-IP rate limit. Fails closed with 429 +
     Retry-After once a client exceeds AXIOM_RATE_LIMIT_PER_MIN requests in a
@@ -637,6 +649,11 @@ def resolve_sandbox_path(file_path_str: str) -> pathlib.Path:
     if not file_path_str or not isinstance(file_path_str, str) or not file_path_str.strip() or "\x00" in file_path_str:
         raise HTTPException(status_code=422, detail="Invalid file path")
 
+    if file_path_str.startswith("uploaded:"):
+        owned = document_store.resolve(current_tenant(), file_path_str)
+        if owned is None:
+            raise HTTPException(404, "Document unavailable or expired")
+        return owned
     p = pathlib.Path(file_path_str)
     candidates = []
     if p.is_absolute():
@@ -650,7 +667,12 @@ def resolve_sandbox_path(file_path_str: str) -> pathlib.Path:
     for cand in candidates:
         try:
             resolved = cand.resolve()
-            if resolved.is_file() and any(resolved.is_relative_to(root) for root in ALLOWED_ROOTS):
+            # Deployment credentials may read curated public fixtures, never
+            # repository internals, shared temp files or another upload path.
+            permitted = (resolved.is_relative_to(FIXTURES_DIR.resolve())
+                         if current_tenant() != "local"
+                         else any(resolved.is_relative_to(root) for root in ALLOWED_ROOTS))
+            if resolved.is_file() and permitted:
                 return resolved
         except (OSError, ValueError):
             continue
@@ -662,11 +684,15 @@ def resolve_sandbox_path(file_path_str: str) -> pathlib.Path:
 provenance_log = ProvenanceLogImpl()
 STATE_DIR = pathlib.Path(os.environ.get("AXIOM_STATE_DIR", str(BASE_DIR / ".kairo")))
 memory_store = MemoryStoreImpl(STATE_DIR / "overlay_store.db")
+evidence_store = EvidenceStore(STATE_DIR / "scoped_evidence.db")
+document_store = DocumentStore(STATE_DIR / "owned_uploads")
+_admission = AdmissionGate()
 ingestor = IngestorImpl()
 security_filter = LocalSecurityFilter(enable_pii_scan=False)
 
-# Gateway in test mode (no LiteLLM/Ollama needed for overlay demonstration)
-os.environ["KAIRO_GATEWAY_TEST_MODE"] = "true"
+# Offline extraction uses deterministic pack rules, not mocked model output.
+# Tests may opt into gateway test mode themselves; importing production code
+# must never silently overwrite the deployment's model configuration.
 inference_gateway = TieredInferenceGateway(tier3_enabled=False)
 
 quality_gate = LocalQualityGate(memory_store)
@@ -683,6 +709,9 @@ orchestrator = OrchestratorImpl(
 )
 
 action_executor = ActionExecutorImpl(provenance_log)
+MAX_PREVIEW_DOCUMENTS = int(os.environ.get("AXIOM_PREVIEW_DOCUMENTS", "128"))
+if MAX_PREVIEW_DOCUMENTS < 1:
+    raise ValueError("AXIOM_PREVIEW_DOCUMENTS must be positive")
 
 # --- Pipeline concurrency: launch-blocker #1 fix ------------------------------
 # Previously every /demo and /apply call serialized on one global mutex, which
@@ -731,16 +760,17 @@ class DemoRequest(IngressModel):
 
 
 class ApplyRequest(IngressModel):
-    ext_id: str
+    ext_id: str = Field(min_length=1, max_length=256)
     accept: bool
 
 
 class CorrectionRequest(IngressModel):
-    ext_id: str
-    field_name: str
-    original: str
-    corrected: str
-    reason: str
+    ext_id: str = Field(min_length=1, max_length=256)
+    field_name: str = Field(min_length=1, max_length=256)
+    original: str = Field(max_length=131072)
+    corrected: str = Field(max_length=131072)
+    reason: str = Field(max_length=4096)
+    expected_revision: int | None = Field(default=None, ge=0)
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -753,38 +783,220 @@ async def read_root():
     return HTMLResponse(content=content)
 
 
+@app.get("/assets/overlay.js")
+async def overlay_javascript():
+    """Serve one fixed public script, not a directory containing runtime data."""
+    from fastapi.responses import Response
+    content = await asyncio.to_thread(
+        (TEMPLATES_DIR / "overlay.js").read_text, encoding="utf-8"
+    )
+    return Response(content, media_type="application/javascript")
+
+
+async def _bounded_worker_call(fn, request, *, pool, slots, lane):
+    """Bounded async queue; ownership ends only at actual native completion."""
+    async def work():
+        permit = await _admission.acquire(slots, current_tenant())
+        try:
+            future = pool.submit(contextvars.copy_context().run, fn)
+        except BaseException:
+            permit.release()
+            raise
+        future.add_done_callback(lambda _: permit.release())
+        return await asyncio.wrap_future(future)
+    try:
+        return await until_disconnect(work(), request, EXTRACTION_DEADLINE_SECONDS)
+    except AdmissionFull as exc:
+        key = f"{lane}_shed_total"
+        OPS_METRICS[key] = OPS_METRICS.get(key, 0) + 1
+        raise HTTPException(503, f"{lane.capitalize()} capacity saturated; retry shortly", headers={"Retry-After": "1"}) from exc
+    except ClientDisconnected as exc:
+        raise HTTPException(499, "Client disconnected") from exc
+    except TimeoutError as exc:
+        key = f"{lane}_deadline_total"
+        OPS_METRICS[key] = OPS_METRICS.get(key, 0) + 1
+        detail = "Document processing deadline exceeded" if lane == "extraction" else "Evidence operation deadline exceeded"
+        raise HTTPException(504, detail, headers={"Retry-After": "5"}) from exc
+
+
+async def _admitted_call(fn, request=None):
+    return await _bounded_worker_call(
+        fn, request, pool=_extraction_pool, slots=_extraction_slots, lane="extraction"
+    )
+
+
+def _submit_document_stages(file_reference, fn):
+    """Resolve metadata, then revalidate and execute on the CPU pool.
+
+    The caller already owns one extraction permit. The metadata result is
+    deliberately discarded: ``fn`` must resolve the original opaque reference
+    again immediately before its bounded byte read.
+    """
+    completed = concurrent.futures.Future()
+    metadata_context = contextvars.copy_context()
+    cpu_context = contextvars.copy_context()
+    metadata_future = _document_metadata_pool.submit(
+        metadata_context.run, resolve_sandbox_path, file_reference
+    )
+
+    def finish_cpu(cpu_future):
+        if completed.done():
+            return
+        try:
+            completed.set_result(cpu_future.result())
+        except BaseException as exc:  # noqa: BLE001 -- preserve worker terminal state
+            completed.set_exception(exc)
+
+    def finish_metadata(resolution_future):
+        if completed.done():
+            return
+        try:
+            resolution_future.result()
+            cpu_future = _extraction_pool.submit(cpu_context.run, fn)
+        except BaseException as exc:  # noqa: BLE001 -- submission/result boundary
+            completed.set_exception(exc)
+            return
+        cpu_future.add_done_callback(finish_cpu)
+
+    metadata_future.add_done_callback(finish_metadata)
+    return completed
+
+
+async def _document_call(fn, file_reference, request=None):
+    """One completion-owned extraction permit across metadata and CPU stages."""
+    async def work():
+        permit = await _admission.acquire(_extraction_slots, current_tenant())
+        try:
+            future = _submit_document_stages(file_reference, fn)
+        except BaseException:
+            permit.release()
+            raise
+        future.add_done_callback(lambda _: permit.release())
+        # Request cancellation must not cancel the composite future and release
+        # capacity while metadata or native CPU work is still running.
+        return await asyncio.shield(asyncio.wrap_future(future))
+
+    try:
+        return await until_disconnect(work(), request, EXTRACTION_DEADLINE_SECONDS)
+    except AdmissionFull as exc:
+        OPS_METRICS["extraction_shed_total"] = OPS_METRICS.get("extraction_shed_total", 0) + 1
+        raise HTTPException(
+            503,
+            "Extraction capacity saturated; retry shortly",
+            headers={"Retry-After": "1"},
+        ) from exc
+    except ClientDisconnected as exc:
+        raise HTTPException(499, "Client disconnected") from exc
+    except TimeoutError as exc:
+        OPS_METRICS["extraction_deadline_total"] = OPS_METRICS.get(
+            "extraction_deadline_total", 0
+        ) + 1
+        raise HTTPException(
+            504,
+            "Document processing deadline exceeded",
+            headers={"Retry-After": "5"},
+        ) from exc
+
+
+async def _evidence_call(fn, request=None):
+    return await _bounded_worker_call(
+        fn, request, pool=_evidence_pool, slots=_evidence_slots, lane="evidence"
+    )
+
+
+@app.post("/api/documents")
+async def upload_document(request: Request, filename: str):
+    """Create an opaque owned copy; filename is format metadata, not a path."""
+    if len(filename) > 256 or not filename or "\x00" in filename:
+        raise HTTPException(422, "Invalid filename")
+    content = await request.body()  # outer middleware enforces streaming ceiling
+    try:
+        reference = await _admitted_call(lambda: document_store.save(current_tenant(), filename, content), request)
+    except UploadBudgetExceeded as exc:
+        raise HTTPException(413, str(exc)) from exc
+    except UploadConflict as exc:
+        raise HTTPException(409, str(exc)) from exc
+    except OSError as exc:
+        raise HTTPException(503, "Upload storage unavailable", headers={"Retry-After": "1"}) from exc
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    return {"file": reference, "bytes": len(content), "retention_seconds": document_store.ttl,
+            "storage_scope": "app-managed copy; not encrypted at rest"}
+
+
 @app.post("/demo")
-async def run_demo(req: DemoRequest):
-    """Run the pipeline on a document and return data for the overlay."""
+async def run_demo(req: DemoRequest, request: Request = None):
+    try:
+        return await _document_call(lambda: _run_document_preview(req), req.file, request)
+    except HTTPException:
+        raise
+    except Exception:
+        logger.exception("preview pipeline failed")
+        raise HTTPException(500, "Document processing failed") from None
+
+
+def _run_document_preview(req: DemoRequest):
+    """All preview I/O and pipeline work lives inside the admitted worker."""
     file_path = resolve_sandbox_path(req.file)
+    doc = None
+    request_store = MemoryStoreImpl(":memory:")
+    request_provenance = ProvenanceLogImpl()
+    proposed_actions = []
 
     try:
         # 1. Create target document
         # Real provenance digest of the exact bytes fed to the pipeline.
         try:
-            file_bytes = await asyncio.to_thread(file_path.read_bytes)
+            with file_path.open("rb") as source:
+                file_bytes = source.read(MAX_UPLOAD_BYTES + 1)
+            if len(file_bytes) > MAX_UPLOAD_BYTES:
+                raise HTTPException(status_code=413, detail="Document exceeds byte budget")
             digest = hashlib.sha256(file_bytes).hexdigest()
         except OSError as exc:
-            raise HTTPException(status_code=422, detail=f"Unable to read {req.file}: {exc}") from exc
+            raise HTTPException(status_code=422, detail="Unable to read document") from exc
         doc = Document(
             source_path=str(file_path),
             sha256=digest,
         )
 
+        pipeline_ingestor = IngestorImpl()
+        if file_path.suffix.lower() not in (".txt", ".md"):
+            from kernel.sidecar.isolated_ingest import (
+                IsolatedIngestDeadline,
+                IsolatedIngestResourceError,
+                ParsedDocumentIngestor,
+                ingest_isolated_document,
+                isolation_enabled,
+            )
+            try:
+                if isolation_enabled():
+                    parsed = ingest_isolated_document(str(file_path), timeout=max(5.0, EXTRACTION_DEADLINE_SECONDS-2))
+                else:
+                    with orchestrator_lock:
+                        parsed = pipeline_ingestor.ingest(str(file_path))
+                pipeline_ingestor = ParsedDocumentIngestor(str(file_path), parsed)
+            except IsolatedIngestDeadline as exc:
+                raise HTTPException(504, "Isolated parsing exceeded its deadline", headers={"Retry-After": "5"}) from exc
+            except (IsolatedIngestResourceError, ValueError, RuntimeError) as exc:
+                raise HTTPException(422, "Document format is unsupported, invalid, or exceeds parser limits") from exc
+        request_orchestrator = OrchestratorImpl(
+            ingestor=pipeline_ingestor, security_filter=LocalSecurityFilter(enable_pii_scan=False),
+            inference_gateway=TieredInferenceGateway(tier3_enabled=False),
+            quality_gate=LocalQualityGate(ScopedReviewLookup(evidence_store, current_tenant())), provenance_log=request_provenance,
+            pack=GenericPack(), memory_store=request_store)
+
         # 2. Run Orchestrator (off event loop, bounded concurrency; services are individually thread-safe)
         def _run_pipeline(document):
             with orchestrator_lock:
-                return orchestrator.run(document)
-        trace = await asyncio.to_thread(_run_pipeline, doc)
+                return request_orchestrator.run(document)
+        trace = _run_pipeline(doc)
 
         # 3. Read raw file contents to return to UI
         if file_path.suffix.lower() in (".txt", ".md"):
-            document_text = await asyncio.to_thread(file_path.read_text, encoding="utf-8", errors="replace")
+            document_text = file_bytes.decode("utf-8", errors="replace")
         else:
             # Reconstruct document text from the registered chunks
-            doc_chunks = provenance_log.chunks_for_doc(doc.doc_id)
-            if not doc_chunks:
-                doc_chunks = provenance_log.all_chunks()
+            doc_chunks = request_provenance.chunks_for_doc(doc.doc_id)
             document_chunks = sorted(
                 doc_chunks,
                 key=lambda c: (c.page, c.bbox.y0 if c.bbox else 0)
@@ -794,15 +1006,16 @@ async def run_demo(req: DemoRequest):
         # 4. Format suggestions with bbox + page mapping
         suggestions = []
         for ext in trace.extractions:
-            if ext.status == ExtractionStatus.BLOCKED:
+            if ext.status == ExtractionStatus.BLOCKED or ext.method == GroundingMethod.BLOCK:
                 continue
             
-            chain = provenance_log.get_provenance(ext.ext_id)
+            chain = request_provenance.get_provenance(ext.ext_id)
             if not chain.is_complete:
                 continue
 
             suggestions.append({
                 "ext_id": ext.ext_id,
+                "revision": 0,
                 "field_name": ext.field_name,
                 "value": ext.value,
                 "confidence": ext.confidence,
@@ -825,7 +1038,8 @@ async def run_demo(req: DemoRequest):
                 confidence=ext.confidence,
                 status=ActionStatus.PENDING,
             )
-            provenance_log.register_action(action)
+            request_provenance.register_action(action)
+            proposed_actions.append(action)
 
         # 5. Format trace details
         formatted_trace = {
@@ -843,35 +1057,64 @@ async def run_demo(req: DemoRequest):
             ]
         }
 
+        doc = request_provenance.document_for_id(doc.doc_id) or doc
+        _publish_evidence(doc, request_provenance.chunks_for_doc(doc.doc_id), trace.extractions,
+                          proposed_actions, formatted_trace)
         return {
+            "doc_id": doc.doc_id,
             "success": True,
             "document_text": document_text,
             "suggestions": suggestions,
             "trace": formatted_trace,
         }
 
-    except Exception as e:
+    except EvidenceBudgetExceeded as exc:
+        raise HTTPException(413, "Evidence snapshot exceeds byte budget") from exc
+    except HTTPException:
+        raise
+    except Exception:
         logger.exception("unhandled error in overlay endpoint")
-        return {"success": False, "error": str(e)}
+        raise HTTPException(status_code=500, detail="Document processing failed") from None
+    finally:
+        request_store.close()
+
+
+def _publish_evidence(doc, chunks, extractions, actions=(), trace=None):
+    evidence_store.publish(current_tenant(), doc, chunks, extractions, actions, trace)
+    # Trusted, auth-disabled library compatibility only; no shared legacy data
+    # can be assigned to a deployment credential.
+    if current_tenant() == "local":
+        provenance_log.register_document(doc)
+        for chunk in chunks:
+            provenance_log.register_chunk(chunk)
+        for ext in extractions:
+            provenance_log.register_extraction(ext)
+        for action in actions:
+            provenance_log.register_action(action)
+        provenance_log.complete_document(doc.doc_id, MAX_PREVIEW_DOCUMENTS)
 
 
 @app.post("/apply")
 async def apply_cua(req: ApplyRequest):
     """Execute a confirmed CUA action and verify post-state."""
     # Retrieve action from provenance log
-    action_id = None
-    for act_id, act in provenance_log._actions.items():
-        if act.ext_id == req.ext_id:
-            action_id = act_id
-            break
-
-    if not action_id:
+    action = await _evidence_call(lambda: evidence_store.action_for_extraction(current_tenant(), req.ext_id))
+    if action is None and current_tenant() == "local":
+        action = provenance_log.action_for_extraction(req.ext_id)
+    if action is None:
         return {"success": False, "error": "No pending action found for this extraction"}
-
-    action = provenance_log._actions[action_id]
     
     # Kairo ActionExecutor requires human_confirm=True
-    result = action_executor.apply(action, human_confirm=req.accept)
+    if current_tenant() != "local":
+        chain = await _evidence_call(lambda: evidence_store.chain(current_tenant(), req.ext_id))
+        owned = ProvenanceLogImpl()
+        if chain.is_complete:
+            owned.register_document(chain.document)
+            owned.register_chunk(chain.chunk)
+            owned.register_extraction(chain.extraction)
+        result = ActionExecutorImpl(owned).apply(action, human_confirm=req.accept)
+    else:
+        result = action_executor.apply(action, human_confirm=req.accept)
     return {
         "success": result.success,
         "error": result.error,
@@ -880,21 +1123,31 @@ async def apply_cua(req: ApplyRequest):
 
 
 @app.post("/correct")
-async def record_flywheel_correction(req: CorrectionRequest):
-    """Record a correction to memory store, triggering the local flywheel."""
+async def record_flywheel_correction(req: CorrectionRequest, request: Request = None):
+    """Credential-scoped CAS review, never a new grounding assertion."""
     try:
-        corr = Correction(
-            ext_id=req.ext_id,
-            original=req.original,
-            corrected=req.corrected,
-            reason=req.reason,
-            by="overlay-user",
-        )
-        memory_store.record_correction(corr)
-        return {"success": True}
-    except Exception as e:
-        logger.exception("unhandled error in overlay endpoint")
-        return {"success": False, "error": str(e)}
+        return await _evidence_call(lambda: evidence_store.review(current_tenant(), req.ext_id,
+            req.field_name, req.original, req.corrected, req.reason, req.expected_revision), request)
+    except HTTPException:
+        raise
+    except KeyError as exc:
+        raise HTTPException(404, "Extraction unavailable or expired") from exc
+    except ReviewConflict as exc:
+        raise HTTPException(409, str(exc)) from exc
+    except EvidenceBudgetExceeded as exc:
+        raise HTTPException(413, str(exc)) from exc
+    except Exception:
+        logger.exception("review persistence failed")
+        raise HTTPException(500, "Unable to record correction") from None
+
+
+
+@app.get("/api/reviews/{extraction_id}")
+async def get_current_review(extraction_id: str):
+    try:
+        return await _evidence_call(lambda: evidence_store.current_review(current_tenant(), extraction_id))
+    except KeyError as exc:
+        raise HTTPException(404, "Extraction unavailable or expired") from exc
 
 
 # Serve only rendered images, never the runtime database, WAL, or audit files.
@@ -908,6 +1161,8 @@ app.mount("/static/page_images", StaticFiles(
 @app.get("/api/compression/stats")
 async def get_compression_stats():
     """Return aggregate context compression statistics."""
+    if current_tenant() != "local":
+        raise HTTPException(501, "Legacy aggregate is not credential-scoped; unavailable in authenticated mode")
     try:
         from kairo.context.compressor import get_compression_stats
         return get_compression_stats()
@@ -927,22 +1182,14 @@ async def get_dashboard():
 
 @app.get("/api/traces")
 async def get_traces(limit: int = 50):
-    """Return recent grounding traces for the dashboard."""
-    try:
-        from kairo.observability.trace import get_traces
-        return get_traces(limit=limit)
-    except ImportError:
-        return []
+    """Only completed snapshots belonging to this deployment credential."""
+    return await _evidence_call(lambda: evidence_store.traces(current_tenant(), limit))
 
 
 @app.get("/api/traces/stats")
 async def get_trace_stats():
-    """Return aggregate grounding trace statistics."""
-    try:
-        from kairo.observability.trace import get_trace_stats
-        return get_trace_stats()
-    except ImportError:
-        return {"total_traces": 0, "grounded_pct": 0.0}
+    traces = await _evidence_call(lambda: evidence_store.traces(current_tenant(), 128))
+    return {"total_traces": len(traces), "scope": "retained credential-scoped snapshots"}
 
 
 # ---- Phase 3: Connector Protocol ----
@@ -983,24 +1230,12 @@ class GraphQueryRequest(IngressModel):
 
 
 @app.post("/api/extract-document")
-async def extract_document(req: ExtractDocumentRequest):
+async def extract_document(req: ExtractDocumentRequest, request: Request = None):
     """Extract fields from a document with grounding metadata.
 
     Returns fields with value, grounded status, bbox, cascade method,
     confidence, and source_link for each extracted field.
     """
-    # Admission covers all document I/O, classification and pipeline work.
-    # Acquiring only at submit time let rejected requests fill the default
-    # executor and retain full document strings before the capacity check.
-    slots = _extraction_slots
-    if not slots.acquire(blocking=False):
-        OPS_METRICS["extraction_shed_total"] = OPS_METRICS.get("extraction_shed_total", 0) + 1
-        raise HTTPException(
-            status_code=503,
-            detail="Extraction capacity saturated; retry shortly",
-            headers={"Retry-After": "1"},
-        )
-
     def _run_admitted():
         file_path = resolve_sandbox_path(req.file)
         filepath = str(file_path)
@@ -1014,6 +1249,7 @@ async def extract_document(req: ExtractDocumentRequest):
             logger.exception("unable to read document for extraction")
             raise HTTPException(status_code=422, detail="Unable to read document") from exc
 
+        pipeline_ingestor = IngestorImpl()
         if file_path.suffix.lower() not in (".txt", ".md"):
             # Binary containers are not UTF-8 text. Classify parsed content,
             # otherwise real PDF/DOCX invoices silently select GenericPack.
@@ -1021,19 +1257,20 @@ async def extract_document(req: ExtractDocumentRequest):
                 from kernel.sidecar.isolated_ingest import (
                     IsolatedIngestDeadline,
                     IsolatedIngestResourceError,
-                    ingest_isolated,
+                    ParsedDocumentIngestor,
+                    ingest_isolated_document,
                     isolation_enabled,
                 )
                 if isolation_enabled():
                     # Killable child process with rlimits: a hung/adversarial
                     # parser cannot pin a service thread or the GIL (AG-21).
-                    texts = ingest_isolated(
+                    parsed = ingest_isolated_document(
                         filepath, timeout=max(5.0, EXTRACTION_DEADLINE_SECONDS - 2.0))
-                    text = "\n\n".join(texts)
                 else:
                     with orchestrator_lock:
-                        chunks, _, _ = IngestorImpl().ingest(filepath)
-                    text = "\n\n".join(chunk.text for chunk in chunks)
+                        parsed = pipeline_ingestor.ingest(filepath)
+                text = "\n\n".join(chunk.text for chunk in parsed[0])
+                pipeline_ingestor = ParsedDocumentIngestor(filepath, parsed)
             except IsolatedIngestDeadline as exc:
                 raise HTTPException(status_code=504, detail="Isolated parsing exceeded its deadline", headers={"Retry-After": "5"}) from exc
             except IsolatedIngestResourceError as exc:
@@ -1050,47 +1287,41 @@ async def extract_document(req: ExtractDocumentRequest):
             "memo": ClassifiedMemoPack,
             "generic": GenericPack,
         }.get(doc_type, GenericPack)
-        doc = Document(source_path=filepath)
+        doc = Document(source_path=filepath, sha256=hashlib.sha256(content).hexdigest())
         # The store and capacity belong to the actual worker, not its waiter.
         # Cancelling an HTTP request cannot stop a running Python thread.
         with MemoryStoreImpl(":memory:") as request_store:
+            request_provenance = ProvenanceLogImpl()
             request_orchestrator = OrchestratorImpl(
-                ingestor=IngestorImpl(),
+                ingestor=pipeline_ingestor,
                 security_filter=LocalSecurityFilter(enable_pii_scan=False),
                 inference_gateway=TieredInferenceGateway(tier3_enabled=False),
-                quality_gate=LocalQualityGate(request_store),
-                provenance_log=ProvenanceLogImpl(),
+                quality_gate=LocalQualityGate(ScopedReviewLookup(evidence_store, current_tenant())),
+                provenance_log=request_provenance,
                 pack=pack_class(),
                 memory_store=request_store,
             )
             with orchestrator_lock:
                 trace = request_orchestrator.run(doc)
+            # Retain actual source evidence before the request-scoped store
+            # closes. Returning a synthetic URI after discarding all chunks
+            # made click-to-source impossible for extraction/ask responses.
+            doc = request_provenance.document_for_id(doc.doc_id) or doc
+            _publish_evidence(doc, request_provenance.chunks_for_doc(doc.doc_id), trace.extractions,
+                              trace={"halted": trace.halted, "halt_reason": trace.halt_reason,
+                                     "stages": [{"name": st.name, "status": st.status,
+                                                 "duration_ms": st.duration_ms} for st in trace.stages]})
         return trace, doc_type, doc
 
     try:
-        work = _extraction_pool.submit(contextvars.copy_context().run, _run_admitted)
-    except BaseException:
-        slots.release()
-        raise
-    work.add_done_callback(lambda _future: slots.release())
-    try:
-        trace, doc_type, doc = await asyncio.wait_for(
-            asyncio.wrap_future(work), timeout=EXTRACTION_DEADLINE_SECONDS)
+        trace, doc_type, doc = await _document_call(_run_admitted, req.file, request)
+    except EvidenceBudgetExceeded as exc:
+        raise HTTPException(413, "Evidence snapshot exceeds byte budget") from exc
     except HTTPException:
         raise
-    except asyncio.TimeoutError as exc:
-        OPS_METRICS["extraction_deadline_total"] = OPS_METRICS.get("extraction_deadline_total", 0) + 1
-        logger.warning("extraction exceeded deadline of %.1fs", EXTRACTION_DEADLINE_SECONDS)
-        raise HTTPException(
-            status_code=504,
-            detail=f"Extraction exceeded {EXTRACTION_DEADLINE_SECONDS:.0f}s deadline",
-            headers={"Retry-After": "5"},
-        ) from exc
-    except Exception as exc:
-        logger.exception("unhandled error in /api/extract-document pipeline")
-        raise HTTPException(status_code=500, detail="Extraction pipeline failed") from exc
-
-    from kairo.core.classifier import build_source_link
+    except Exception:
+        logger.exception("unexpected failure in /api/extract-document")
+        raise HTTPException(500, "Extraction pipeline failed") from None
 
     # Build response with grounding metadata
     fields = {}
@@ -1106,13 +1337,15 @@ async def extract_document(req: ExtractDocumentRequest):
         grounded = ext.method.value != "block"
         if grounded:
             fields[ext.field_name] = {
+                "ext_id": ext.ext_id,
+                "revision": 0,
                 "value": ext.value,
                 "grounded": True,
                 "bbox": bbox,
                 "page": page,
                 "cascade": ext.method.value.upper(),
                 "confidence": ext.confidence,
-                "source_link": build_source_link(doc.doc_id, page, bbox or [0, 0, 0, 0]),
+                "source_link": f"/api/source/{doc.doc_id}?page={page}",
             }
         else:
             refused_fields.append(ext.field_name)
@@ -1127,16 +1360,14 @@ async def extract_document(req: ExtractDocumentRequest):
 
 
 @app.post("/api/ask-document")
-async def ask_document(req: AskDocumentRequest):
+async def ask_document(req: AskDocumentRequest, request: Request = None):
     """Ask a question about a document. Returns answer with bbox or refusal."""
-    file_path = resolve_sandbox_path(req.file)
-    filepath = str(file_path)
     question = req.question
 
     try:
         # For now, extract all fields and check if the question matches any
-        extract_req = ExtractDocumentRequest(file=filepath)
-        result = await extract_document(extract_req)
+        extract_req = ExtractDocumentRequest(file=req.file)
+        result = await extract_document(extract_req, request)
     except HTTPException:
         raise
     except Exception as exc:
@@ -1167,18 +1398,24 @@ async def ask_document(req: AskDocumentRequest):
 
 @app.get("/api/source/{doc_id}")
 async def get_source_render(doc_id: str, page: int = 1, x: float = 0, y: float = 0, w: float = 0, h: float = 0):
-    """Render a document page with bbox highlight overlay.
-
-    For text documents, returns the text with the highlighted region marked.
-    For PDFs, would render via PyMuPDF (requires the source file path).
-    """
-    # In a full implementation, this would render the page as PNG via PyMuPDF
-    # and overlay an SVG bbox. For now, return metadata.
+    """Return retained source text/geometry; never invent a rendered image URI."""
+    if page < 1 or not all(math.isfinite(v) for v in (x, y, w, h)):
+        raise HTTPException(status_code=422, detail="Invalid source page or coordinates")
+    chunks = await _evidence_call(lambda: evidence_store.chunks_for_doc(current_tenant(), doc_id))
+    chunks = [chunk for chunk in chunks if chunk.page == page]
+    if not chunks:
+        raise HTTPException(status_code=404, detail="Source evidence unavailable or expired")
     return {
         "doc_id": doc_id,
         "page": page,
         "highlight_bbox": [x, y, w, h] if w > 0 and h > 0 else None,
-        "render_url": f"kairo://doc/{doc_id}?page={page}&x={x}&y={y}&w={w}&h={h}",
+        "highlight_scope": "caller-requested coordinates, not independently verified",
+        "source_text": "\n\n".join(chunk.text for chunk in chunks),
+        "regions": [{"chunk_id": chunk.chunk_id,
+                     "bbox": [chunk.bbox.x0, chunk.bbox.y0, chunk.bbox.x1, chunk.bbox.y1]
+                     if chunk.bbox else None} for chunk in chunks],
+        "render_status": "retained_text_preview",
+        "render_url": None,
     }
 
 
@@ -1191,6 +1428,8 @@ async def query_graph(req: GraphQueryRequest):
     NOT an LLM call — pure keyword + entity matching + graph traversal.
     Returns matching nodes with bbox provenance.
     """
+    if current_tenant() != "local":
+        raise HTTPException(501, "Legacy aggregate is not credential-scoped; unavailable in authenticated mode")
     keyword = req.keyword or req.query or ""
     if not keyword or not keyword.strip():
         raise HTTPException(status_code=400, detail="keyword or query is required")
@@ -1208,6 +1447,8 @@ async def query_graph(req: GraphQueryRequest):
 @app.get("/api/graph")
 async def get_graph():
     """Get the full knowledge graph for visualization."""
+    if current_tenant() != "local":
+        raise HTTPException(501, "Legacy aggregate is not credential-scoped; unavailable in authenticated mode")
     try:
         from kairo.graph.store import GroundedKnowledgeGraph
         g = GroundedKnowledgeGraph()
@@ -1227,6 +1468,8 @@ async def get_figures(doc_id: str, file: str = ""):
     For PDFs: uses PyMuPDF to detect images, find captions, classify.
     For text: extracts Figure/Table references from text.
     """
+    if current_tenant() != "local":
+        raise HTTPException(501, "Legacy aggregate is not credential-scoped; unavailable in authenticated mode")
     if not file or not file.strip():
         raise HTTPException(status_code=400, detail="file parameter is required")
     file_path = resolve_sandbox_path(file)
@@ -1262,6 +1505,8 @@ async def get_figures(doc_id: str, file: str = ""):
 @app.get("/api/eval/report")
 async def get_eval_report():
     """Get the full eval report with regression and drift alerts."""
+    if current_tenant() != "local":
+        raise HTTPException(501, "Legacy aggregate is not credential-scoped; unavailable in authenticated mode")
     try:
         from kairo.observability.eval import get_eval_report
         return get_eval_report()
@@ -1272,49 +1517,14 @@ async def get_eval_report():
 
 @app.get("/source/{extraction_id}")
 async def get_source_provenance(extraction_id: str):
-    """Retrieve bounding box and page reference for click-to-source verification."""
-    ext = memory_store.get_extraction(extraction_id)
-    if not ext:
-        ext = provenance_log.get_provenance(extraction_id).extraction
-        if not ext:
-            raise HTTPException(status_code=404, detail="Extraction not found")
-
-    chain = provenance_log.get_provenance(ext.ext_id)
-    if not chain.is_complete or not chain.chunk:
-        if ext.anchors:
-            anchor = ext.anchors[0]
-            bbox = {
-                "x0": anchor.bbox.x0 if anchor.bbox else 0,
-                "y0": anchor.bbox.y0 if anchor.bbox else 0,
-                "x1": anchor.bbox.x1 if anchor.bbox else 1,
-                "y1": anchor.bbox.y1 if anchor.bbox else 1,
-            }
-            page = anchor.page
-            doc_id = ext.pack_id
-        else:
-            raise HTTPException(status_code=404, detail="Provenance chain is incomplete")
-    else:
-        page = chain.chunk.page
-        bbox = {
-            "x0": chain.chunk.bbox.x0 if chain.chunk.bbox else 0,
-            "y0": chain.chunk.bbox.y0 if chain.chunk.bbox else 0,
-            "x1": chain.chunk.bbox.x1 if chain.chunk.bbox else 1,
-            "y1": chain.chunk.bbox.y1 if chain.chunk.bbox else 1,
-        }
-        doc_id = chain.document.doc_id if chain.document else ""
-
-    pages = memory_store.get_pages(doc_id)
-    image_ref = ""
-    for p in pages:
-        if p.index == page:
-            image_ref = f"/static/page_images/{p.image_sha256}.png" if p.image_sha256 else ""
-            break
-
-    return {
-        "page": page,
-        "bbox": bbox,
-        "image_ref": image_ref,
-    }
+    """Only complete retained source chains; no invented document/image links."""
+    chain = await _evidence_call(lambda: evidence_store.chain(current_tenant(), extraction_id))
+    if not chain.is_complete:
+        raise HTTPException(404, "Source evidence unavailable or expired")
+    box = chain.chunk.bbox
+    return {"doc_id": chain.document.doc_id, "page": chain.chunk.page,
+            "bbox": {"x0": box.x0, "y0": box.y0, "x1": box.x1, "y1": box.y1},
+            "source_text": chain.chunk.text, "image_ref": ""}
 
 
 # ------------------------------------------------------------------
@@ -1372,7 +1582,14 @@ def _readyz_dependency_checks() -> dict:
         checks["state_dir_writable"] = "ok"
     except OSError as exc:
         checks["state_dir_writable"] = f"failed:{type(exc).__name__}"
+    for name, store in (("scoped_evidence", evidence_store), ("owned_uploads", document_store)):
+        try:
+            store.healthcheck()
+            checks[name] = "ok"
+        except Exception as exc:  # noqa: BLE001 -- dependency probe must fail closed
+            checks[name] = f"failed:{type(exc).__name__}"
     checks["extraction_capacity"] = "ok" if _extraction_slots._value > 0 else "saturated"
+    checks["evidence_capacity"] = "ok" if _evidence_slots._value > 0 else "saturated"
     return checks
 
 
@@ -1457,6 +1674,21 @@ def _run_readyz_probe() -> dict:
 @app.get("/metrics")
 async def metrics(format: str = "json"):
     """Bounded in-process telemetry in JSON or Prometheus exposition format."""
+    def resident_memory_bytes():
+        """Current RSS without depending on an undeployed container exporter."""
+        try:
+            # Linux production image: statm reports resident pages.
+            resident_pages = int(pathlib.Path("/proc/self/statm").read_text().split()[1])
+            return resident_pages * os.sysconf("SC_PAGE_SIZE")
+        except (OSError, ValueError, IndexError):
+            # ru_maxrss is a peak fallback (KiB on Linux, bytes on macOS).
+            try:
+                import resource
+                peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+                return int(peak if sys.platform == "darwin" else peak * 1024)
+            except (ImportError, OSError, ValueError):
+                return 0
+
     total = OPS_METRICS["requests_total"]
     samples = sorted(OPS_METRICS["latency_samples"])
     def percentile(q):
@@ -1464,15 +1696,20 @@ async def metrics(format: str = "json"):
     data = {"uptime_seconds": round(time.time()-OPS_METRICS["started_at"],2), "requests_total": total,
             "errors_total": OPS_METRICS["errors_total"], "auth_rejections_total": OPS_METRICS.get("auth_rejections_total",0),
             "extraction_shed_total": OPS_METRICS.get("extraction_shed_total",0),
+            "evidence_shed_total": OPS_METRICS.get("evidence_shed_total",0),
+            "evidence_deadline_total": OPS_METRICS.get("evidence_deadline_total",0),
             "log_dropped_total": LOG_DROPPED_TOTAL["count"],
             "status_counts": OPS_METRICS["status_counts"], "active_rate_limit_buckets": len(_rate_limit_buckets),
             "latency_ms_mean": round(OPS_METRICS["latency_ms_total"]/total,2) if total else 0.0,
             "latency_ms_max": OPS_METRICS["latency_ms_max"],
+            "process_resident_memory_bytes": resident_memory_bytes(),
             "latency_percentiles": {"p50":percentile(.5),"p90":percentile(.9),"p95":percentile(.95),"p99":percentile(.99)}}
     if format.lower() in {"prometheus","otel"}:
         lines=[f"axiom_requests_total {total}",f"axiom_errors_total {data['errors_total']}",
                f"axiom_auth_rejections_total {data['auth_rejections_total']}",f"axiom_extraction_shed_total {data['extraction_shed_total']}",f"axiom_log_dropped_total {data['log_dropped_total']}",f"axiom_rate_limit_buckets {data['active_rate_limit_buckets']}"]
         lines += [f'axiom_http_status_total{{code="{code}"}} {count}' for code,count in data["status_counts"].items()]
+        lines += [f"axiom_evidence_shed_total {data['evidence_shed_total']}",
+                  f"axiom_evidence_deadline_total {data['evidence_deadline_total']}"]
         # Latency summary (Prometheus summary-style quantiles). Alerting on P95/P99 requires this
         # exposition; the JSON form alone is not scrapeable. Quantiles are over the bounded in-process
         # sample window, so each worker reports its own distribution (aggregate with max() by pod).
@@ -1483,6 +1720,7 @@ async def metrics(format: str = "json"):
         lines += [f"axiom_request_latency_ms_sum {round(OPS_METRICS['latency_ms_total'], 2)}",
                   f"axiom_request_latency_ms_count {total}",
                   f"axiom_request_latency_ms_max {data['latency_ms_max']}",
+                  f"axiom_process_resident_memory_bytes {data['process_resident_memory_bytes']}",
                   f"axiom_uptime_seconds {data['uptime_seconds']}"]
         return HTMLResponse("\n".join(lines)+"\n", media_type="text/plain; version=0.0.4")
     return data
@@ -1545,9 +1783,8 @@ async def _validation_exception_handler(request, exc):
     return JSONResponse(status_code=422, content=content)
 
 
-# Register last so spans enclose auth, rate limiting and request logging.
-install_tracing(app)
-
-
-# Outer ASGI boundary counts actual bytes before any endpoint parses JSON.
+# Count actual bytes before endpoint parsing, without per-layer task streams.
 app.add_middleware(BodyLimitMiddleware, limit=lambda: MAX_UPLOAD_BYTES)
+app.add_middleware(RequestPolicyMiddleware, server=sys.modules[__name__])
+# Traces include policy rejections as well as endpoint work.
+install_tracing(app)

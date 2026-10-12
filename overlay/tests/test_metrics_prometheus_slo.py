@@ -3,6 +3,7 @@
 If this test fails, the SLO alerts are silently dead in production.
 """
 import re
+
 from fastapi.testclient import TestClient
 
 from overlay import server
@@ -17,10 +18,11 @@ def test_prometheus_exposition_has_slo_series(monkeypatch):
     for series in (
         "axiom_requests_total", "axiom_errors_total", "axiom_extraction_shed_total",
         "axiom_request_latency_ms_count", "axiom_request_latency_ms_sum",
-        "axiom_request_latency_ms_max", "axiom_uptime_seconds",
+        "axiom_request_latency_ms_max", "axiom_process_resident_memory_bytes",
+        "axiom_uptime_seconds",
     ):
-        assert re.search(rf"^{series} [0-9.]+$", body, re.M), f"missing {series}"
+        assert re.search(rf"^{series} [0-9.]+$", body, re.MULTILINE), f"missing {series}"
     for q in ("0.5", "0.9", "0.95", "0.99"):
-        assert re.search(rf'^axiom_request_latency_ms\{{quantile="{q}"\}} [0-9.]+$', body, re.M), q
-    assert re.search(r'^axiom_http_status_total\{code="200"\} [1-9][0-9]*$', body, re.M)
+        assert re.search(rf'^axiom_request_latency_ms\{{quantile="{q}"\}} [0-9.]+$', body, re.MULTILINE), q
+    assert re.search(r'^axiom_http_status_total\{code="200"\} [1-9][0-9]*$', body, re.MULTILINE)
     assert "# TYPE axiom_request_latency_ms summary" in body
