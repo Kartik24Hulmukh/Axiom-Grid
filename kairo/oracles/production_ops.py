@@ -247,9 +247,8 @@ def run_airgap_telemetry_kill_proof(
 
             # Attempt a real socket connection (simulating telemetry phone-home)
             import socket
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.connect(("93.184.216.34", 443))  # example.com — external
-            s.close()
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.connect(("93.184.216.34", 443))  # example.com — external
         except (ConnectionError, OSError):
             pass  # Expected — interceptor blocked it
 

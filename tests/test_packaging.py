@@ -11,11 +11,8 @@ Verifies that:
 from __future__ import annotations
 
 import pathlib
-import re
-import subprocess
 import sys
 
-import pytest
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
@@ -51,9 +48,10 @@ class TestInstallScriptHonesty:
         content = INSTALL_SH.read_text()
         assert "Windows" in content or "MINGW" in content, "install.sh must mention Windows"
 
-    def test_linux_labeled_ci_verified(self):
+    def test_linux_not_claimed_clean_host_verified(self):
         content = INSTALL_SH.read_text()
-        assert "CI-verified" in content, "install.sh must label Linux as CI-verified"
+        assert "Linux clean-host installation is NOT CI-verified" in content
+        assert "FULLY SUPPORTED" not in content
 
     def test_macos_not_claimed_as_full_verified(self):
         content = INSTALL_SH.read_text()
@@ -90,12 +88,16 @@ class TestInstallScriptReferences:
 
     def test_has_smoke_test(self):
         content = INSTALL_SH.read_text()
+        assert "--python-env" in content
+        content = (REPO_ROOT / "install.py").read_text()
         assert "import kernel" in content, "install.sh must have a smoke test importing kernel"
         assert "import packs" in content, "install.sh must have a smoke test importing packs"
         assert "import bench" in content, "install.sh must have a smoke test importing bench"
 
     def test_has_corpus_integrity_test(self):
         content = INSTALL_SH.read_text()
+        assert "--python-env" in content
+        content = (REPO_ROOT / "install.py").read_text()
         assert "test_corpus_integrity" in content, (
             "install.sh must run corpus integrity test as a smoke check"
         )

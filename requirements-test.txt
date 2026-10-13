@@ -1,6 +1,6 @@
 hypothesis>=6.0.0
 pdfplumber>=0.11.0
-model2vec>=0.1.1
+model2vec==0.9.0  # local asset loader public API and real-model parity verified
 litellm>=1.20.0
 mammoth>=1.6.0
 sqlite-vec>=0.1.0
@@ -9,7 +9,8 @@ duckdb>=1.0.0
 fastapi>=0.100.0
 imagehash>=4.3.0
 pytest-asyncio>=0.23.0
-ebooklib>=0.18.0
+# Legacy EPUB tests/export need the separate legal-review-only
+# requirements-legacy-epub.txt opt-in; EbookLib (LGPL) is not a default dependency.
 striprtf>=0.0.26
 odfpy>=1.4.0
 python-docx>=1.1.0
@@ -18,7 +19,7 @@ python-pptx>=1.0.0
 pydantic>=2.0.0
 cryptography>=42.0.0
 beautifulsoup4>=4.12.0
-# PDF domain engines (permissive only — PyMuPDF/AGPL BANNED)
+# PDF domain engines (permissive + MPL-2.0; PyMuPDF/AGPL BANNED)
 # pdfplumber (MIT) — text + word/char coordinates (read-back oracle)
 # pypdfium2 (BSD-3-Clause, Google PDFium) — render/rasterize, image extraction
 pypdfium2>=4.0.0

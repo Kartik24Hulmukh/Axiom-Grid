@@ -5428,7 +5428,7 @@ fn print_help() {
     println!("  import <file.kpx>      Import a .kpx memory export");
     println!("  export-memory          Export memory as .kpx file");
 
-    println!("  memory sync            Discover/sync LAN peers (discover|pull <addr>|serve)");
+    println!("  memory sync            Unavailable pending authenticated encrypted pairing");
     println!("  skill <sub>            Manage skills (list|add <url>|remove <name>|new <name>)");
     println!("  verify                 Verify system facts");
     println!("  export                 Export document (--format revealjs --output file)");

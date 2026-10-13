@@ -3,20 +3,20 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Kairo-Phantom — Offline AI agent with a verifiable audit trail</title>
-<meta name="description" content="The offline, air-gapped AI desktop agent with a signed, independently-verifiable audit trail. Runs fully on-device — and proves it." />
+<title>Axiom-Grid — Offline AI agent with a verifiable audit trail</title>
+<meta name="description" content="Engineering preview: local document-agent receipts, citations and an offline verifier. Release gates remain open." />
 <meta name="theme-color" content="#0A0A0B" />
-<link rel="canonical" href="https://kartik24hulmukh.github.io/Kairo-Phantom/" />
+<link rel="canonical" href="https://kartik24hulmukh.github.io/Axiom-Grid/" />
 
 <!-- Open Graph -->
-<meta property="og:title" content="Kairo-Phantom — Don't trust it. Verify it." />
-<meta property="og:description" content="Offline, air-gapped AI desktop agent. Every action Ed25519-signed into a hash-chained receipt anyone can verify — offline." />
+<meta property="og:title" content="Axiom-Grid — Don't trust it. Verify it." />
+<meta property="og:description" content="Engineering preview for cited document workflows and independently verifiable receipts." />
 <meta property="og:type" content="website" />
-<meta property="og:url" content="https://kartik24hulmukh.github.io/Kairo-Phantom/" />
-<meta property="og:image" content="https://kartik24hulmukh.github.io/Kairo-Phantom/og.png" />
+<meta property="og:url" content="https://kartik24hulmukh.github.io/Axiom-Grid/" />
+<meta property="og:image" content="https://kartik24hulmukh.github.io/Axiom-Grid/og.png" />
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Kairo-Phantom — Don't trust it. Verify it." />
-<meta name="twitter:description" content="Offline by architecture, not by promise. Signed, hash-chained receipts for every AI action." />
+<meta name="twitter:title" content="Axiom-Grid — Don't trust it. Verify it." />
+<meta name="twitter:description" content="Read and suggest document workflows with local, verifiable receipt tooling." />
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -394,12 +394,12 @@ footer{padding:40px 0 48px}
 <!-- ================= NAV ================= -->
 <header class="nav">
   <div class="container nav-inner">
-    <a class="logo" href="#top" aria-label="Kairo-Phantom home">
+    <a class="logo" href="#top" aria-label="Axiom-Grid home">
       <svg class="logo-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path d="M12 2L21 7v10l-9 5-9-5V7l9-5z" stroke="#33E0FF" stroke-width="1.6" stroke-linejoin="round"/>
         <path d="M8.5 12.5l2.4 2.4 4.6-5.3" stroke="#EDEDF0" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
-      Kairo-Phantom
+      Axiom-Grid
     </a>
     <nav class="nav-links" aria-label="Primary">
       <a href="#how">How it works</a>
@@ -426,14 +426,14 @@ footer{padding:40px 0 48px}
   <div class="hero-signal" aria-hidden="true"></div>
   <div class="hero-glow" aria-hidden="true"></div>
   <div class="container hero-inner">
-    <span class="badge"><span class="dot" aria-hidden="true"></span>Pre-launch · Open source · Runs 100% offline</span>
-    <h1>The AI agent that runs air-gapped — <span class="accent">and proves it.</span></h1>
-    <p class="hero-sub">Kairo-Phantom is an offline desktop AI agent for knowledge work. Every action it takes is Ed25519-signed into a hash-chained receipt that anyone can independently verify — no cloud, no telemetry, no trust required.</p>
+    <span class="badge"><span class="dot" aria-hidden="true"></span>Engineering preview · Open source · Read + suggest</span>
+    <h1>Receipts for document agents — <span class="accent">verify the evidence.</span></h1>
+    <p class="hero-sub">Axiom-Grid is a local document-intelligence engineering preview. Read documents, suggest cited answers, and inspect signed receipts with an offline verifier. Live application control and general-availability claims remain gated.</p>
     <div class="hero-ctas">
       <a class="btn btn-primary btn-lg" href="#verify">See it verify itself</a>
       <a class="btn btn-lg" href="#" data-github>View source</a>
     </div>
-    <p class="hero-note">MIT licensed · <code>kairo verify</code> works with the network cable unplugged</p>
+    <p class="hero-note">MIT licensed · <code>axiom verify</code> can run offline · <a href="https://github.com/Kartik24Hulmukh/Axiom-Grid/blob/main/LAUNCH-BLOCKERS.md">Release blockers</a></p>
   </div>
 </section>
 
@@ -477,7 +477,7 @@ footer{padding:40px 0 48px}
       <div class="step reveal">
         <div class="step-num mono">01</div>
         <h3>The agent acts locally</h3>
-        <p>Kairo-Phantom runs entirely on your device and ghost-types into your real applications — Word, your PDF viewer, your matter management system (driving live applications is an experimental capability under active hardening). It operates in <code>read + suggest</code> mode: it drafts and redlines; you accept. The agent runs with networking disabled; you can confirm there are no outbound connections from the agent process with a packet capture (runtime-scoped, not a whole-OS guarantee).</p>
+        <p>Axiom-Grid supports local read + suggest document workflows. Live application control is experimental and is not part of this preview. Sealed-mode egress tests are scoped to the agent process, not an entire operating system.</p>
       </div>
       <div class="step reveal">
         <div class="step-num mono">02</div>
@@ -562,7 +562,7 @@ footer{padding:40px 0 48px}
           <span class="term-title">kairo-phantom — receipt ledger</span>
         </div>
         <div class="term-body" id="term-body" aria-live="polite">
-          <div class="t-dim">Ready. Click “Run” to generate a signed receipt for a sample redline session.</div>
+          <div class="t-dim">Ready. Click “Run” for a browser-only hash-chain illustration; signatures are simulated here.</div>
         </div>
         <div class="term-actions">
           <button class="btn btn-primary" id="btn-run">▶ Run</button>
@@ -574,19 +574,18 @@ footer{padding:40px 0 48px}
       <!-- CLI panel -->
       <div class="cli-panel">
         <div class="cli-block reveal">
-          <div class="cli-head"><span>Real thing — same steps</span><button class="copy-btn" data-copy="cli-1">Copy</button></div>
+          <div class="cli-head"><span>Real CLI — use a clean clone</span><button class="copy-btn" data-copy="cli-1">Copy</button></div>
           <pre id="cli-1"><span class="c"># run a session (fully offline)</span>
-kairo run --task redline contract.docx
+python -m kairo.cli redline fixtures/demo/sample_nda.docx fixtures/demo/nda_playbook.json --out demo_output
 
 <span class="c"># verify the receipt chain</span>
-kairo verify receipts/session.krcpt \
-  --pubkey kairo.pub</pre>
+python -m kairo.cli verify demo_output demo_output/public_key.pem</pre>
         </div>
         <div class="cli-block reveal">
           <div class="cli-head"><span>Prove zero egress</span><button class="copy-btn" data-copy="cli-2">Copy</button></div>
           <pre id="cli-2"><span class="c"># watch the wire while it works</span>
 sudo tcpdump -i any -n &amp; \
-  kairo run --task redline contract.docx
+  python -m kairo.cli redline fixtures/demo/sample_nda.docx fixtures/demo/nda_playbook.json --out demo_output
 <span class="c"># expected: zero packets from kairo</span></pre>
         </div>
         <div class="demo-video reveal">
@@ -729,7 +728,8 @@ sudo tcpdump -i any -n &amp; \
   <div class="container">
     <p class="kicker reveal">Where we are</p>
     <h2 class="reveal">Honest status. Candor is a feature.</h2>
-    <p class="section-lede reveal">Kairo-Phantom is pre-launch and open source. Here is exactly what works today and what doesn't yet.</p>
+    <p class="section-lede reveal">Axiom-Grid is an engineering preview. Read the release blockers and independently reproduce each claim before use.</p>
+    <p class="section-lede reveal"><a href="https://github.com/Kartik24Hulmukh/Axiom-Grid/blob/main/LAUNCH-BLOCKERS.md">Launch blockers: credential rotation, full release regression, human UX, soak, signed builds</a></p>
     <div class="status reveal">
       <div>
         <h3><span class="s-dot" style="background:var(--accent)"></span>Works today</h3>
@@ -770,15 +770,8 @@ sudo tcpdump -i any -n &amp; \
       <a class="btn btn-lg" href="#" data-docs>Read the docs</a>
     </div>
 
-    <!-- PLACEHOLDER: point this form at your form backend (e.g. Formspree/Buttondown endpoint).
-         It currently just shows a local confirmation and stores nothing. -->
-    <form class="email-form reveal" id="email-form" novalidate>
-      <label class="sr-only" for="email">Work email</label>
-      <input type="email" id="email" name="email" placeholder="you@company.com" autocomplete="email" required />
-      <button type="submit" class="btn btn-primary btn-lg">Request early access</button>
-    </form>
-    <p class="email-success" id="email-success" role="status">Thanks — we'll be in touch. (Demo form: connect a backend before launch.)</p>
-    <p class="email-note reveal">For design collaborators in legal, compliance, healthcare, and finance. No newsletter, no spam.</p>
+    <p class="email-note reveal">Interested in a legal-redline design partnership? Open a GitHub issue to start a conversation. No signup form is collecting leads here.</p>
+    <a class="btn btn-lg" href="https://github.com/Kartik24Hulmukh/Axiom-Grid/issues/new">Discuss a pilot</a>
   </div>
 </section>
 
@@ -794,7 +787,7 @@ sudo tcpdump -i any -n &amp; \
       <a href="#" data-docs>Docs</a>
       <a href="#" data-github>GitHub</a>
     </div>
-    <p class="foot-meta">Kairo-Phantom · MIT License · Runs 100% offline</p>
+    <p class="foot-meta">Axiom-Grid · MIT License · Runs 100% offline</p>
   </div>
 </footer>
 
@@ -802,8 +795,8 @@ sudo tcpdump -i any -n &amp; \
 /* ==========================================================================
    CONFIG — fill these in
    ========================================================================== */
-var GITHUB_URL = "https://github.com/Kartik24Hulmukh/Kairo-Phantom";
-var DOCS_URL   = "https://github.com/Kartik24Hulmukh/Kairo-Phantom#readme";
+var GITHUB_URL = "https://github.com/Kartik24Hulmukh/Axiom-Grid";
+var DOCS_URL   = "https://github.com/Kartik24Hulmukh/Axiom-Grid#readme";
 
 document.querySelectorAll("[data-github]").forEach(function(a){ a.href = GITHUB_URL; a.rel = "noopener"; });
 document.querySelectorAll("[data-docs]").forEach(function(a){ a.href = DOCS_URL; a.rel = "noopener"; });
@@ -864,21 +857,6 @@ document.querySelectorAll(".copy-btn").forEach(function(btn){
     });
   });
 });
-
-/* ==========================================================================
-   Email form (local demo only — connect a backend before launch)
-   ========================================================================== */
-(function(){
-  var form = document.getElementById("email-form");
-  var ok = document.getElementById("email-success");
-  form.addEventListener("submit", function(e){
-    e.preventDefault();
-    var input = document.getElementById("email");
-    if (!input.checkValidity()) { input.reportValidity(); return; }
-    ok.style.display = "block";
-    form.style.display = "none";
-  });
-})();
 
 /* ==========================================================================
    Interactive "Verify it yourself" demo
@@ -954,7 +932,7 @@ document.querySelectorAll(".copy-btn").forEach(function(btn){
     entries = []; tamperedIdx = -1;
     setState(null); clearTerm();
 
-    line("kairo run --task redline contract.docx", "t-cmd");
+    line("python -m kairo.cli redline fixtures/demo/sample_nda.docx fixtures/demo/nda_playbook.json --out demo_output", "t-cmd");
     await sleep(DELAY);
     line('<span class="t-dim">network: disabled · model: local · mode: read+suggest</span>');
     await sleep(DELAY);
@@ -1010,7 +988,7 @@ document.querySelectorAll(".copy-btn").forEach(function(btn){
     }
     await sleep(DELAY * .6);
     if (broken === -1){
-      verdict(true, "VERIFIED — " + entries.length + " entries · chain intact · signatures valid");
+      verdict(true, "DEMO HASH CHAIN OK — " + entries.length + " entries · signatures simulated");
       setState("verified");
     } else {
       verdict(false, "VERIFICATION FAILED — tamper detected at entry #" + broken);
@@ -1046,7 +1024,7 @@ document.querySelectorAll(".copy-btn").forEach(function(btn){
   function reset(){
     entries = []; tamperedIdx = -1;
     setState(null); clearTerm();
-    line('<span class="t-dim">Ready. Click “Run” to generate a signed receipt for a sample redline session.</span>');
+    line('<span class="t-dim">Ready. Click “Run” for a browser-only hash-chain illustration; signatures are simulated here.</span>');
     btnRun.disabled = false; btnTamp.disabled = true; btnReset.disabled = true;
   }
 

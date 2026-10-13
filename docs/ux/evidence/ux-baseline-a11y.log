@@ -1,0 +1,126 @@
+✖ UX08 modal fits 320px viewport with keyboard-height constraint (4937.502454ms)
+✖ UX19 pinned axe-core audits actual initial, processed and correction views (5089.470489ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 0
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 11617.261112
+
+✖ failing tests:
+
+test at tests/browser/ux-hardening.e2e.cjs:143:1
+✖ UX08 modal fits 320px viewport with keyboard-height constraint (4937.502454ms)
+  AssertionError [ERR_ASSERTION]: {"x":16,"y":-51.875,"width":256,"height":583.75}
+      at TestContext.<anonymous> (/data/axiom-fourth/ux/tests/browser/ux-hardening.e2e.cjs:146:74)
+      at runNextTicks (node:internal/process/task_queues:65:5)
+      at process.processImmediate (node:internal/timers:472:9)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at tests/browser/ux-hardening.e2e.cjs:233:1
+✖ UX19 pinned axe-core audits actual initial, processed and correction views (5089.470489ms)
+  AssertionError [ERR_ASSERTION]: serious/critical accessibility violations
+  + actual - expected
+  
+  + [
+  +   {
+  +     id: 'label',
+  +     impact: 'critical',
+  +     state: 'initial',
+  +     targets: [
+  +       [
+  +         '#modal-field'
+  +       ],
+  +       [
+  +         '#modal-original'
+  +       ],
+  +       [
+  +         '#modal-corrected'
+  +       ]
+  +     ]
+  +   },
+  +   {
+  +     id: 'select-name',
+  +     impact: 'critical',
+  +     state: 'initial',
+  +     targets: [
+  +       [
+  +         '#fixture-select'
+  +       ]
+  +     ]
+  +   },
+  +   {
+  +     id: 'label',
+  +     impact: 'critical',
+  +     state: 'processed',
+  +     targets: [
+  +       [
+  +         '#modal-field'
+  +       ],
+  +       [
+  +         '#modal-original'
+  +       ],
+  +       [
+  +         '#modal-corrected'
+  +       ]
+  +     ]
+  +   },
+  +   {
+  +     id: 'select-name',
+  +     impact: 'critical',
+  +     state: 'processed',
+  +     targets: [
+  +       [
+  +         '#fixture-select'
+  +       ]
+  +     ]
+  +   },
+  +   {
+  +     id: 'label',
+  +     impact: 'critical',
+  +     state: 'correction',
+  +     targets: [
+  +       [
+  +         '#modal-field'
+  +       ],
+  +       [
+  +         '#modal-original'
+  +       ],
+  +       [
+  +         '#modal-corrected'
+  +       ]
+  +     ]
+  +   },
+  +   {
+  +     id: 'select-name',
+  +     impact: 'critical',
+  +     state: 'correction',
+  +     targets: [
+  +       [
+  +         '#fixture-select'
+  +       ]
+  +     ]
+  +   }
+  + ]
+  - []
+  
+      at TestContext.<anonymous> (/data/axiom-fourth/ux/tests/browser/ux-hardening.e2e.cjs:246:16)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: [ { state: 'initial', id: 'label', impact: 'critical', targets: [Array] }, { state: 'initial', id: 'select-name', impact: 'critical', targets: [Array] }, { state: 'processed', id: 'label', impact: 'critical', targets: [Array] }, { state: 'processed', id: 'select-name', impact: 'critical', targets: [Array] }, { state: 'correction', id: 'label', impact: 'critical', targets: [Array] }, { state: 'correction', id: 'select-name', impact: 'critical', targets: [Array] } ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

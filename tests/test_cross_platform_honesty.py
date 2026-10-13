@@ -79,13 +79,18 @@ class TestREADMEPlatformHonesty:
         """Linux ghost-typing claim must be honest about what's verified."""
         readme = _read_file(README_PATH)
         linux_lines = [l for l in readme.splitlines() if "Linux" in l and "ghost" in l.lower()]
-        # If Linux is claimed as "verified", it must reference CI or be qualified
+        # Compilation/Ubuntu CI does not certify live desktop ghost-typing.
+        # This narrow textual guard accepts explicit non-native qualifications;
+        # it is not a language-truth classifier or an OS verification oracle.
         for line in linux_lines:
-            if "verified" in line.lower():
-                # This is OK only if CI actually runs on Linux for this — check
-                # that the claim is about the Rust platform code compiling, not
-                # about live ghost-typing being verified
-                pass  # Linux AT-SPI2 code exists and compiles; CI runs on Ubuntu
+            claim = re.sub(r"\b(?:not|never)\s+(?:ci[- ])?verified\b", "", line.lower())
+            positive_verified = re.search(r"\bverified\b", claim) is not None
+            qualified = re.search(r"\b(?:pending|scaffold|compile[- ]only)\b", claim) is not None
+            if positive_verified and not qualified:
+                pytest.fail(
+                    "README claims Linux ghost-typing as 'verified' without "
+                    f"an explicit non-native qualification: {line.strip()}"
+                )
 
     def test_readme_has_platform_section(self):
         """README must have a platform support section."""

@@ -2,7 +2,10 @@
 
 Kairo Phantom integrates the following open-source libraries and projects. We are grateful to every maintainer listed here.
 
-All licenses listed are compatible with the MIT license under which Kairo Phantom is distributed.
+This inventory records stated upstream licenses, not legal clearance or a complete bill of
+materials. Compatibility, obligations, version-specific notices, transitive dependencies,
+and actual distribution boundaries require review; the project MIT license does not
+relicense third-party components.
 
 ---
 
@@ -84,17 +87,57 @@ All licenses listed are compatible with the MIT license under which Kairo Phanto
 | **toml** | 0.8 | MIT / Apache-2.0 | https://github.com/toml-rs/toml |
 | **hex** | 0.4 | MIT / Apache-2.0 | https://github.com/KokaKiwi/rust-hex |
 
-## PDF Domain (permissive-only stack — PyMuPDF/AGPL BANNED)
+## PDF Domain (permissive and MPL-2.0 stack — PyMuPDF/AGPL BANNED)
+
+Default manifests exclude PyMuPDF. The supported `kernel/sidecar/ingestor.py` PDF
+intake uses real pdfplumber; `kairo/pdf/engine.py` and `kairo/domains/pdf/requirements.txt`
+retain the real pdfplumber/pikepdf stack. MPL-2.0 is file-level copyleft, not permissive.
+These retained dependencies are not a blanket legal approval.
+
+**Open wider-product blocker:** legacy sidecar implementations still use fitz in
+`sidecar/parsers/{pdf_parser,pdf_extraction_engine,mineru_parser,markitdown_bridge}.py`,
+`sidecar/oracles.py`, and `sidecar/multi_doc_context.py` beneath `kairo-sidecar/`.
+Some try/except probes execute at module import time; others import at call time.
+They are unsupported under the default policy, not deleted or replaced with mocks.
+Removing the default dependency does not disable them when PyMuPDF is already installed.
+Lazy imports or a subprocess boundary do not remove license obligations. Any future
+PyMuPDF use requires explicit legal/policy review of the applicable AGPL/commercial
+terms and distribution; this change supplies no approval, substitute engine, or opt-in
+PyMuPDF manifest. Existing tests and policy skips are unchanged.
 
 | Component | Version | License | Upstream | Attribution Notes |
 |:---|:---|:---|:---|:---|
 | **pdfplumber** | 0.11+ | MIT | https://github.com/jsvine/pdfplumber | Text + word/char coordinates — the read-back oracle. Built on pdfminer.six (MIT). |
-| **pypdfium2** | 4.x+ | BSD-3-Clause | https://github.com/pypdfium2-team/pypdfium2 | Python binding to Google PDFium (BSD-3-Clause). Render/rasterize pages, extract images, inspect vector objects. Replaces PyMuPDF's `get_pixmap()`. |
+| **pypdfium2** | 4.x+ | Apache-2.0 OR BSD-3-Clause (bindings); PDFium BSD-3-Clause + dependency notices | https://github.com/pypdfium2-team/pypdfium2 | Python binding to PDFium; preserve version-specific PDFium and bundled dependency notices. Render/rasterize pages, extract images, inspect vector objects. |
 | **pikepdf** | 9.x+ | MPL-2.0 | https://github.com/pikepdf/pikepdf | MPL-2.0 (file-level copyleft) — used as an **unmodified dependency**; not forked into our tree. Content-stream edit, TRUE redaction (bytes removed, not black boxes), AcroForm fill/flatten, encryption, repair. Wraps qpdf (Apache-2.0). |
 | **pypdf** | 4.x+ | BSD-3-Clause | https://github.com/py-pdf/pypdf | Merge/split/rotate/metadata — lightweight PDF manipulation. |
 | **pyHanko** | 0.20+ | MIT | https://github.com/MatthiasValvekens/pyHanko | PAdES digital signatures — sign + verify. Used for regulated legal/finance signature workflows. |
 | **pdfminer.six** | latest | MIT | https://github.com/pdfminer/pdfminer.six | Low-level PDF text extraction engine (transitive dep of pdfplumber). |
 | **reportlab** | 4.x+ | BSD-3-Clause | https://github.com/MrBitBucket/reportlab-mirror | PDF generation for test fixtures (not shipped in production paths). |
+
+## Legacy EPUB (legal-review-only opt-in)
+
+| Component | Version | License | Upstream | Status |
+|:---|:---|:---|:---|:---|
+| **EbookLib** | 0.18+ | LGPL-3.0 (copyleft; not permissive) | https://github.com/aerkalov/ebooklib | Real legacy KPX EPUB export dependency retained in `requirements-legacy-epub.txt` only. |
+
+Default manifests do not install EbookLib. Legacy EPUB paths/tests remain in the source
+and require the real dependency; no mocks or weakened tests are introduced. The separate
+opt-in manifest requires explicit license/policy review before use or distribution and
+is not an approval. `deny.toml` is a Rust check, not a Python license audit. New static
+guards cover direct default requirements and local includes/constraints only, not
+installed packages or resolver/transitive closure. Docling dependencies and system
+LGPL/MPL libraries may remain; passing this check approves none of them.
+
+**Clean-default degradation:** `KPXExporter.export_epub` raises `ModuleNotFoundError`
+when EbookLib is absent, before writing an EPUB. `export_all` catches that failure and
+puts `FAILED: No module named 'ebooklib'` in its EPUB result, but returns top-level
+`ok: true`; HTML/Markdown/LaTeX/JSON exports continue. Callers must inspect per-format
+results. Preinstalled-EbookLib suite success cannot attest clean-default EPUB behavior.
+The launch ingestor does not support EPUB intake. A separate legacy Quarkdown/KAMI
+export path is not an EbookLib replacement or parity claim; it requires its own review.
+The owner must explicitly decide and legally review the default/optional distribution
+profile; neither an LGPL-enabled profile nor an MPL exception is approved here.
 
 ## Cryptography & Security
 
@@ -231,7 +274,7 @@ The following external tools are *not* bundled with Kairo Phantom but are requir
 | **wl-clipboard** | 2.x | GPL-3.0 | Wayland clipboard (`wl-copy`/`wl-paste`). `sudo apt install wl-clipboard` |
 | **at-spi2-core** | 2.x | LGPL-2.1 | Assistive Technology Service Provider Interface for GNOME accessibility bus. `sudo apt install at-spi2-core` |
 
-> **Note:** GPL-licensed runtime tools are separate processes invoked via subprocess. Kairo Phantom (MIT) does not link to or distribute these tools. The GPL copyleft therefore does not extend to Kairo's source code.
+> **Note:** These tools are described as separate-process integrations, not bundled libraries. A subprocess boundary alone does not establish license clearance; actual use, packaging, distribution and applicable obligations require legal/policy review.
 
 ### macOS Accessibility
 

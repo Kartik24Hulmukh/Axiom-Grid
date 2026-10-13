@@ -1,4 +1,4 @@
-// Kairo Phantom — Landing Page Interactions
+// Axiom-Grid — Landing Page Interactions
 
 // Smooth scroll for nav links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -33,22 +33,3 @@ document.querySelectorAll('.metric-card, .feature-card').forEach(card => {
     metricObserver.observe(card);
 });
 
-// Receipt verification animation
-const receiptSection = document.getElementById('receipt');
-if (receiptSection) {
-    const receiptObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const verifyOk = document.querySelector('.verify-ok');
-                const verifyFail = document.querySelector('.verify-fail');
-                if (verifyOk) {
-                    setTimeout(() => verifyOk.style.opacity = '1', 300);
-                }
-                if (verifyFail) {
-                    setTimeout(() => verifyFail.style.opacity = '1', 800);
-                }
-            }
-        });
-    }, { threshold: 0.3 });
-    receiptObserver.observe(receiptSection);
-}

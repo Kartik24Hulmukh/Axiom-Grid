@@ -1,0 +1,35 @@
+name: Platform claim rejection contract
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  platform-claim-rejection-contract:
+    # Textual claim guards only. NOT native desktop/platform verification.
+    # The missing cross-platform workflow remains an explicit original skip.
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install pinned test-only tools
+        run: python -m pip install pytest==9.1.1 ruff==0.16.10
+      - name: Lint actual guard and rejection contract
+        run: >-
+          python -m ruff check --select E9,F
+          tests/test_cross_platform_honesty.py
+          tests/test_cross_platform_honesty_rejection_contract.py
+      - name: Reject explicit unqualified claims and retain native evidence gap
+        run: >-
+          python -m pytest --noconftest --strict-markers --import-mode=importlib
+          -q -p no:cacheprovider
+          tests/test_cross_platform_honesty_rejection_contract.py
+          tests/test_cross_platform_honesty.py
+          -W error::ResourceWarning
+          -W error::pytest.PytestUnraisableExceptionWarning

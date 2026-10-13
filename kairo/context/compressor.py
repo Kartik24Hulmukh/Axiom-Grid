@@ -139,6 +139,7 @@ def compress_document_chunks(
     chunks: list[Chunk],
     model: str = "gpt-4o-mini",
     target_ratio: float = 0.5,
+    passthrough_below_bytes: int = 0,
 ) -> tuple[list[Chunk], CompressionStats]:
     """Compress document chunks while preserving bbox/page/provenance metadata.
 
@@ -154,6 +155,19 @@ def compress_document_chunks(
     """
     if not chunks:
         return [], CompressionStats()
+    if type(passthrough_below_bytes) is not int or passthrough_below_bytes < 0:
+        raise ValueError("passthrough byte budget must be a non-negative integer")
+    if passthrough_below_bytes and sum(len(c.text.encode("utf-8")) for c in chunks) <= passthrough_below_bytes:
+        # Local regex extraction does not need an expensive context-compressor
+        # pass on tiny inputs. Preserve exact source text and geometry; do not
+        # repeatedly initialise optional native engines for zero savings.
+        # This is a byte-work budget, NOT a provider/tokenizer admission cap.
+        estimated = sum(max(1, int(len(c.text.split()) * .75)) for c in chunks)
+        return list(chunks), CompressionStats(
+            tokens_before=estimated, tokens_after=estimated, tokens_saved=0,
+            chunks_before=len(chunks), chunks_after=len(chunks),
+            transforms_applied=["small_document_passthrough_estimated_tokens"],
+        )
 
     # Step 1: Bbox-aware dedup — merge overlapping chunks
     merged = merge_overlapping_chunks(chunks)

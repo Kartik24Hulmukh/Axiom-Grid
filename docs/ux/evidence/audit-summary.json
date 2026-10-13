@@ -1,0 +1,350 @@
+{
+  "ux-baseline-assets": {
+    "axe-correction": {
+      "engine": {
+        "name": "axe-core",
+        "version": "4.11.0"
+      },
+      "environment": {
+        "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+        "windowWidth": 320,
+        "windowHeight": 900,
+        "orientationAngle": 0,
+        "orientationType": "landscape-primary"
+      },
+      "violations": [
+        {
+          "id": "label",
+          "impact": "critical",
+          "targets": [
+            [
+              "#modal-field"
+            ],
+            [
+              "#modal-original"
+            ],
+            [
+              "#modal-corrected"
+            ]
+          ]
+        },
+        {
+          "id": "region",
+          "impact": "moderate",
+          "targets": [
+            [
+              "label[for=\"connection-key\"]"
+            ],
+            [
+              "#connection-key"
+            ],
+            [
+              ".modal-title"
+            ],
+            [
+              ".modal-content > .form-group:nth-child(2)"
+            ],
+            [
+              ".form-group:nth-child(3)"
+            ],
+            [
+              ".form-group:nth-child(4)"
+            ],
+            [
+              ".form-group:nth-child(5)"
+            ]
+          ]
+        },
+        {
+          "id": "select-name",
+          "impact": "critical",
+          "targets": [
+            [
+              "#fixture-select"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "node_count": 41
+        }
+      ]
+    },
+    "axe-initial": {
+      "engine": {
+        "name": "axe-core",
+        "version": "4.11.0"
+      },
+      "environment": {
+        "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+        "windowWidth": 320,
+        "windowHeight": 900,
+        "orientationAngle": 0,
+        "orientationType": "landscape-primary"
+      },
+      "violations": [
+        {
+          "id": "label",
+          "impact": "critical",
+          "targets": [
+            [
+              "#modal-field"
+            ],
+            [
+              "#modal-original"
+            ],
+            [
+              "#modal-corrected"
+            ]
+          ]
+        },
+        {
+          "id": "page-has-heading-one",
+          "impact": "moderate",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "region",
+          "impact": "moderate",
+          "targets": [
+            [
+              "label[for=\"connection-key\"]"
+            ],
+            [
+              "#connection-key"
+            ],
+            [
+              ".modal-title"
+            ],
+            [
+              ".modal-content > .form-group:nth-child(2)"
+            ],
+            [
+              ".form-group:nth-child(3)"
+            ],
+            [
+              ".form-group:nth-child(4)"
+            ],
+            [
+              ".form-group:nth-child(5)"
+            ]
+          ]
+        },
+        {
+          "id": "select-name",
+          "impact": "critical",
+          "targets": [
+            [
+              "#fixture-select"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "node_count": 17
+        }
+      ]
+    },
+    "axe-processed": {
+      "engine": {
+        "name": "axe-core",
+        "version": "4.11.0"
+      },
+      "environment": {
+        "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+        "windowWidth": 320,
+        "windowHeight": 900,
+        "orientationAngle": 0,
+        "orientationType": "landscape-primary"
+      },
+      "violations": [
+        {
+          "id": "label",
+          "impact": "critical",
+          "targets": [
+            [
+              "#modal-field"
+            ],
+            [
+              "#modal-original"
+            ],
+            [
+              "#modal-corrected"
+            ]
+          ]
+        },
+        {
+          "id": "page-has-heading-one",
+          "impact": "moderate",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "region",
+          "impact": "moderate",
+          "targets": [
+            [
+              "label[for=\"connection-key\"]"
+            ],
+            [
+              "#connection-key"
+            ],
+            [
+              ".modal-title"
+            ],
+            [
+              ".modal-content > .form-group:nth-child(2)"
+            ],
+            [
+              ".form-group:nth-child(3)"
+            ],
+            [
+              ".form-group:nth-child(4)"
+            ],
+            [
+              ".form-group:nth-child(5)"
+            ]
+          ]
+        },
+        {
+          "id": "select-name",
+          "impact": "critical",
+          "targets": [
+            [
+              "#fixture-select"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "node_count": 38
+        }
+      ]
+    }
+  },
+  "ux-current-assets": {
+    "axe-correction": {
+      "engine": {
+        "name": "axe-core",
+        "version": "4.11.0"
+      },
+      "environment": {
+        "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+        "windowWidth": 320,
+        "windowHeight": 900,
+        "orientationAngle": 0,
+        "orientationType": "landscape-primary"
+      },
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "node_count": 3
+        }
+      ]
+    },
+    "axe-initial": {
+      "engine": {
+        "name": "axe-core",
+        "version": "4.11.0"
+      },
+      "environment": {
+        "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+        "windowWidth": 320,
+        "windowHeight": 900,
+        "orientationAngle": 0,
+        "orientationType": "landscape-primary"
+      },
+      "violations": [
+        {
+          "id": "page-has-heading-one",
+          "impact": "moderate",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "region",
+          "impact": "moderate",
+          "targets": [
+            [
+              "label[for=\"connection-key\"]"
+            ],
+            [
+              "#connection-key"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "node_count": 17
+        }
+      ]
+    },
+    "axe-processed": {
+      "engine": {
+        "name": "axe-core",
+        "version": "4.11.0"
+      },
+      "environment": {
+        "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36",
+        "windowWidth": 320,
+        "windowHeight": 900,
+        "orientationAngle": 0,
+        "orientationType": "landscape-primary"
+      },
+      "violations": [
+        {
+          "id": "page-has-heading-one",
+          "impact": "moderate",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "region",
+          "impact": "moderate",
+          "targets": [
+            [
+              "label[for=\"connection-key\"]"
+            ],
+            [
+              "#connection-key"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "node_count": 38
+        }
+      ]
+    }
+  }
+}

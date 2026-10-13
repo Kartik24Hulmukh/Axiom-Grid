@@ -57,3 +57,13 @@ We follow responsible disclosure. Once a fix is ready, we will:
 1. Release a patched version.
 2. Publish a GitHub Security Advisory with full details.
 3. Credit the reporter (unless they prefer anonymity).
+
+## Credential exposure response (2026-09-29)
+
+A Melious credential was found embedded in a tracked live torture script. It has
+been removed from the working tree; **removal does not revoke the secret in Git
+history**. A GitHub token was also supplied outside the repository in a chat.
+The repository owner must revoke and replace both, audit usage and copies, and
+store new credentials only in a secret manager. Do not run live benchmarks with
+previously exposed values. The live torture runner now requires `MELIOUS_API_KEY`
+in the environment. Never include tokens in test artifacts, logs, PRs or docs.

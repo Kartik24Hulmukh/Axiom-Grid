@@ -32,10 +32,10 @@ def test_socket_connect_blocks_non_local_under_offline_env():
     with patch.dict(os.environ, {"KAIRO_OFFLINE": "1"}):
         with patch("socket.socket.connect", new=mock_connect):
             # localhost connection should be allowed (returns None)
-            s = socket.socket()
-            s.connect(("127.0.0.1", 11434))
+            with socket.socket() as s:
+                s.connect(("127.0.0.1", 11434))
 
-            # public connection should be blocked
-            with pytest.raises(socket.error) as excinfo:
-                s.connect(("api.github.com", 443))
-            assert "blocked in offline mode" in str(excinfo.value)
+                # public connection should be blocked
+                with pytest.raises(socket.error) as excinfo:
+                    s.connect(("api.github.com", 443))
+                assert "blocked in offline mode" in str(excinfo.value)

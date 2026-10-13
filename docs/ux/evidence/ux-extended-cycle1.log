@@ -1,0 +1,46 @@
+✔ UX01 forget during actual processing cannot overwrite cleared document (5138.255815ms)
+✔ UX02 forget during actual upload leaves no owned option or stale status (2310.777207ms)
+✔ UX03 hidden correction controls cannot receive keyboard focus (1194.377853ms)
+✔ UX04 keyboard tabs expose selected state and arrow navigation (2149.778527ms)
+✔ UX05 correction traps keyboard, Escape returns focus, labels resolve (2423.926813ms)
+✔ UX06 conflict retains draft and updates displayed original before explicit retry (2837.728487ms)
+✔ UX07 delayed save from closed editor cannot close a newer editor (2813.612986ms)
+✔ UX08 modal fits 320px viewport with keyboard-height constraint (1784.939815ms)
+✔ UX09 document controls lock together; duplicate owned upload sends one request (1525.999655ms)
+✔ UX10 old pipeline completion cannot unlock or replace newer same-key session (2571.10184ms)
+✔ UX11 forget during actual source lookup removes evidence and late failure (2311.815849ms)
+✔ UX12 escape then forget during actual save wipes review draft and ignores completion (2509.485389ms)
+✖ UX13 real unstructured owned note has no actionable grounded suggestions (1609.122213ms)
+✔ UX14 isolated empty/refused response oracle states text, trace and halt honestly (1792.240431ms)
+✔ UX15 actual missing source response is recoverable and not fictional evidence (1852.829262ms)
+✔ UX16 missing and oversize upload make no requests; filename markup stays literal (2469.309404ms)
+✔ UX17 isolated proxy HTML error oracle preserves HTTP status and restores controls (1929.021875ms)
+✔ UX18 timeout clock oracle explains uncertain server outcome without auto retry (1999.494208ms)
+ℹ Error: Test hook "before" at tests/browser/ux-hardening.e2e.cjs:12:1 generated asynchronous activity after the test ended. This activity created the error "Error: route.fulfill: Route is already handled!" and would have caused the test to fail, but instead triggered an unhandledRejection event.
+ℹ tests 18
+ℹ suites 0
+ℹ pass 17
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 42643.878856
+
+✖ failing tests:
+
+test at tests/browser/ux-hardening.e2e.cjs:165:1
+✖ UX13 real unstructured owned note has no actionable grounded suggestions (1609.122213ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/data/axiom-fourth/ux/tests/browser/ux-hardening.e2e.cjs:169:113)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

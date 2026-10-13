@@ -8,6 +8,8 @@ import json
 import unittest
 from pathlib import Path
 
+import pytest
+
 DATASET_PATH = Path(__file__).parent.parent / "training_data" / "kairo_writing_dataset_5k.jsonl"
 
 if not DATASET_PATH.exists():

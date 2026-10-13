@@ -118,25 +118,25 @@ def test_readyz_revalidates_after_ttl_and_recovers(monkeypatch):
     server._readyz_state.update(verdict=None, checked_at=0.0)
     monkeypatch.setattr(server, "READYZ_TTL_SECONDS", 0.05)
     monkeypatch.setattr(server, "READYZ_NEGATIVE_TTL_SECONDS", 0.05)
-    client = TestClient(server.app)
-    first = client.get("/readyz")
-    assert first.status_code == 200 and first.json()["checks"]["pdf_parser"] == "ok"
-    assert client.get("/readyz").json().get("cached") is True
+    with TestClient(server.app) as client:  # run real durable-store lifecycle
+        first = client.get("/readyz")
+        assert first.status_code == 200 and first.json()["checks"]["pdf_parser"] == "ok"
+        assert client.get("/readyz").json().get("cached") is True
 
-    # Dependency breaks: after the TTL the pod must leave rotation (503) ...
-    real_checks = server._readyz_dependency_checks
-    monkeypatch.setattr(server, "_readyz_dependency_checks",
-                        lambda: {**real_checks(), "pdf_parser": "missing:ImportError"})
-    threading.Event().wait(0.06)
-    broken = client.get("/readyz")
-    assert broken.status_code == 503
-    assert broken.json()["status"] == "not_ready"
-    assert not server._readyz_probe_ok.is_set()
+        # Dependency breaks: after the TTL the pod must leave rotation (503) ...
+        real_checks = server._readyz_dependency_checks
+        monkeypatch.setattr(server, "_readyz_dependency_checks",
+                            lambda: {**real_checks(), "pdf_parser": "missing:ImportError"})
+        threading.Event().wait(0.06)
+        broken = client.get("/readyz")
+        assert broken.status_code == 503
+        assert broken.json()["status"] == "not_ready"
+        assert not server._readyz_probe_ok.is_set()
 
-    # ... and recover automatically once the dependency is back.
-    monkeypatch.setattr(server, "_readyz_dependency_checks", real_checks)
-    threading.Event().wait(0.06)
-    assert client.get("/readyz").status_code == 200
+        # ... and recover automatically once the dependency is back.
+        monkeypatch.setattr(server, "_readyz_dependency_checks", real_checks)
+        threading.Event().wait(0.06)
+        assert client.get("/readyz").status_code == 200
 
 
 def test_readyz_single_flight_under_probe_stampede(monkeypatch):
@@ -154,14 +154,14 @@ def test_readyz_single_flight_under_probe_stampede(monkeypatch):
         return real()
 
     monkeypatch.setattr(server, "_readyz_dependency_checks", counting)
-    client = TestClient(server.app)
-    with ThreadPoolExecutor(max_workers=32) as pool:
-        codes = list(pool.map(lambda _: client.get("/readyz").status_code, range(64)))
-    assert codes == [200] * 64
-    assert len(calls) == 1, f"probe stampede: pipeline ran {len(calls)} times for 64 probes"
+    with TestClient(server.app) as client:  # run real durable-store lifecycle
+        with ThreadPoolExecutor(max_workers=32) as pool:
+            codes = list(pool.map(lambda _: client.get("/readyz").status_code, range(64)))
+        assert codes == [200] * 64
+        assert len(calls) == 1, f"probe stampede: pipeline ran {len(calls)} times for 64 probes"
 
 
-# ---------------------------------------------------------------- AG-08
+    # ---------------------------------------------------------------- AG-08
 
 def test_durable_ledger_shared_across_replicas_and_idempotent(tmp_path):
     path = tmp_path / "spend.sqlite"

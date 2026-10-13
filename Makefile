@@ -107,7 +107,7 @@ lint: ## Ruff gates exactly as CI focused-runtime runs them (repo root)
 	python3 -m ruff check overlay/server.py kernel/sidecar/melious_router.py overlay/tests/test_server_wave11.py kernel/tests/test_melious_router_wave11.py scripts/stress_wave11.py
 
 pre-push: ## Full local release gate: lint + focused suites + runner syntax
-	./ci/pre-push.sh
+	bash ci/pre-push.sh
 
 .PHONY: serve
 serve: ## Start the local overlay API (not the grounded-Q&A CLI)

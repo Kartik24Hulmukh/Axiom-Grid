@@ -17,13 +17,15 @@ Receipt: `receipts/packaging.txt`
 
 ## Installer Build Path
 
-Packaging infrastructure exists:
+**Historical packaging notes, not current installer attestation.** The root scripts now use the [reviewed local developer workflow](../LOCAL_INSTALL.md). Linux Python setup needs an existing reviewed wheelhouse and a fresh destination; local Rust installation needs an existing cached toolchain. Windows/macOS automated installation is blocked. No signed artifacts or clean-host verification are established here.
+
+Inherited packaging infrastructure:
 
 | Platform | Script | Output |
 |---|---|---|
 | Linux | `scripts/package-linux.sh` | `.AppImage` + `.deb` |
-| macOS/Linux | `install.sh` | `~/.kairo-phantom/` |
-| Windows | `install.ps1` | PowerShell installer |
+| Linux developer only | `install.sh` | Explicit fresh private Python environment |
+| Windows (unverified) | `install.ps1` | Nonzero refusal; no installation |
 | Cross-platform | `phantom-core/src-tauri/tauri.conf.json` | Tauri bundle (`.dmg`, `.deb`, `.msi`) |
 
 ### Build commands
@@ -35,8 +37,8 @@ Packaging infrastructure exists:
 # Tauri bundle (all platforms)
 cd phantom-core && cargo tauri build
 
-# Python install
-python install.py
+# Root installer commands: see ../LOCAL_INSTALL.md for prerequisites/flags.
+# install.py without an explicit local mode and destination fails closed.
 ```
 
 ---
@@ -60,9 +62,9 @@ Signed installers require code-signing certificates that are not available in th
 4. `WINDOWS_AUTHENTICODE_CERT` — Authenticode code-signing certificate (PFX format)
 5. `WINDOWS_AUTHENTICODE_PASSWORD` — Certificate password
 
-**What's ready:** The build scripts and Tauri config are in place. Once signing certificates are provided, the build produces signed installers with no code changes needed.
+**Historical infrastructure only:** Build scripts and Tauri configuration do not demonstrate signing, notarization or clean-host installation. Certificates alone do not prove a working signed release; actual packaging and verification gates remain open.
 
-**What ships unsigned:** The `.AppImage` (Linux) and unsigned `.dmg`/`.msi` can be built now. Users on Linux can install without signing. macOS/Windows users will see a "unidentified developer" warning until signed builds are available.
+**No release attestation:** This review did not build or test `.AppImage`, `.dmg` or `.msi` artifacts. Do not infer that unsigned binaries are safe, installable or supported from these notes.
 
 ---
 
@@ -93,6 +95,6 @@ The overlay is a thin Tauri renderer — the CLI is the real product. The overla
 | Item | Status |
 |---|---|
 | Migration test (checksums) | ✅ PASS (241/241) |
-| Installer build scripts | ✅ Ready (install.sh, package-linux.sh, Tauri) |
+| Root installers | Reviewed offline Linux developer path only; clean-host gates open |
 | Signed installers | INFRA-PENDING (5 missing secrets listed) |
 | Tauri bundle config | ✅ Ready |

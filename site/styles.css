@@ -297,14 +297,22 @@ footer a:hover { text-decoration: underline; }
 /* Responsive */
 @media (max-width: 600px) {
     .hero h1 { font-size: 1.8rem; }
-    .nav-links { gap: 12px; }
+    nav, .nav-links, .cta-group { flex-wrap: wrap; gap: 12px; }
+    .nav-links { width: 100%; }
     .nav-links a { font-size: 0.8rem; }
     .demo-step { flex-direction: column; }
+    .feature-grid, .metrics-grid { grid-template-columns: minmax(0, 1fr); }
 }
+
+.step-content, .metric-card { min-width: 0; max-width: 100%; }
+code, footer a { overflow-wrap: anywhere; }
+pre { max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; }
+.metric-source code { white-space: normal; overflow-wrap: anywhere; }
 
 /* Honest status table (W10 addition) */
 .status-table {
     width: 100%;
+    table-layout: fixed;
     border-collapse: collapse;
     margin: 1.5rem 0;
     font-size: 0.95rem;
@@ -312,6 +320,7 @@ footer a:hover { text-decoration: underline; }
 
 .status-table th,
 .status-table td {
+    overflow-wrap: anywhere;
     text-align: left;
     padding: 0.6rem 0.9rem;
     border-bottom: 1px solid rgba(128, 128, 128, 0.25);

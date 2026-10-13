@@ -44,6 +44,7 @@ class ProvenanceLogImpl:
         self._chunks: dict[str, Chunk] = {}
         self._extractions: dict[str, Extraction] = {}
         self._actions: dict[str, Action] = {}
+        self._completed_documents: dict[str, None] = {}
 
     # ---- Registration ----
 
@@ -80,9 +81,41 @@ class ProvenanceLogImpl:
         """
         return [c for c in self._chunks.values() if c.doc_id == doc_id]
 
+    def document_for_id(self, doc_id: str) -> Document | None:
+        """Return the registered metadata, not a caller's pre-ingestion guess."""
+        return self._documents.get(doc_id)
+
     def all_chunks(self) -> list[Chunk]:
         """Return a consistent snapshot of every registered chunk."""
         return list(self._chunks.values())
+
+    def action_for_extraction(self, ext_id: str) -> Action | None:
+        """Resolve under the registry lock; never iterate live dicts in HTTP."""
+        return next((action for action in self._actions.values()
+                     if action.ext_id == ext_id), None)
+
+    def complete_document(self, doc_id: str, retain: int) -> None:
+        """Bound completed preview graphs without evicting active documents.
+
+        This cache is not a durable audit store. Old source links intentionally
+        expire. Call only after a worker has finished all registrations.
+        """
+        if type(retain) is not int or retain < 1:
+            raise ValueError("retention must be a positive integer")
+        if doc_id not in self._documents:
+            return
+        self._completed_documents[doc_id] = None
+        while len(self._completed_documents) > retain:
+            oldest = next(iter(self._completed_documents))
+            del self._completed_documents[oldest]
+            chunks = {key for key, chunk in self._chunks.items() if chunk.doc_id == oldest}
+            extractions = {key for key, ext in self._extractions.items() if ext.chunk_id in chunks}
+            actions = {key for key, action in self._actions.items() if action.ext_id in extractions}
+            for mapping, keys in ((self._chunks, chunks), (self._extractions, extractions),
+                                  (self._actions, actions)):
+                for key in keys:
+                    del mapping[key]
+            self._documents.pop(oldest, None)
 
     # ---- Chain Resolution ----
 

@@ -1,0 +1,6 @@
+# LEGACY / OPT-IN ONLY — not included by any default requirements manifest.
+# EbookLib is LGPL-3.0, not permissive. Legacy KPX EPUB export and its existing
+# tests need this real library; no mock or replacement is supplied.
+# Use/distribution requires explicit license and policy review first.
+# This manifest is not legal clearance and must not be added to default installs.
+ebooklib>=0.18.0

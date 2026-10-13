@@ -7,6 +7,7 @@ social/email platform layout engines, audio dialogue systems, or subtitle genera
 import json
 import logging
 import re
+import zipfile
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, Tuple, Optional
@@ -56,6 +57,7 @@ class KamiCommandHandler:
             handler = self._export_pdf
 
         try:
+            self._scan_content(document_text)
             return handler(document_text, args, metadata)
         except Exception as e:
             logger.error(f"Error handling kami command '{cmd_name}': {e}", exc_info=True)
@@ -93,6 +95,7 @@ class KamiCommandHandler:
             subtitle=subtitle,
         )
 
+        written_path = self._validated_artifact_path(written_path, out_path, "pdf")
         return {
             "ok": True,
             "format": "pdf",
@@ -109,12 +112,9 @@ class KamiCommandHandler:
 
         # Quarkdown compiles .qd to EPUB, fallback to a clean XHTML/OPF zip container
         success = self._get_quarkdown().compile_quarkdown(text, "epub", str(out_path))
-        if not success:
-            # Fallback EPUB stub (valid ZIP container mimicking EPUB)
-            with open(out_path, "wb") as f:
-                f.write(
-                    b"PK\x03\x04\n\x00\x00\x00\x00\x00" + b"\x00" * 100
-                )  # simple valid EPUB file stub header
+        if success is not True:
+            raise RuntimeError("EPUB compiler failed; no EPUB success attested")
+        self._validated_artifact_path(str(out_path), out_path, "epub")
 
         return {
             "ok": True,
@@ -132,6 +132,9 @@ class KamiCommandHandler:
 
         # Quarkdown compiles directly to RevealJS
         success = self._get_quarkdown().compile_quarkdown(text, "revealjs", str(out_path))
+        if success is not True:
+            raise RuntimeError("Slides compiler failed; no artifact success attested")
+        self._validated_artifact_path(str(out_path), out_path, "html")
 
         return {
             "ok": success,
@@ -149,6 +152,9 @@ class KamiCommandHandler:
 
         # Compiles to long continuous HTML doc
         success = self._get_quarkdown().compile_quarkdown(text, "book", str(out_path))
+        if success is not True:
+            raise RuntimeError("Book compiler failed; no artifact success attested")
+        self._validated_artifact_path(str(out_path), out_path, "html")
 
         return {
             "ok": success,
@@ -165,6 +171,9 @@ class KamiCommandHandler:
         out_path = self.output_dir / f"kairo-export-{ts}.html"
 
         success = self._get_quarkdown().compile_quarkdown(text, "html", str(out_path))
+        if success is not True:
+            raise RuntimeError("Html compiler failed; no artifact success attested")
+        self._validated_artifact_path(str(out_path), out_path, "html")
 
         return {
             "ok": success,
@@ -372,27 +381,130 @@ class KamiCommandHandler:
         """// kami all — Batch export to pdf, epub, slides, book, and html formats simultaneously."""
         formats = ["pdf", "epub", "slides", "book", "html"]
         results = {}
+        failed = []
 
         for fmt in formats:
             try:
-                # Reuse individual format handlers
+                # Reuse the actual independent format handlers; keep partial outputs.
                 handler = getattr(self, f"_export_{fmt}")
-                res = handler(text, {}, metadata)
-                if res.get("ok"):
-                    results[fmt] = res["output_path"]
-                else:
-                    results[fmt] = f"FAILED: {res.get('error')}"
+                results[fmt] = self._export_output_path(handler(text, {}, metadata))
             except Exception as e:
                 results[fmt] = f"FAILED: {e}"
+                failed.append(fmt)
 
-        return {
-            "ok": True,
+        result = {
+            "ok": not failed,
             "format": "all",
             "results": results,
             "notification": f"📦 All formats successfully compiled in: {self.output_dir}",
         }
+        if failed:
+            summary = (
+                f"Export incomplete: {len(formats) - len(failed)}/{len(formats)} formats "
+                f"exported to {self.output_dir}; failed: {', '.join(failed)}"
+            )
+            result["notification"] = summary
+            # Existing IPC/Rust error parsing reads this without a caller change.
+            result["error"] = summary
+        return result
 
     # ─── Helpers ───
+
+    @staticmethod
+    def _validated_scan_result(result: Any) -> bool:
+        """Require an explicit consistent scanner decision, never truthiness."""
+        if (
+            not isinstance(result, dict)
+            or type(result.get("safe")) is not bool
+            or not isinstance(result.get("matched_patterns"), list)
+            or any(not isinstance(pattern, str) for pattern in result["matched_patterns"])
+            or (result["safe"] is True and result["matched_patterns"])
+        ):
+            raise RuntimeError(
+                "PromptShield returned invalid safety decision; refusing unscanned Kami content"
+            )
+        return result["safe"]
+
+    def _scan_content(self, text: str) -> None:
+        """Guard the public command entry before invoking any format handler.
+
+        Private format methods, metadata and HTML sanitization are separate bounds.
+        """
+        try:
+            from sidecar.safety.prompt_shield import PromptShield
+        except ImportError as exc:
+            raise RuntimeError(
+                "PromptShield unavailable; refusing unscanned Kami content"
+            ) from exc
+        if not self._validated_scan_result(PromptShield().scan_detailed(text)):
+            raise ValueError("Kami export blocked: injection payloads detected")
+
+
+    @staticmethod
+    def _export_output_path(result: Any) -> str:
+        """Validate an explicit handler outcome, not filename-prefix truthiness."""
+        if not isinstance(result, dict):
+            raise TypeError("Malformed export result: expected dictionary")
+        if result.get("ok") is not True:
+            error = result.get("error")
+            if not isinstance(error, str) or not error:
+                error = "Format handler did not report success"
+            raise RuntimeError(error)
+        path = result.get("output_path")
+        if not isinstance(path, str) or not path:
+            raise ValueError("Malformed export result: nonempty string output_path required")
+        return path
+
+    @staticmethod
+    def _validated_artifact_path(path: Any, expected_path: Path, fmt: str) -> str:
+        """Attest a real requested-route artifact, not universal format validity/custody.
+
+        PDF requires actual pdfplumber readback. HTML/EPUB get basic type/container
+        checks only; these checks are not sanitization or EPUB/JVM certification.
+        Engine fallback/partial files are retained, but never called format success.
+        """
+        if not isinstance(path, str) or not path:
+            raise ValueError(f"{fmt} artifact path must be a nonempty string")
+        artifact = Path(path)
+        if artifact.suffix.lower() != f".{fmt}" or artifact.resolve() != expected_path.resolve():
+            raise ValueError(f"{fmt} exporter returned an unexpected artifact path/type")
+        if not artifact.is_file() or artifact.stat().st_size == 0:
+            raise ValueError(f"{fmt} artifact is missing or empty")
+        with artifact.open("rb") as source:
+            prefix = source.read(8192)
+        if fmt == "pdf":
+            if not prefix.startswith(b"%PDF-"):
+                raise ValueError("PDF artifact has no PDF header")
+            try:
+                import pdfplumber
+            except ImportError as exc:
+                raise RuntimeError("PDF readback unavailable; refusing PDF success") from exc
+            try:
+                with pdfplumber.open(artifact) as document:
+                    if not document.pages:
+                        raise ValueError("PDF has no readable pages")
+            except Exception as exc:
+                raise RuntimeError("PDF readback failed; refusing PDF success") from exc
+        elif fmt == "html":
+            if not re.search(rb"<html(?:\s|>)", prefix, re.IGNORECASE):
+                raise ValueError("HTML artifact has no HTML document element")
+        elif fmt == "epub":
+            try:
+                with zipfile.ZipFile(artifact) as archive:
+                    first = archive.infolist()[0]
+                    if (
+                        first.filename != "mimetype"
+                        or first.compress_type != zipfile.ZIP_STORED
+                        or first.file_size != len(b"application/epub+zip")
+                        or archive.read(first) != b"application/epub+zip"
+                        or archive.getinfo("META-INF/container.xml").file_size == 0
+                    ):
+                        raise ValueError("EPUB container markers are invalid")
+            except (zipfile.BadZipFile, KeyError, IndexError, ValueError) as exc:
+                raise ValueError("EPUB artifact is not a recognized EPUB ZIP container") from exc
+        else:
+            raise ValueError("Unsupported artifact validation format")
+        return path
 
     def _parse_command(self, command: str) -> Tuple[str, Dict[str, Any]]:
         """Parse `// kami <cmd> [--key value]` into cmd and args dictionary."""

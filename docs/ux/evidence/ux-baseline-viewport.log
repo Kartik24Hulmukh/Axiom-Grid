@@ -1,0 +1,25 @@
+✖ UX08 modal fits 320px viewport with keyboard-height constraint (3367.493714ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4307.400222
+
+✖ failing tests:
+
+test at tests/browser/ux-hardening.e2e.cjs:143:1
+✖ UX08 modal fits 320px viewport with keyboard-height constraint (3367.493714ms)
+  AssertionError [ERR_ASSERTION]: {"x":16,"y":-51.875,"width":256,"height":583.75}
+      at TestContext.<anonymous> (/data/axiom-fourth/ux/tests/browser/ux-hardening.e2e.cjs:146:74)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

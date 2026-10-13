@@ -1,0 +1,21 @@
+Axiom-Grid hardening delivery — engineering preview / NO-GO for GA
+
+Base main: 8f381cf219098d03c0ae2d440681ed59beeaf99a
+Branch: harden/axiom-grid-v1-launch
+
+The delivery contains a clean tracked source snapshot, an incremental Git bundle
+with this execution's semantic commits, and verification evidence. The bundle
+requires the exact base commit; it deliberately does not package the full old
+Git history or credentials. Import into a review clone, not protected main.
+
+  git clone https://github.com/Kartik24Hulmukh/Axiom-Grid.git review-clone
+  cd review-clone
+  git bundle verify /path/to/axiom-grid-hardening.bundle
+  git fetch /path/to/axiom-grid-hardening.bundle harden/axiom-grid-v1-launch:harden/axiom-grid-v1-launch
+  git switch harden/axiom-grid-v1-launch
+
+Review LAUNCH_VERIFICATION-2026-10-01.md, LAUNCH-BLOCKERS.md and docs/PR_HANDOFF.md.
+Use newly rotated credentials in secure storage; never reuse exposed values.
+Do not push/merge/release until required checks, security and operational gates
+are independently satisfied. This handoff does not claim a live upstream
+integration, deployed website, 100 actual humans, paid pilots or production readiness.

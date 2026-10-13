@@ -4,16 +4,23 @@ import tempfile
 import shutil
 import logging
 from pathlib import Path
+from html import escape as html_escape
 
 logger = logging.getLogger("kairo.quarkdown")
+
+_JVM_FORMATS = ("pdf", "revealjs")
+_NATIVE_FORMATS = ("html", "book", "epub", "revealjs")
 
 
 def compile_quarkdown(content: str, output_format: str, output_path: str) -> bool:
     """
-    Compiles Quarkdown/Markdown content to either 'pdf' or 'revealjs' presentation.
-    Tries to use a bundled quarkdown.jar JVM binary if available,
-    otherwise gracefully falls back to native Python-based high-fidelity HTML/CSS layout templates.
+    Compile explicitly supported formats; JVM supports only PDF and Reveal.js.
+    Native builders support HTML, book HTML, EPUB and Reveal.js, not PDF.
     """
+    if output_format not in _JVM_FORMATS + _NATIVE_FORMATS:
+        logger.error("Unsupported Quarkdown output format")
+        return False
+
     try:
         # Prepare input and output paths
         out_path = Path(output_path)
@@ -24,11 +31,11 @@ def compile_quarkdown(content: str, output_format: str, output_path: str) -> boo
 
         # 2. Try JVM-based Quarkdown Compiler if bundled/available
         jar_path = Path(__file__).parent.parent.parent / "bin" / "quarkdown.jar"
-        if jar_path.exists() and shutil.which("java"):
+        if output_format in _JVM_FORMATS and jar_path.exists() and shutil.which("java"):
             logger.info("Found bundled quarkdown.jar and JVM, running compilation...")
             return run_jvm_quarkdown(qd_markup, jar_path, output_format, output_path)
 
-        # 3. Fallback: Programmatic, high-fidelity layout compilation (100% reliable)
+        # 3. Native fallback for supported non-PDF formats only
         logger.info(
             "Quarkdown JVM compiler unavailable. Running high-fidelity local programmatic compiler..."
         )
@@ -67,6 +74,10 @@ def generate_quarkdown_markup(content: str, output_format: str) -> str:
 
 
 def run_jvm_quarkdown(markup: str, jar_path: Path, output_format: str, output_path: str) -> bool:
+    # Reject before temporary-file creation or subprocess invocation.
+    if output_format not in _JVM_FORMATS:
+        logger.error("Unsupported JVM Quarkdown output format")
+        return False
     with tempfile.NamedTemporaryFile(
         mode="w", suffix=".qd", delete=False, encoding="utf-8"
     ) as temp_in:
@@ -74,7 +85,7 @@ def run_jvm_quarkdown(markup: str, jar_path: Path, output_format: str, output_pa
         temp_in_name = temp_in.name
 
     try:
-        fmt_arg = "revealjs" if output_format == "revealjs" else "pdf"
+        fmt_arg = output_format
         cmd = [
             "java",
             "-jar",
@@ -116,8 +127,10 @@ def run_fallback_compiler(
         return _generate_revealjs_fallback(original_content, output_path)
     elif output_format == "book":
         return _generate_book_fallback(original_content, output_path)
-    else:
+    elif output_format == "html":
         return _generate_html_fallback(original_content, output_path)
+    logger.error("Native Quarkdown compiler does not support the requested format")
+    return False
 
 
 def _generate_epub_fallback(content: str, output_path: str) -> bool:
@@ -270,7 +283,7 @@ def _generate_revealjs_fallback(original_content: str, output_path: str) -> bool
 
     slides_html = ""
     for slide in slides:
-        title = slide["title"]
+        title = html_escape(slide["title"])
         elements_html = []
 
         in_list = False
@@ -280,7 +293,7 @@ def _generate_revealjs_fallback(original_content: str, output_path: str) -> bool
                     elements_html.append('<ul style="margin-top: 20px;">')
                     in_list = True
                 elements_html.append(
-                    f'<li class="fragment" style="margin-bottom: 10px;">{elem["text"]}</li>'
+                    f'<li class="fragment" style="margin-bottom: 10px;">{html_escape(elem["text"])}</li>'
                 )
             else:
                 if in_list:
@@ -289,11 +302,11 @@ def _generate_revealjs_fallback(original_content: str, output_path: str) -> bool
 
                 if elem["type"] == "code":
                     elements_html.append(
-                        f'<pre><code class="language-{elem["lang"]}">{elem["text"]}</code></pre>'
+                        f'<pre><code class="language-{html_escape(elem["lang"], quote=True)}">{html_escape(elem["text"])}</code></pre>'
                     )
                 elif elem["type"] == "p":
                     elements_html.append(
-                        f'<p style="margin-top: 15px; font-size: 1.1em; line-height: 1.6;">{elem["text"]}</p>'
+                        f'<p style="margin-top: 15px; font-size: 1.1em; line-height: 1.6;">{html_escape(elem["text"])}</p>'
                     )
 
         if in_list:

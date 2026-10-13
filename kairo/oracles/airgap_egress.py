@@ -534,9 +534,8 @@ def run_kill_proof() -> AirgapEgressReport:
         try:
             # Deliberately attempt to connect to an external host
             # This MUST be caught by the interceptor
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.connect(("93.184.216.34", 80))  # example.com — external
-            s.close()
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.connect(("93.184.216.34", 80))  # example.com — external
             report.session_completed = True
         except (ConnectionError, socket.gaierror, OSError):
             # Expected — the interceptor blocked the connection

@@ -2,16 +2,19 @@
 from __future__ import annotations
 
 import contextlib
+import http.client
 import json
 import math
 import os
 import random
+import re
+import socket
 import threading
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
 from email.utils import parsedate_to_datetime
-from urllib import error, request
+from urllib.parse import urlsplit
 
 
 @dataclass
@@ -52,6 +55,12 @@ class CircuitBreaker:
         return "HALF_OPEN" if time.monotonic()-self.opened_at >= self.recovery_seconds else "OPEN"
 
 class RouterError(RuntimeError): pass
+
+class RouterCancelledError(RouterError):
+    """Caller cancelled; no retry or fallback may dispatch."""
+
+class RouterDeadlineError(RouterError):
+    """The call-wide monotonic deadline has expired."""
 
 class BudgetExhaustedError(RouterError):
     """The completion budget was consumed (finish_reason=length) before any
@@ -199,17 +208,28 @@ class MeliousModelRouter:
     """Bounded-time fallback router with independent, thread-safe breakers."""
     DEFAULT_MODELS = ("glm-5.3", "glm-5.3-flash", "kimi-k3", "qwen3.8-27b")
     # Fallback chain is operator-tunable without a redeploy: MELIOUS_MODELS="a,b,c".
-    # Every id in DEFAULT_MODELS was verified against the live gateway catalog
-    # (GET /v1/models) — a dead id silently shortens the fallback chain (404).
+    # These are historical operator-selected defaults, not proof of the live
+    # catalog. Revalidate GET /v1/models with a rotated key before deployment.
     def __init__(self, models=None, base_url=None, timeout=10.0, max_retries=1,
                  acquire_timeout=5.0, probe_timeout=None,
                  transport: Callable | None=None, sleep: Callable=time.sleep,
                  max_inflight=32, total_timeout=30.0, spend_ceiling=None,
                  spend: SpendGovernor | None=None):
         env_models=tuple(m.strip() for m in os.getenv("MELIOUS_MODELS","").split(",") if m.strip())
-        self.models=tuple(models or env_models or self.DEFAULT_MODELS)
-        if not self.models: raise RouterError("no models configured")
+        if models is not None and not isinstance(models, (list, tuple)):
+            raise RouterError("models must be a list or tuple of identifiers")
+        self.models=tuple(models if models is not None else env_models or self.DEFAULT_MODELS)
+        if (not self.models or any(not self._valid_model(m) for m in self.models)
+                or len(set(self.models)) != len(self.models)):
+            raise RouterError("models must be non-empty, unique, valid identifiers")
         self.base_url=(base_url or os.getenv("MELIOUS_BASE_URL","https://api.melious.ai/v1")).rstrip("/")
+        parsed = urlsplit(self.base_url)
+        if (not parsed.hostname or parsed.username is not None
+                or parsed.password is not None or parsed.query or parsed.fragment
+                or parsed.scheme not in {"https", "http"}
+                or (parsed.scheme == "http" and parsed.hostname not in {"localhost", "127.0.0.1", "::1"})):
+            raise RouterError("gateway URL must use HTTPS (HTTP is loopback-test-only), without credentials, query, or fragment")
+        self._call_context = threading.local()
         self.timeout=float(timeout); self.max_retries=max(0,int(max_retries))
         # Latency-budget guards (100x-load premortem): cap total time spent
         # queueing for the router lock, and give the single half-open probe a
@@ -265,24 +285,124 @@ class MeliousModelRouter:
         self._lock=threading.RLock(); self.breakers={m:CircuitBreaker() for m in self.models}
         self._cooldown_until = {m: 0.0 for m in self.models}
         self.metrics={"requests":0,"successes":0,"failures":0,"fallbacks":0,"prompt_tokens":0,"completion_tokens":0,"reasoning_tokens":0,"total_tokens":0,"budget_exhausted":0}
-    def _http_transport(self, model, payload, timeout):
+    @staticmethod
+    def _valid_model(value):
+        # Also keeps operator-controlled names safe in Prometheus labels.
+        return isinstance(value, str) and re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:/-]{0,199}", value) is not None
+
+    @staticmethod
+    def _check_active(deadline, cancel_event):
+        if cancel_event is not None and cancel_event.is_set():
+            raise RouterCancelledError("router request cancelled") from None
+        if time.monotonic() >= deadline:
+            raise RouterDeadlineError("router total deadline exhausted") from None
+
+    def _http_json(self, method, suffix, payload, timeout, cancel_event=None):
+        """Direct stdlib HTTP: no ambient proxies and no credential redirects.
+
+        Socket inactivity timeouts alone do not bound trickled headers/bodies.
+        One joined watchdog per admitted exchange interrupts its connected socket
+        on a monotonic deadline or explicit cancellation. DNS resolution is still
+        synchronous OS work and cannot be interrupted by Python socket timeouts.
+        """
         key=os.getenv("MELIOUS_API_KEY")
         if not key: raise RouterError("MELIOUS_API_KEY is not configured")
-        body=json.dumps({**payload,"model":model}).encode()
-        req=request.Request(self.base_url+"/chat/completions",body,{"Authorization":"Bearer "+key,"Content-Type":"application/json"})
+        body = None if payload is None else json.dumps(payload, ensure_ascii=False, allow_nan=False).encode("utf-8")
+        if body is not None and len(body) > self.MAX_REQUEST_BYTES:
+            raise RouterError("payload exceeds byte budget")
+        parsed = urlsplit(self.base_url)
+        connection_type = http.client.HTTPSConnection if parsed.scheme == "https" else http.client.HTTPConnection
+        conn = connection_type(parsed.hostname, parsed.port, timeout=timeout)
+        deadline = time.monotonic() + timeout
+        done = threading.Event()
+        watcher = None
+        response = None
         try:
-            with request.urlopen(req,timeout=timeout) as r:
-                body = r.read(self.MAX_RESPONSE_BYTES + 1)
-                if len(body) > self.MAX_RESPONSE_BYTES:
-                    raise RouterError("upstream response exceeds byte budget")
-                return json.loads(body)
-        except error.HTTPError as exc:
-            retry=exc.headers.get("Retry-After") if exc.headers else None
-            e=RouterError(f"upstream HTTP {exc.code}")
-            e.retry_after = self._retry_after(retry)
-            e.status=exc.code
-            exc.close()
-            raise e from None
+            self._check_active(deadline, cancel_event)
+            conn.connect()
+            self._check_active(deadline, cancel_event)
+            sock = conn.sock  # HTTPConnection can detach it after close-delimited headers.
+
+            def interrupt():
+                while not done.is_set():
+                    remaining = deadline - time.monotonic()
+                    if remaining <= 0 or (cancel_event is not None and cancel_event.is_set()):
+                        with contextlib.suppress(OSError):
+                            sock.shutdown(socket.SHUT_RDWR)
+                        return
+                    # Bounded cancellation detection; Event.wait also permits
+                    # immediate normal completion, without a detached worker.
+                    if done.wait(min(.02, remaining)):
+                        return
+
+            watcher = threading.Thread(target=interrupt, name="gateway-socket-deadline", daemon=True)
+            watcher.start()
+            path = parsed.path.rstrip("/") + suffix
+            conn.request(method, path, body, {"Authorization": "Bearer " + key, "Content-Type": "application/json"})
+            response = conn.getresponse()
+            if not 200 <= response.status < 300:
+                exc = RouterError(f"upstream HTTP {response.status}")
+                exc.status = response.status
+                exc.retry_after = self._retry_after(response.getheader("Retry-After"))
+                raise exc
+            raw = response.read(self.MAX_RESPONSE_BYTES + 1)
+            self._check_active(deadline, cancel_event)
+            if len(raw) > self.MAX_RESPONSE_BYTES:
+                raise RouterError("upstream response exceeds byte budget")
+            return json.loads(raw)
+        except RouterCancelledError:
+            raise
+        except Exception as exc:
+            if cancel_event is not None and cancel_event.is_set():
+                raise RouterCancelledError("router request cancelled") from None
+            if time.monotonic() >= deadline:
+                raise TimeoutError("upstream exchange deadline exhausted") from None
+            if isinstance(exc, RouterError):
+                raise
+            raise RouterError("upstream request failed") from None
+        finally:
+            done.set()
+            if watcher is not None:
+                watcher.join()
+            if response is not None:
+                response.close()
+            conn.close()
+
+    def _http_transport(self, model, payload, timeout):
+        return self._http_json("POST", "/chat/completions", {**payload, "model": model}, timeout,
+                               getattr(self._call_context, "cancel_event", None))
+
+    def discover_models(self, *, cancel_event=None):
+        """Explicit catalog snapshot, not a model quality/alias verification.
+
+        No discovery happens at construction or implicitly during completion.
+        The same destination, byte, deadline and inflight limits apply to GET.
+        """
+        if not self._slots.acquire(blocking=False):
+            raise RouterError("router saturated: inflight capacity exhausted")
+        try:
+            data = self._http_json("GET", "/models", None, min(self.timeout, self.total_timeout), cancel_event)
+            if not isinstance(data, dict) or not isinstance(data.get("data"), list) or not 1 <= len(data["data"]) <= 4096:
+                raise RouterError("malformed upstream model catalog")
+            names = []
+            for item in data["data"]:
+                if not isinstance(item, dict) or not self._valid_model(item.get("id")):
+                    raise RouterError("malformed upstream model identifier")
+                names.append(item["id"])
+            if len(set(names)) != len(names):
+                raise RouterError("duplicate upstream model identifiers")
+            return tuple(names)
+        finally:
+            self._slots.release()
+
+    def validate_models(self, *, cancel_event=None):
+        """Require configured identifiers to occur exactly in a fresh catalog."""
+        catalog = self.discover_models(cancel_event=cancel_event)
+        if any(model not in catalog for model in self.models):
+            raise RouterError("configured models are absent from upstream catalog")
+        return self.models
+
+    MAX_RETRY_AFTER_SECONDS = 3600.0  # local availability policy, not provider permission
     @staticmethod
     def _retry_after(value):
         if value is None:
@@ -294,7 +414,7 @@ class MeliousModelRouter:
                 seconds = parsedate_to_datetime(value).timestamp() - time.time()
             except (TypeError, ValueError, OverflowError):
                 return 0.0
-        return max(0.0, seconds) if math.isfinite(seconds) else 0.0
+        return min(MeliousModelRouter.MAX_RETRY_AFTER_SECONDS, max(0.0, seconds)) if math.isfinite(seconds) else 0.0
 
     @staticmethod
     def _usage_counts(data):
@@ -311,8 +431,12 @@ class MeliousModelRouter:
         counts["reasoning_tokens"] = details.get("reasoning_tokens", usage.get("reasoning_tokens", 0))
         if any(type(value) is not int or value < 0 for value in counts.values()):
             raise RouterError("upstream token counts must be non-negative integers")
-        # Providers may omit or understate total_tokens. Reasoning tokens are
-        # already included in completion_tokens; do not count them twice.
+        # Reasoning is included in completion, not an additional charge. But
+        # an explicitly reported subset is a lower bound on an omitted or
+        # understated completion count, and must also enforce max_tokens.
+        counts["completion_tokens"] = max(counts["completion_tokens"], counts["reasoning_tokens"])
+        # Providers may omit or understate total_tokens; do not count reasoning
+        # twice when reconstructing the reported billable lower bound.
         counts["total_tokens"] = max(counts["total_tokens"],
                                      counts["prompt_tokens"] + counts["completion_tokens"])
         return counts
@@ -322,22 +446,27 @@ class MeliousModelRouter:
     MAX_REQUEST_BYTES = 262144
     MAX_RESPONSE_BYTES = 2097152
 
-    def complete(self, messages, **options):
+    def complete(self, messages, *, cancel_event=None, **options):
+        deadline = time.monotonic() + self.total_timeout
+        self._check_active(deadline, cancel_event)
         # No unbounded queue of blocked callers or outbound socket stampede.
         if not self._slots.acquire(blocking=False):
             raise RouterError("router saturated: inflight capacity exhausted")
-        reservation = None
-        spent = [0]
+        billing = {"reservation": None, "actual": 0, "dispatched": False}
+        previous_cancel = getattr(self._call_context, "cancel_event", None)
+        self._call_context.cancel_event = cancel_event
         try:
-            reservation = self.spend.reserve(self._reservation_estimate(messages, options))
-            return self._complete(messages, time.monotonic() + self.total_timeout, spent, **options)
+            payload, budget = self._validate_payload(messages, options)
+            billing["estimate"] = self._reservation_estimate(messages, options)
+            billing["reservation"] = self.spend.reserve(billing["estimate"])
+            self._check_active(deadline, cancel_event)
+            return self._complete(payload, budget, deadline, billing, cancel_event=cancel_event)
         finally:
-            # Admission failures, cancellation and settlement failures must all
-            # return the inflight permit. Billing is independent of success.
             try:
-                if reservation is not None:
-                    self.spend.settle(reservation, spent[0])
+                if billing["reservation"] is not None:
+                    self.spend.settle(billing["reservation"], billing["actual"])
             finally:
+                self._call_context.cancel_event = previous_cancel
                 self._slots.release()
 
     # English-oriented estimate, NOT a tokenizer upper bound. Unicode, model
@@ -349,10 +478,15 @@ class MeliousModelRouter:
         chars = sum(len(m.get("content", "")) for m in messages if isinstance(m, dict) and isinstance(m.get("content"), str))
         budget = options.get("max_completion_tokens", options.get("max_tokens", self.MAX_COMPLETION_TOKENS))
         if type(budget) is not int or budget < 1: budget = self.MAX_COMPLETION_TOKENS
+        # Tool schemas and non-content message fields also consume context.
+        extras = {k: v for k, v in options.items() if k not in {"max_tokens", "max_completion_tokens"}}
+        extras["message_metadata"] = [{k: v for k, v in m.items() if k not in {"role", "content"}}
+                                      for m in messages]
+        if any(extras["message_metadata"]) or len(extras) > 1:
+            chars += len(json.dumps(extras, ensure_ascii=False))
         return math.ceil(chars / self.PROMPT_CHARS_PER_TOKEN) + budget
 
-    def _complete(self, messages, deadline, spent=None, **options):
-        if spent is None: spent = [0]
+    def _validate_payload(self, messages, options):
         # Sanitize the I/O boundary before any network cost is incurred.
         if not isinstance(messages, list) or not messages or len(messages) > self.MAX_MESSAGES:
             raise RouterError(f"messages must be a non-empty list of at most {self.MAX_MESSAGES} items")
@@ -372,22 +506,43 @@ class MeliousModelRouter:
             raise RouterError("streaming is not supported by the JSON completion router")
         if options.get("n", 1) != 1:
             raise RouterError("only one completion is supported per budget")
-        payload={"messages":messages,**options, budget_key: budget}; trace=[]; last=None
+        payload={"messages":messages,**options, budget_key: budget}
         try:
-            encoded = json.dumps(payload, ensure_ascii=False, allow_nan=False).encode("utf-8")
-        except (TypeError, ValueError, UnicodeError) as exc:
-            raise RouterError("payload must be finite JSON") from exc
-        if len(encoded) > self.MAX_REQUEST_BYTES:
+            encoded_bytes = len(json.dumps(payload, ensure_ascii=False, allow_nan=False).encode("utf-8"))
+        except (TypeError, ValueError, UnicodeError):
+            raise RouterError("payload must be finite JSON") from None
+        # Include the router-added model field in the actual wire byte budget.
+        if encoded_bytes + max(len(json.dumps({"model": model}).encode("utf-8")) for model in self.models) > self.MAX_REQUEST_BYTES:
             raise RouterError("payload exceeds byte budget")
-        if not self._lock.acquire(timeout=self.acquire_timeout):
+        return payload, budget
+
+    def _complete(self, payload, budget, deadline, billing, *, cancel_event=None):
+        trace=[]; last=None
+        def acquire():
+            lock_deadline = min(deadline, time.monotonic() + self.acquire_timeout)
+            while True:
+                self._check_active(deadline, cancel_event)
+                remaining = max(0, lock_deadline-time.monotonic())
+                acquired = self._lock.acquire(timeout=min(remaining, .02) if cancel_event is not None else remaining)
+                if acquired:
+                    try:
+                        self._check_active(deadline, cancel_event)
+                    except BaseException:
+                        self._lock.release()
+                        raise
+                    return True
+                if time.monotonic() >= lock_deadline:
+                    self._check_active(deadline, cancel_event)
+                    return False
+
+        if not acquire():
             raise RouterError(f"router saturated: lock not acquired within {self.acquire_timeout}s")
         try: self.metrics["requests"]+=1
         finally: self._lock.release()
         for index,model in enumerate(self.models):
+            self._check_active(deadline, cancel_event)
             now=time.monotonic()
-            if now >= deadline:
-                break
-            if not self._lock.acquire(timeout=self.acquire_timeout):
+            if not acquire():
                 raise RouterError(f"router saturated: lock not acquired within {self.acquire_timeout}s")
             try:
                 allowed=now >= self._cooldown_until[model] and self.breakers[model].allow(now)
@@ -395,10 +550,10 @@ class MeliousModelRouter:
                 generation = self.breakers[model].generation
             finally: self._lock.release()
             if not allowed: trace.append({"model":model,"result":"circuit_open"}); continue
-            if index and self._lock.acquire(timeout=self.acquire_timeout):
-                try: self.metrics["fallbacks"]+=1
-                finally: self._lock.release()
             try:
+                if index and acquire():
+                    try: self.metrics["fallbacks"]+=1
+                    finally: self._lock.release()
                 for attempt in range(self.max_retries+1):
                     if attempt:
                         # Backoff is not a lease: another request may have
@@ -406,7 +561,7 @@ class MeliousModelRouter:
                         remaining = min(deadline - time.monotonic(), self.total_timeout)
                         if remaining <= 0:
                             break
-                        if not self._lock.acquire(timeout=min(self.acquire_timeout, remaining)):
+                        if not acquire():
                             raise RouterError("router saturated during retry admission")
                         try:
                             breaker = self.breakers[model]
@@ -417,6 +572,16 @@ class MeliousModelRouter:
                                 break
                         finally:
                             self._lock.release()
+                    self._check_active(deadline, cancel_event)
+                    # Every dispatch is separately admitted against already billed
+                    # prior attempts. A rejected response must not fund a fallback.
+                    if billing["dispatched"]:
+                        reservation = billing["reservation"]
+                        billing["reservation"] = None
+                        self.spend.settle(reservation, billing["actual"])
+                        billing["actual"] = 0
+                        billing["reservation"] = self.spend.reserve(billing["estimate"])
+                    billing["dispatched"] = True
                     try:
                         # Half-open probe gets the shorter probe_timeout deadline.
                         remaining = min(deadline - time.monotonic(), self.total_timeout)
@@ -424,7 +589,9 @@ class MeliousModelRouter:
                             raise RouterError("router total deadline exhausted")
                         # Per-model deadline, always capped by the remaining
                         # total budget and the half-open probe budget.
-                        base = self.probe_timeout if is_probe else self.model_timeouts.get(model, self.timeout)
+                        base = self.model_timeouts.get(model, self.timeout)
+                        if is_probe:
+                            base = min(base, self.probe_timeout)
                         data=self._transport(model,payload,min(remaining, base))
                         if not isinstance(data, dict):
                             raise RouterError("malformed upstream response")
@@ -432,10 +599,13 @@ class MeliousModelRouter:
                         # each response once, before validating its output, and
                         # before fallbacks can overwrite the upstream evidence.
                         counts = self._usage_counts(data)
-                        spent[0] += counts["total_tokens"]
+                        billing["actual"] += counts["total_tokens"]
                         with self._lock:
                             for key, value in counts.items():
                                 self.metrics[key] += value
+                        self._check_active(deadline, cancel_event)
+                        if "model" in data and data["model"] != model:
+                            raise RouterError("upstream returned an unrequested model identifier")
                         if not isinstance(data.get("choices"), list) or not data["choices"]:
                             raise RouterError("malformed upstream response")
                         for choice in data["choices"]:
@@ -451,17 +621,19 @@ class MeliousModelRouter:
                             raise RouterError("unexpected multiple completions")
                         if counts["completion_tokens"] > budget:
                             raise RouterError("upstream exceeded completion budget")
-                        if not self._lock.acquire(timeout=self.acquire_timeout):
+                        if not acquire():
                             raise RouterError(f"router saturated: lock not acquired within {self.acquire_timeout}s")
                         try:
                             self.breakers[model].success(generation); self.metrics["successes"]+=1
                         finally: self._lock.release()
                         data["router"]={"selected_model":model,"fallback_chain":trace+[ {"model":model,"result":"success"} ]}
                         return data
+                    except (RouterCancelledError, RouterDeadlineError):
+                        raise
                     except BudgetExhaustedError as exc:
                         # Fail fast: healthy upstream, wrong budget. Account spend, leave breaker CLOSED.
                         trace.append({"model":model,"result":"budget_exhausted","error":"BudgetExhaustedError","detail":"completion budget consumed by reasoning tokens","status":None})
-                        if self._lock.acquire(timeout=self.acquire_timeout):
+                        if acquire():
                             try:
                                 # A budget-limited response proves the upstream is reachable.
                                 # Release HALF_OPEN's exclusive probe as well as resetting
@@ -473,15 +645,18 @@ class MeliousModelRouter:
                         exc.trace = trace; exc.status = None
                         raise
                     except Exception as exc:  # noqa: BLE001 -- isolate arbitrary injected transport failures
-                        last=exc; trace.append({"model":model,"result":"failure","error":type(exc).__name__,"detail":f"upstream HTTP {exc.status}" if type(getattr(exc,"status",None)) is int else "upstream request failed","status":getattr(exc,"status",None)})
-                        if self._lock.acquire(timeout=self.acquire_timeout):
+                        status = getattr(exc, "status", None)
+                        status = status if type(status) is int and 100 <= status <= 599 else None
+                        last_status = status
+                        last = True
+                        trace.append({"model":model,"result":"failure","error":"RouterError","detail":f"upstream HTTP {status}" if status is not None else "upstream request failed","status":status})
+                        if acquire():
                             try:
                                 self.breakers[model].failure(time.monotonic(), generation)
-                                if getattr(exc, "status", None) == 429:
+                                if status == 429:
                                     self._cooldown_until[model] = max(
-                                        self._cooldown_until[model], time.monotonic() + self._retry_after(getattr(exc, "retry_after", 0)))
+                                        self._cooldown_until[model], time.monotonic() + (self._retry_after(getattr(exc, "retry_after", 0)) or 1.0))
                             finally: self._lock.release()
-                        status = getattr(exc, "status", None)
                         # Retry-After is route cooldown, not a worker sleep.
                         # Waiting here parks scarce inflight permits and delays
                         # healthy fallbacks even though the route is inadmissible.
@@ -501,7 +676,12 @@ class MeliousModelRouter:
                             # Never shorten Retry-After and hammer the same route.
                             if delay >= deadline - time.monotonic():
                                 break
-                            self._sleep(delay)
+                            if cancel_event is not None:
+                                if cancel_event.wait(delay):
+                                    raise RouterCancelledError("router request cancelled") from None
+                            else:
+                                self._sleep(delay)
+                            self._check_active(deadline, cancel_event)
             finally:
                 # BaseException (including cancellation) bypasses ordinary error
                 # handling. Never strand the exclusive half-open probe lease.
@@ -511,18 +691,22 @@ class MeliousModelRouter:
                         breaker = self.breakers[model]
                         if breaker.generation == generation and breaker.probing:
                             breaker.failure(time.monotonic(), generation)
-        if self._lock.acquire(timeout=self.acquire_timeout):
+        if acquire():
             try: self.metrics["failures"]+=1
             finally: self._lock.release()
         err = RouterError(f"all model routes failed: {trace}")
         # Preserve the last upstream HTTP status so callers can map 429/5xx
         # without parsing the trace text.
-        if last is not None and getattr(last, "status", None) is not None:
-            err.status = last.status
-        raise err from last
+        if last is not None and last_status is not None:
+            err.status = last_status
+        # A sanitized message is insufficient if traceback logs chain the raw
+        # transport exception (which can contain credentials or document text).
+        raise err from None
     def get_metrics(self):
-        with self._lock: base = dict(self.metrics)
-        return {**base, **self.spend.snapshot(), "circuits":{m:b.state for m,b in self.breakers.items()}}
+        with self._lock:
+            base = dict(self.metrics)
+            circuits = {m:b.state for m,b in self.breakers.items()}
+        return {**base, **self.spend.snapshot(), "circuits":circuits}
     def get_prometheus_metrics(self):
         m=self.get_metrics(); lines=[f"axiom_router_{k} {v}" for k,v in m.items() if isinstance(v,int)]
         lines += [f'axiom_router_circuit_state{{model="{name}",state="{state}"}} 1' for name,state in m["circuits"].items()]

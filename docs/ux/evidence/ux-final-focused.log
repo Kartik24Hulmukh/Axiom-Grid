@@ -1,0 +1,27 @@
+✔ UX01 forget during actual processing cannot overwrite cleared document (4457.681367ms)
+✔ UX02 forget during actual upload leaves no owned option or stale status (1962.703054ms)
+✔ UX03 hidden correction controls cannot receive keyboard focus (1032.042515ms)
+✔ UX04 keyboard tabs expose selected state and arrow navigation (1456.02432ms)
+✔ UX05 correction traps keyboard, Escape returns focus, labels resolve (1984.123544ms)
+✔ UX06 conflict retains draft and updates displayed original before explicit retry (2700.505701ms)
+✔ UX07 delayed save from closed editor cannot close a newer editor (2475.323076ms)
+✔ UX08 modal fits 320px viewport with keyboard-height constraint (1623.995367ms)
+✔ UX09 document controls lock together; duplicate owned upload sends one request (1490.700458ms)
+✔ UX10 old pipeline completion cannot unlock or replace newer same-key session (2719.110732ms)
+✔ UX11 forget during actual source lookup removes evidence and late failure (1992.250594ms)
+✔ UX12 escape then forget during actual save wipes review draft and ignores completion (2376.31788ms)
+✔ UX13 actual short owned note has no grounded suggestions (not a universal no-heading rule) (1790.470168ms)
+✔ UX14 isolated empty/refused response oracle states text, trace and halt honestly (1506.861123ms)
+✔ UX15 actual missing source response is recoverable and not fictional evidence (1602.897525ms)
+✔ UX16 missing and oversize upload make no requests; filename markup stays literal (2272.737039ms)
+✔ UX17 isolated proxy HTML error oracle preserves HTTP status and restores controls (1360.394656ms)
+✔ UX18 timeout clock oracle explains uncertain server outcome without auto retry (1364.388118ms)
+✔ UX19 pinned axe-core audits actual initial, processed and correction views (2709.689961ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 19
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 40726.349215

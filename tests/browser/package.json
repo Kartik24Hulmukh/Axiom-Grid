@@ -1,0 +1,1 @@
+{"name":"axiom-grid-browser-regressions","version":"0.1.0","private":true,"scripts":{"test":"node --test overlay.e2e.cjs"},"devDependencies":{"playwright":"1.63.0"}}

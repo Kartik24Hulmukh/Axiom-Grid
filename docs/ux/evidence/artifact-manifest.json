@@ -1,0 +1,137 @@
+[
+  {
+    "path": "ux-baseline-assets/axe-correction.json",
+    "sha256": "fd435dfb32fa48e4bc4b1e95bfbd6ebbe8ba10dc70fb9844e91d400c5c5bd26d",
+    "bytes": 237456
+  },
+  {
+    "path": "ux-baseline-assets/axe-initial.json",
+    "sha256": "5619e67341b7b1dffcaf129ebd3b9544992f44b17343c1dbeab30adab9b07895",
+    "bytes": 148933
+  },
+  {
+    "path": "ux-baseline-assets/axe-processed.json",
+    "sha256": "235a38a08e75e0f34529e96f36fed5167cb9a61743c0ea230986cd93ff043b0c",
+    "bytes": 225738
+  },
+  {
+    "path": "ux-baseline-assets/correction-320x900.png",
+    "sha256": "08c53843594379a50b61222395e5376831478073ec11c363e1c8e86655fe6645",
+    "bytes": 355299
+  },
+  {
+    "path": "ux-baseline-assets/initial-320x900.png",
+    "sha256": "159f192e3dd170db5e50aef03cbc209f15112580e0552036ea487e30baa55985",
+    "bytes": 118935
+  },
+  {
+    "path": "ux-baseline-assets/modal-320x480.png",
+    "sha256": "a7f33d2f1c1bd3c24b540367dce2edf4407bece19b11a871d76bcd63f80f446c",
+    "bytes": 27316
+  },
+  {
+    "path": "ux-baseline-assets/processed-320x900.png",
+    "sha256": "37ce2f98de0c5cb705c2d5e651c997aeabd2a146a70c8971bfa71a079e094d5b",
+    "bytes": 379489
+  },
+  {
+    "path": "ux-current-assets/axe-correction.json",
+    "sha256": "c6a82509f309e851de004567641bb8ed47adc927afaa2919deabd92102cc6ea3",
+    "bytes": 108608
+  },
+  {
+    "path": "ux-current-assets/axe-initial.json",
+    "sha256": "62e1e3941671b46d59b273b6b6cf499cf4e1e017237b099a126e28f5ce2923d5",
+    "bytes": 172915
+  },
+  {
+    "path": "ux-current-assets/axe-processed.json",
+    "sha256": "e7bfb2b633c8ff818846562f7f92b581ec00148ba293c1185e87185ea233f14a",
+    "bytes": 247820
+  },
+  {
+    "path": "ux-current-assets/correction-320x900.png",
+    "sha256": "49637e7804eeef975e56639ed1210a9394f7bfd2490b7fef85b7887a4a155fb8",
+    "bytes": 358050
+  },
+  {
+    "path": "ux-current-assets/initial-320x900.png",
+    "sha256": "6128597e226dc077305b75a56104ae9ecdbde2ede76e1549510f70e13cc7fce4",
+    "bytes": 119155
+  },
+  {
+    "path": "ux-current-assets/modal-320x480.png",
+    "sha256": "6df56ef6baba8c9af2516a67048c233256d473ec8225e8fe3bd992ffd8b2a2df",
+    "bytes": 29139
+  },
+  {
+    "path": "ux-current-assets/modal-actions-320x480.png",
+    "sha256": "52e7ba54cf8e03ee23588af3e9a8c7d2b49fca8d169967fea9b7761d12c84f00",
+    "bytes": 30384
+  },
+  {
+    "path": "ux-current-assets/processed-320x900.png",
+    "sha256": "d7db9caa175479ef2a4ea819e41f2105511a851ebed0ca7fef80f3fb12e509b8",
+    "bytes": 380079
+  },
+  {
+    "path": "ux-a11y-cycle1.log",
+    "sha256": "c276ab1606bead954a594e9003aeb71495ad92f32423947c79bf59364ecb1fde",
+    "bytes": 295
+  },
+  {
+    "path": "ux-after-cycle1.log",
+    "sha256": "79eb07676bf2c952439fd8482b74c4068d1974a7c710ddaa1456fb4042d1fc77",
+    "bytes": 820
+  },
+  {
+    "path": "ux-baseline-a11y.log",
+    "sha256": "ad88c6c4c0862b6d5afa3813deb91733a6bdea8db7899fa07626622ddd9c0668",
+    "bytes": 3572
+  },
+  {
+    "path": "ux-baseline-chromium.log",
+    "sha256": "a663b56554a1cf11da6b1bb961337a64c2dbf141d0bd0b95e3ad0d386f338f1b",
+    "bytes": 964
+  },
+  {
+    "path": "ux-baseline-viewport-stable.log",
+    "sha256": "68367ce348991d16898eadf3a299bc0b2f95e6955bf66706ea2f39fc68b95eff",
+    "bytes": 822
+  },
+  {
+    "path": "ux-baseline-viewport.log",
+    "sha256": "dcd551b45ce057305758cf9ae76c46b32e02b8323538f807e74c369d338fc534",
+    "bytes": 822
+  },
+  {
+    "path": "ux-before-chromium.log",
+    "sha256": "710918872a645c2e6fa999dd867ca2a7aad3863e7ad0f615a1307d0882f87577",
+    "bytes": 6881
+  },
+  {
+    "path": "ux-current-viewport-stable.log",
+    "sha256": "d1cfd0038c6be05a3fd77b4cbdac1706aa9a0344cc9a74d8186696a5276de0d6",
+    "bytes": 199
+  },
+  {
+    "path": "ux-current-viewport.log",
+    "sha256": "839042629e9379c3e051cd056184a517b1307ba78d4cc3096d7aa6e0216ab7bd",
+    "bytes": 199
+  },
+  {
+    "path": "ux-extended-cycle1.log",
+    "sha256": "7739ce990f2cb12bbb75ca9c4ae8bd40715854c90613e289c3014108baeeb8f3",
+    "bytes": 2750
+  },
+  {
+    "path": "ux-final-focused.log",
+    "sha256": "7bacc5368b467d92c762c257180c2b17ef6576617a1b7f4ec434963b6de71283",
+    "bytes": 1924
+  },
+  {
+    "path": "ux-script-safety.log",
+    "sha256": "97da734125dd6153d32395e86dcb9f30ed93c9ee98dfdf10a4ed63668823b179",
+    "bytes": 604
+  }
+]

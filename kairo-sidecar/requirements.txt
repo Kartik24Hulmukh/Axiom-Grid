@@ -3,11 +3,12 @@ openpyxl>=3.1.0
 python-pptx>=1.0.0
 pydantic>=2.0.0
 cryptography>=46.0.0
-model2vec>=0.1.1
+model2vec==0.9.0  # local asset loader public API and real-model parity verified
 litellm>=1.20.0
 mammoth>=1.6.0
 beautifulsoup4>=4.12.0
-PyMuPDF>=1.23.0
+# PyMuPDF/fitz is excluded from default installation by license policy.
+# Legacy fitz-based PDF paths remain unsupported; see THIRD_PARTY_NOTICES.md.
 reportlab>=4.0.0
 # Docling — structured document parser (DOCX/PPTX/PDF with heading levels, tables)
 docling>=2.0.0

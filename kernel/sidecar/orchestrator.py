@@ -29,6 +29,7 @@ from kernel.core.data_model import (
     Document,
     Extraction,
     ExtractionStatus,
+    GroundingMethod,
     Trace,
     TraceStage,
 )
@@ -87,6 +88,13 @@ class OrchestratorImpl:
                 halted=True,
                 halt_reason=f"Ingestor failed: {e}",
             )
+
+        # Ingestors mint an internal document id. Preserve the caller's public
+        # id consistently across document/chunks/pages so source links resolve
+        # to the actual ingested graph rather than a different empty identity.
+        ingested_doc = replace(ingested_doc, doc_id=doc.doc_id)
+        chunks = [replace(chunk, doc_id=doc.doc_id) for chunk in chunks]
+        pages = [replace(page, doc_id=doc.doc_id) for page in pages]
 
         elapsed_ms = (time.monotonic() - t0) * 1000
         stages.append(TraceStage(
@@ -170,7 +178,8 @@ class OrchestratorImpl:
                 compress_document_chunks,
                 record_compression,
             )
-            compressed_chunks, compression_stats = compress_document_chunks(chunks)
+            compressed_chunks, compression_stats = compress_document_chunks(
+                chunks, passthrough_below_bytes=4096)
             record_compression(compression_stats)
             # Use compressed chunks for extraction (preserves bbox/page metadata)
             extraction_chunks = compressed_chunks
@@ -261,6 +270,7 @@ class OrchestratorImpl:
                 blocked_ext = replace(
                     ext,
                     status=ExtractionStatus.PENDING_REVIEW,
+                    method=GroundingMethod.BLOCK,
                     confidence=gate_result.calibrated_confidence,
                 )
                 all_extractions.append(blocked_ext)

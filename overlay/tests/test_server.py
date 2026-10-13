@@ -22,7 +22,7 @@ def test_serve_index_html(client):
     response = client.get("/")
     assert response.status_code == 200
     assert "text/html" in response.headers["content-type"]
-    assert "Kairo Phantom" in response.text
+    assert "Axiom-Grid" in response.text
 
 
 def test_demo_endpoint_not_found(client):
@@ -49,14 +49,15 @@ def test_demo_and_actions_endpoints(client):
     app_response = client.post("/apply", json={"ext_id": ext_id, "accept": True})
     assert app_response.status_code == 200
     app_data = app_response.json()
-    assert app_data["success"]
-    assert app_data["post_state"]["status"] == "verified"
+    assert app_data["success"] is False
+    assert app_data["post_state"]["status"] == "not_executed"
+    assert "native writer" in app_data["error"]
 
     # 3. Record correction (flywheel)
     corr_response = client.post("/correct", json={
         "ext_id": ext_id,
-        "field_name": "author",
-        "original": "Dr. Margaret Chen",
+        "field_name": data["suggestions"][0]["field_name"],
+        "original": data["suggestions"][0]["value"],
         "corrected": "Margaret Chen",
         "reason": "Test correction"
     })
@@ -96,7 +97,7 @@ def test_demo_rejects_empty_file_name(client):
         assert response.status_code in (404, 422), (bad, response.status_code)
 
 
-def test_demo_logs_unexpected_exceptions(client, caplog):
+def test_demo_logs_unexpected_exceptions(client, caplog, monkeypatch):
     """Unhandled errors on /demo are logged (not silently swallowed) and still
     return a fail-closed structured error, never a raw traceback to the client."""
     from overlay import server
@@ -104,17 +105,13 @@ def test_demo_logs_unexpected_exceptions(client, caplog):
     def boom(_doc):
         raise RuntimeError("synthetic failure for logging regression test")
 
-    original_run = server.orchestrator.run
-    server.orchestrator.run = boom
-    try:
-        with caplog.at_level("ERROR", logger="overlay.server"):
-            response = client.post("/demo", json={"file": "sample_memo_01.txt"})
-    finally:
-        server.orchestrator.run = original_run
-    assert response.status_code == 200
+    monkeypatch.setattr(server.OrchestratorImpl, "run", lambda self, doc: boom(doc))
+    with caplog.at_level("ERROR", logger="overlay.server"):
+        response = client.post("/demo", json={"file": "sample_memo_01.txt"})
+    assert response.status_code == 500
     data = response.json()
-    assert data["success"] is False
-    assert "synthetic failure" in data["error"]
+    assert data["detail"] == "Document processing failed"
+    assert "synthetic failure" not in response.text
     assert any("unhandled error in overlay endpoint" in r.message for r in caplog.records)
 
 
@@ -161,8 +158,10 @@ def test_ask_document_boundaries(client):
 def test_apply_and_correct_validation(client):
     """Boundary: empty ext_id must not be silently accepted."""
     response = client.post("/apply", json={"ext_id": "", "accept": True})
-    assert response.status_code == 200
-    assert response.json()["success"] is False
+    assert response.status_code == 422
+    response = client.post("/correct", json={"ext_id": "", "field_name": "author",
+                                             "original": "", "corrected": "", "reason": ""})
+    assert response.status_code == 422
 
 
 def test_graph_query_rejects_blank(client):

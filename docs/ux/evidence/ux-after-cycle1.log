@@ -1,0 +1,16 @@
+✔ UX01 forget during actual processing cannot overwrite cleared document (3935.050025ms)
+✔ UX02 forget during actual upload leaves no owned option or stale status (1734.400482ms)
+✔ UX03 hidden correction controls cannot receive keyboard focus (856.984289ms)
+✔ UX04 keyboard tabs expose selected state and arrow navigation (1400.393973ms)
+✔ UX05 correction traps keyboard, Escape returns focus, labels resolve (1639.16207ms)
+✔ UX06 conflict retains draft and updates displayed original before explicit retry (3284.327951ms)
+✔ UX07 delayed save from closed editor cannot close a newer editor (2758.687287ms)
+✔ UX08 modal fits 320px viewport with keyboard-height constraint (1613.302002ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 18636.272644

@@ -8,6 +8,12 @@ import json
 import statistics
 import concurrent.futures
 import pathlib
+import os
+
+# This matrix tests pipeline outcomes, not the separate rate-limiter gate.
+# Reserve capacity for probe requests plus the 300-request burst.
+os.environ["AXIOM_RATE_LIMIT_PER_MIN"] = "1000"
+
 from fastapi.testclient import TestClient
 from overlay.server import app
 
@@ -71,6 +77,7 @@ def run_stress_suite():
     latencies = []
     status_counts = {}
     crashes = 0
+    unexpected_statuses = []
 
     def worker_req(item):
         name, path, body, headers, expected = item
@@ -78,10 +85,10 @@ def run_stress_suite():
         try:
             r = client.post(path, json=body, headers=headers)
             elapsed = (time.perf_counter() - t_start) * 1000
-            return (r.status_code, elapsed, None)
+            return (name, expected, r.status_code, elapsed, None)
         except Exception as exc:
             elapsed = (time.perf_counter() - t_start) * 1000
-            return (500, elapsed, str(exc))
+            return (name, expected, 500, elapsed, type(exc).__name__)
 
     wall_start = time.perf_counter()
     with concurrent.futures.ThreadPoolExecutor(max_workers=30) as pool:
@@ -89,11 +96,13 @@ def run_stress_suite():
         results = [f.result() for f in futures]
     wall_duration = time.perf_counter() - wall_start
 
-    for status, lat, err in results:
+    for name, expected, status, lat, err in results:
         status_counts[status] = status_counts.get(status, 0) + 1
         latencies.append(lat)
-        if err or status == 500:
+        if err or status >= 500:
             crashes += 1
+        if status != expected:
+            unexpected_statuses.append({"probe": name, "expected": expected, "actual": status})
 
     latencies.sort()
     n = len(latencies)
@@ -104,6 +113,8 @@ def run_stress_suite():
         "throughput_req_per_sec": round(n / wall_duration, 2),
         "status_code_distribution": status_counts,
         "unhandled_crashes": crashes,
+        "unexpected_statuses": unexpected_statuses[:25],
+        "unexpected_status_count": len(unexpected_statuses),
         "success_rate_pct": 100.0 if crashes == 0 else round((n - crashes) / n * 100, 2),
         "latency_ms": {
             "p50": round(statistics.median(latencies), 2),
@@ -121,14 +132,14 @@ def run_stress_suite():
     print(f"Throughput: {metrics['throughput_req_per_sec']} req/s")
     print(f"Status distribution: {status_counts}")
     print(f"Latency: p50={metrics['latency_ms']['p50']}ms, p95={metrics['latency_ms']['p95']}ms, p99={metrics['latency_ms']['p99']}ms")
-    print(f"Unhandled crashes: {crashes}")
+    print(f"Unhandled crashes: {crashes}; unexpected statuses: {len(unexpected_statuses)}")
 
     out_path = pathlib.Path("docs/axiom/evidence/stress_test_report_100x.json")
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(metrics, indent=2))
     print(f"\nSaved stress test report to {out_path}")
 
-    return 0 if all_passed and crashes == 0 else 1
+    return 0 if all_passed and crashes == 0 and not unexpected_statuses else 1
 
 if __name__ == "__main__":
     import sys

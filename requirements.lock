@@ -20,4 +20,6 @@ semgrep>=1.0
 syncthing>=0.1  # Python REST client (daemon connection INFRA-PENDING:NETWORK)
 
 # Existing core dependencies (pre-installed in sandbox):
-# PyMuPDF, fastapi, uvicorn, numpy, Pillow, pytest, httpx
+# Historical sandbox inventory (not a resolved or exhaustive lock):
+# fastapi, uvicorn, numpy, Pillow, pytest, httpx
+# PyMuPDF is excluded from default manifests; legacy fitz paths remain blocked.

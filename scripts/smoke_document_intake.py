@@ -4,6 +4,7 @@ import os
 import tempfile
 import urllib.request
 from pathlib import Path
+from urllib.parse import urlencode
 
 from docx import Document
 
@@ -32,23 +33,46 @@ def write_pdf(path):
     return path
 
 
-with tempfile.TemporaryDirectory(prefix="axiom-intake-") as directory:
-    root = Path(directory)
-    pdf = write_pdf(root / "memo.pdf")
-    word = root / "memo.docx"
-    doc = Document()
-    doc.add_paragraph("CLASSIFICATION: UNCLASSIFIED")
-    doc.add_paragraph("SUBJECT: release intake")
-    doc.save(word)
-    for path in (pdf, word):
-        request = urllib.request.Request(
-            "http://127.0.0.1:8765/api/extract-document",
-            data=json.dumps({"file": str(path)}).encode(),
-            headers={"Content-Type": "application/json",
-                     "Authorization": "Bearer " + os.environ["AXIOM_API_KEYS"]},
-        )
-        with urllib.request.urlopen(request, timeout=30) as response:
-            data = json.load(response)
-        assert data["doc_type"] == "memo", data
-        assert data["fields"], data
-        print(path.suffix, "authenticated real document intake: PASS")
+def main(base_url="http://127.0.0.1:8765", api_key=None):
+    """Exercise public owned-upload intake, not a forbidden host-file path."""
+    headers = {"Authorization": "Bearer " + (
+        os.environ["AXIOM_API_KEYS"] if api_key is None else api_key
+    )}
+    with tempfile.TemporaryDirectory(prefix="axiom-intake-") as directory:
+        root = Path(directory)
+        pdf = write_pdf(root / "memo.pdf")
+        word = root / "memo.docx"
+        doc = Document()
+        doc.add_paragraph("CLASSIFICATION: UNCLASSIFIED")
+        doc.add_paragraph("SUBJECT: release intake")
+        doc.save(word)
+        for path in (pdf, word):
+            content = path.read_bytes()
+            upload = urllib.request.Request(
+                base_url + "/api/documents?" + urlencode({"filename": path.name}),
+                data=content,
+                headers={**headers, "Content-Type": "application/octet-stream"},
+            )
+            with urllib.request.urlopen(upload, timeout=30) as response:
+                owned = json.load(response)
+            assert owned["bytes"] == len(content), owned
+            assert owned["file"].startswith("uploaded:"), owned
+            request = urllib.request.Request(
+                base_url + "/api/extract-document",
+                data=json.dumps({"file": owned["file"]}).encode(),
+                headers={**headers, "Content-Type": "application/json"},
+            )
+            with urllib.request.urlopen(request, timeout=30) as response:
+                data = json.load(response)
+            assert data["doc_type"] == "memo", data
+            assert data["fields"], data
+            assert any(
+                "UNCLASSIFIED" in str(field["value"]).upper()
+                and field["grounded"] is True
+                for field in data["fields"].values()
+            ), data
+            print(path.suffix, "authenticated real document intake: PASS")
+
+
+if __name__ == "__main__":
+    main()

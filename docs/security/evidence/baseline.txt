@@ -1,0 +1,395 @@
+FFFFFFFFFFFFFFFFF...............                                         [100%]
+=================================== FAILURES ===================================
+_ test_reject_database_sidecar_symlinks_without_touching_victim[database-evidence] _
+
+tmp_path = PosixPath('/tmp/pytest-of-vercel-sandbox/pytest-1/test_reject_database_sidecar_s0')
+kind = 'evidence', leaf = 'database'
+
+    @pytest.mark.parametrize('kind', ['evidence', 'upload'])
+    @pytest.mark.parametrize('leaf', ['database', 'wal', 'shm'])
+    def test_reject_database_sidecar_symlinks_without_touching_victim(tmp_path, kind, leaf):
+        root = tmp_path/'state'; root.mkdir(mode=0o700)
+        victim = tmp_path/'victim'; victim.write_bytes(b'not a sqlite database'); victim.chmod(0o644)
+        name = 'e.db' if kind == 'evidence' else 'uploads.db'
+        suffix = {'database': '', 'wal': '-wal', 'shm': '-shm'}[leaf]
+        (root/(name+suffix)).symlink_to(victim)
+        with pytest.raises((ValueError, OSError)):
+>           if kind == 'evidence': EvidenceStore(root/name)
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/security/test_storage_boundaries.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+kernel/sidecar/evidence_store.py:87: in __init__
+    self.reopen()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <kernel.sidecar.evidence_store.EvidenceStore object at 0x7fd8ed08fb10>
+
+    def reopen(self):
+        with self._lock:
+            if self._db is not None:
+                return
+            self.path.parent.mkdir(parents=True, exist_ok=True)
+            db = sqlite3.connect(self.path, check_same_thread=False, timeout=5)
+            (self.path).chmod(0o600)
+>           db.execute("PRAGMA journal_mode=WAL")
+E           sqlite3.DatabaseError: file is not a database
+
+kernel/sidecar/evidence_store.py:96: DatabaseError
+_ test_reject_database_sidecar_symlinks_without_touching_victim[database-upload] _
+
+tmp_path = PosixPath('/tmp/pytest-of-vercel-sandbox/pytest-1/test_reject_database_sidecar_s1')
+kind = 'upload', leaf = 'database'
+
+    @pytest.mark.parametrize('kind', ['evidence', 'upload'])
+    @pytest.mark.parametrize('leaf', ['database', 'wal', 'shm'])
+    def test_reject_database_sidecar_symlinks_without_touching_victim(tmp_path, kind, leaf):
+        root = tmp_path/'state'; root.mkdir(mode=0o700)
+        victim = tmp_path/'victim'; victim.write_bytes(b'not a sqlite database'); victim.chmod(0o644)
+        name = 'e.db' if kind == 'evidence' else 'uploads.db'
+        suffix = {'database': '', 'wal': '-wal', 'shm': '-shm'}[leaf]
+        (root/(name+suffix)).symlink_to(victim)
+        with pytest.raises((ValueError, OSError)):
+            if kind == 'evidence': EvidenceStore(root/name)
+>           else: DocumentStore(root)
+                  ^^^^^^^^^^^^^^^^^^^
+
+tests/security/test_storage_boundaries.py:35: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+overlay/document_store.py:29: in __init__
+    self.reopen()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <overlay.document_store.DocumentStore object at 0x7fd8ecf811d0>
+
+    def reopen(self):
+        with self._lock:
+            if self._db is not None:
+                return
+            db = sqlite3.connect(self.root/'uploads.db', check_same_thread=False, timeout=5)
+            (self.root/'uploads.db').chmod(0o600)
+>           db.execute('PRAGMA journal_mode=WAL')
+E           sqlite3.DatabaseError: file is not a database
+
+overlay/document_store.py:37: DatabaseError
+_ test_reject_database_sidecar_symlinks_without_touching_victim[wal-evidence] __
+
+tmp_path = PosixPath('/tmp/pytest-of-vercel-sandbox/pytest-1/test_reject_database_sidecar_s2')
+kind = 'evidence', leaf = 'wal'
+
+    @pytest.mark.parametrize('kind', ['evidence', 'upload'])
+    @pytest.mark.parametrize('leaf', ['database', 'wal', 'shm'])
+    def test_reject_database_sidecar_symlinks_without_touching_victim(tmp_path, kind, leaf):
+        root = tmp_path/'state'; root.mkdir(mode=0o700)
+        victim = tmp_path/'victim'; victim.write_bytes(b'not a sqlite database'); victim.chmod(0o644)
+        name = 'e.db' if kind == 'evidence' else 'uploads.db'
+        suffix = {'database': '', 'wal': '-wal', 'shm': '-shm'}[leaf]
+        (root/(name+suffix)).symlink_to(victim)
+>       with pytest.raises((ValueError, OSError)):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE any of (ValueError, OSError)
+
+tests/security/test_storage_boundaries.py:33: Failed
+__ test_reject_database_sidecar_symlinks_without_touching_victim[wal-upload] ___
+
+tmp_path = PosixPath('/tmp/pytest-of-vercel-sandbox/pytest-1/test_reject_database_sidecar_s3')
+kind = 'upload', leaf = 'wal'
+
+    @pytest.mark.parametrize('kind', ['evidence', 'upload'])
+    @pytest.mark.parametrize('leaf', ['database', 'wal', 'shm'])
+    def test_reject_database_sidecar_symlinks_without_touching_victim(tmp_path, kind, leaf):
+        root = tmp_path/'state'; root.mkdir(mode=0o700)
+        victim = tmp_path/'victim'; victim.write_bytes(b'not a sqlite database'); victim.chmod(0o644)
+        name = 'e.db' if kind == 'evidence' else 'uploads.db'
+        suffix = {'database': '', 'wal': '-wal', 'shm': '-shm'}[leaf]
+        (root/(name+suffix)).symlink_to(victim)
+>       with pytest.raises((ValueError, OSError)):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE any of (ValueError, OSError)
+
+tests/security/test_storage_boundaries.py:33: Failed
+_ test_reject_database_sidecar_symlinks_without_touching_victim[shm-evidence] __
+
+tmp_path = PosixPath('/tmp/pytest-of-vercel-sandbox/pytest-1/test_reject_database_sidecar_s4')
+kind = 'evidence', leaf = 'shm'
+
+    @pytest.mark.parametrize('kind', ['evidence', 'upload'])
+    @pytest.mark.parametrize('leaf', ['database', 'wal', 'shm'])
+    def test_reject_database_sidecar_symlinks_without_touching_victim(tmp_path, kind, leaf):
+        root = tmp_path/'state'; root.mkdir(mode=0o700)
+        victim = tmp_path/'victim'; victim.write_bytes(b'not a sqlite database'); victim.chmod(0o644)
+        name = 'e.db' if kind == 'evidence' else 'uploads.db'
+        suffix = {'database': '', 'wal': '-wal', 'shm': '-shm'}[leaf]
+        (root/(name+suffix)).symlink_to(victim)
+        with pytest.raises((ValueError, OSError)):
+>           if kind == 'evidence': EvidenceStore(root/name)
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/security/test_storage_boundaries.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+kernel/sidecar/evidence_store.py:87: in __init__
+    self.reopen()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <kernel.sidecar.evidence_store.EvidenceStore object at 0x7fd8ece8a520>
+
+    def reopen(self):
+        with self._lock:
+            if self._db is not None:
+                return
+            self.path.parent.mkdir(parents=True, exist_ok=True)
+            db = sqlite3.connect(self.path, check_same_thread=False, timeout=5)
+            (self.path).chmod(0o600)
+            db.execute("PRAGMA journal_mode=WAL")
+            db.execute("PRAGMA synchronous=NORMAL")
+            db.execute("PRAGMA foreign_keys=ON")
+>           db.executescript("""
+            CREATE TABLE IF NOT EXISTS evidence_graphs (
+              tenant TEXT NOT NULL, doc_id TEXT NOT NULL, payload TEXT NOT NULL,
+              bytes INTEGER NOT NULL, completed REAL NOT NULL,
+              PRIMARY KEY(tenant, doc_id));
+            CREATE INDEX IF NOT EXISTS evidence_time ON evidence_graphs(tenant, completed);
+            CREATE TABLE IF NOT EXISTS evidence_entities (
+              tenant TEXT NOT NULL, entity_id TEXT NOT NULL, doc_id TEXT NOT NULL,
+              PRIMARY KEY(tenant, entity_id),
+              FOREIGN KEY(tenant, doc_id) REFERENCES evidence_graphs(tenant, doc_id) ON DELETE CASCADE);
+            CREATE TABLE IF NOT EXISTS evidence_reviews (
+              tenant TEXT NOT NULL, ext_id TEXT NOT NULL, doc_id TEXT NOT NULL,
+              revision INTEGER NOT NULL, corrected TEXT NOT NULL, reason TEXT NOT NULL,
+              updated REAL NOT NULL, PRIMARY KEY(tenant, ext_id),
+              FOREIGN KEY(tenant, doc_id) REFERENCES evidence_graphs(tenant, doc_id) ON DELETE CASCADE);
+            """)
+E           sqlite3.OperationalError: unable to open database file
+
+kernel/sidecar/evidence_store.py:99: OperationalError
+__ test_reject_database_sidecar_symlinks_without_touching_victim[shm-upload] ___
+
+tmp_path = PosixPath('/tmp/pytest-of-vercel-sandbox/pytest-1/test_reject_database_sidecar_s5')
+kind = 'upload', leaf = 'shm'
+
+    @pytest.mark.parametrize('kind', ['evidence', 'upload'])
+    @pytest.mark.parametrize('leaf', ['database', 'wal', 'shm'])
+    def test_reject_database_sidecar_symlinks_without_touching_victim(tmp_path, kind, leaf):
+        root = tmp_path/'state'; root.mkdir(mode=0o700)
+        victim = tmp_path/'victim'; victim.write_bytes(b'not a sqlite database'); victim.chmod(0o644)
+        name = 'e.db' if kind == 'evidence' else 'uploads.db'
+        suffix = {'database': '', 'wal': '-wal', 'shm': '-shm'}[leaf]
+        (root/(name+suffix)).symlink_to(victim)
+        with pytest.raises((ValueError, OSError)):
+            if kind == 'evidence': EvidenceStore(root/name)
+>           else: DocumentStore(root)
+                  ^^^^^^^^^^^^^^^^^^^
+
+tests/security/test_storage_boundaries.py:35: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+overlay/document_store.py:29: in __init__
+    self.reopen()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <overlay.document_store.DocumentStore object at 0x7fd8ece8a650>
+
+    def reopen(self):
+        with self._lock:
+            if self._db is not None:
+                return
+            db = sqlite3.connect(self.root/'uploads.db', check_same_thread=False, timeout=5)
+            (self.root/'uploads.db').chmod(0o600)
+            db.execute('PRAGMA journal_mode=WAL')
+>           db.execute('''CREATE TABLE IF NOT EXISTS uploads (
+                tenant TEXT NOT NULL, id TEXT NOT NULL, suffix TEXT NOT NULL,
+                bytes INTEGER NOT NULL, created REAL NOT NULL,
+                PRIMARY KEY(tenant,id))''')
+E           sqlite3.OperationalError: unable to open database file
+
+overlay/document_store.py:38: OperationalError
+__________________ test_reject_symlinked_state_root[evidence] __________________
+
+tmp_path = PosixPath('/tmp/pytest-of-vercel-sandbox/pytest-1/test_reject_symlinked_state_ro0')
+kind = 'evidence'
+
+    @pytest.mark.parametrize('kind', ['evidence', 'upload'])
+    def test_reject_symlinked_state_root(tmp_path, kind):
+        real = tmp_path/'real'; real.mkdir(mode=0o700)
+        link = tmp_path/'link'; link.symlink_to(real, target_is_directory=True)
+>       with pytest.raises((ValueError, OSError)):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE any of (ValueError, OSError)
+
+tests/security/test_storage_boundaries.py:44: Failed
+___________________ test_reject_symlinked_state_root[upload] ___________________
+
+tmp_path = PosixPath('/tmp/pytest-of-vercel-sandbox/pytest-1/test_reject_symlinked_state_ro1')
+kind = 'upload'
+
+    @pytest.mark.parametrize('kind', ['evidence', 'upload'])
+    def test_reject_symlinked_state_root(tmp_path, kind):
+        real = tmp_path/'real'; real.mkdir(mode=0o700)
+        link = tmp_path/'link'; link.symlink_to(real, target_is_directory=True)
+>       with pytest.raises((ValueError, OSError)):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE any of (ValueError, OSError)
+
+tests/security/test_storage_boundaries.py:44: Failed
+________ test_namespace_symlink_cannot_write_or_recovery_delete_outside ________
+
+tmp_path = PosixPath('/tmp/pytest-of-vercel-sandbox/pytest-1/test_namespace_symlink_cannot_0')
+
+    def test_namespace_symlink_cannot_write_or_recovery_delete_outside(tmp_path):
+        root = tmp_path/'owned'; store = DocumentStore(root)
+        outside = tmp_path/'outside'; outside.mkdir(mode=0o700)
+        orphan = outside/'11111111-1111-1111-1111-111111111111.txt'; orphan.write_bytes(b'keep')
+        (root/'local').symlink_to(outside, target_is_directory=True)
+        try:
+>           with pytest.raises((ValueError, OSError)):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE any of (ValueError, OSError)
+
+tests/security/test_storage_boundaries.py:56: Failed
+_________ test_corrupt_upload_suffix_cannot_resolve_or_delete_outside __________
+
+tmp_path = PosixPath('/tmp/pytest-of-vercel-sandbox/pytest-1/test_corrupt_upload_suffix_can0')
+
+    def test_corrupt_upload_suffix_cannot_resolve_or_delete_outside(tmp_path):
+        store = DocumentStore(tmp_path/'owned')
+        ref = store.save('local', 'safe.txt', b'owned')
+        with store._db:
+            store._db.execute('UPDATE uploads SET suffix=?', ('/../../outside.txt',))
+        try:
+>           with pytest.raises((ValueError, sqlite3.DatabaseError)):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE any of (ValueError, DatabaseError)
+
+tests/security/test_storage_boundaries.py:72: Failed
+_________ test_health_fails_closed_on_missing_storage_schema[evidence] _________
+
+tmp_path = PosixPath('/tmp/pytest-of-vercel-sandbox/pytest-1/test_health_fails_closed_on_mi0')
+kind = 'evidence'
+
+    @pytest.mark.parametrize('kind', ['evidence', 'upload'])
+    def test_health_fails_closed_on_missing_storage_schema(tmp_path, kind):
+        store = EvidenceStore(tmp_path/'e.db') if kind == 'evidence' else DocumentStore(tmp_path/'owned')
+        table = 'evidence_reviews' if kind == 'evidence' else 'uploads'
+        with store._db: store._db.execute('DROP TABLE '+table)
+        try:
+>           with pytest.raises((RuntimeError, ValueError, sqlite3.DatabaseError)):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE any of (RuntimeError, ValueError, DatabaseError)
+
+tests/security/test_storage_boundaries.py:83: Failed
+__________ test_health_fails_closed_on_missing_storage_schema[upload] __________
+
+tmp_path = PosixPath('/tmp/pytest-of-vercel-sandbox/pytest-1/test_health_fails_closed_on_mi1')
+kind = 'upload'
+
+    @pytest.mark.parametrize('kind', ['evidence', 'upload'])
+    def test_health_fails_closed_on_missing_storage_schema(tmp_path, kind):
+        store = EvidenceStore(tmp_path/'e.db') if kind == 'evidence' else DocumentStore(tmp_path/'owned')
+        table = 'evidence_reviews' if kind == 'evidence' else 'uploads'
+        with store._db: store._db.execute('DROP TABLE '+table)
+        try:
+>           with pytest.raises((RuntimeError, ValueError, sqlite3.DatabaseError)):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE any of (RuntimeError, ValueError, DatabaseError)
+
+tests/security/test_storage_boundaries.py:83: Failed
+_________________ test_reopen_refuses_wrong_primary_key_schema _________________
+
+tmp_path = PosixPath('/tmp/pytest-of-vercel-sandbox/pytest-1/test_reopen_refuses_wrong_prim0')
+
+    def test_reopen_refuses_wrong_primary_key_schema(tmp_path):
+        path = tmp_path/'e.db'
+        with sqlite3.connect(path) as db:
+            db.execute('CREATE TABLE evidence_graphs (tenant TEXT NOT NULL, doc_id TEXT PRIMARY KEY, payload TEXT NOT NULL, bytes INTEGER NOT NULL, completed REAL NOT NULL)')
+>       with pytest.raises((ValueError, sqlite3.DatabaseError)):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE any of (ValueError, DatabaseError)
+
+tests/security/test_storage_boundaries.py:92: Failed
+_______________ test_corrupt_graph_fails_before_exposing_payload _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-vercel-sandbox/pytest-1/test_corrupt_graph_fails_befor0')
+
+    def test_corrupt_graph_fails_before_exposing_payload(tmp_path):
+        store = EvidenceStore(tmp_path/'e.db'); doc, _ = publish(store)
+        with store._db: store._db.execute("UPDATE evidence_graphs SET payload='{}'")
+        try:
+>           with pytest.raises((ValueError, sqlite3.DatabaseError)):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE any of (ValueError, DatabaseError)
+
+tests/security/test_storage_boundaries.py:100: Failed
+___________ test_purge_removes_inactive_tenants_and_review_entities ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-vercel-sandbox/pytest-1/test_purge_removes_inactive_te0')
+
+    def test_purge_removes_inactive_tenants_and_review_entities(tmp_path):
+        store = EvidenceStore(tmp_path/'e.db'); doc, ext = publish(store)
+        store.review('local', ext.ext_id, 'author', 'Alice', 'Bob', 'fixture', 0)
+        with store._db: store._db.execute('UPDATE evidence_graphs SET completed=0')
+        try:
+>           assert store.purge_expired() == 1
+                   ^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'EvidenceStore' object has no attribute 'purge_expired'
+
+tests/security/test_storage_boundaries.py:110: AttributeError
+________________ test_upload_purge_removes_inactive_tenant_copy ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-vercel-sandbox/pytest-1/test_upload_purge_removes_inac0')
+
+    def test_upload_purge_removes_inactive_tenant_copy(tmp_path):
+        store = DocumentStore(tmp_path/'owned'); ref = store.save('a'*64, 'safe.txt', b'owned')
+        target = store.resolve('a'*64, ref)
+        with store._db: store._db.execute('UPDATE uploads SET created=0')
+        try:
+>           assert store.purge_expired() == 1
+                   ^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'DocumentStore' object has no attribute 'purge_expired'
+
+tests/security/test_storage_boundaries.py:122: AttributeError
+_____ test_private_database_and_wal_without_process_umask_change[evidence] _____
+
+tmp_path = PosixPath('/tmp/pytest-of-vercel-sandbox/pytest-1/test_private_database_and_wal_0')
+kind = 'evidence'
+
+    @pytest.mark.parametrize('kind', ['evidence', 'upload'])
+    def test_private_database_and_wal_without_process_umask_change(tmp_path, kind):
+        before = os.umask(0o022); os.umask(before)
+        store = EvidenceStore(tmp_path/'state'/'e.db') if kind == 'evidence' else DocumentStore(tmp_path/'state')
+        try:
+            if kind == 'evidence': publish(store)
+            else: store.save('local', 'safe.txt', b'owned')
+            root = tmp_path/'state'
+>           assert stat.S_IMODE(root.stat().st_mode) == 0o700
+E           AssertionError: assert 493 == 448
+E            +  where 493 = <built-in function S_IMODE>(16877)
+E            +    where <built-in function S_IMODE> = stat.S_IMODE
+E            +    and   16877 = os.stat_result(st_mode=16877, st_ino=56317657, st_dev=65040, st_nlink=2, st_uid=1000, st_gid=1000, st_size=50, st_atime=1790950999, st_mtime=1790950999, st_ctime=1790950999).st_mode
+E            +      where os.stat_result(st_mode=16877, st_ino=56317657, st_dev=65040, st_nlink=2, st_uid=1000, st_gid=1000, st_size=50, st_atime=1790950999, st_mtime=1790950999, st_ctime=1790950999) = stat()
+E            +        where stat = PosixPath('/tmp/pytest-of-vercel-sandbox/pytest-1/test_private_database_and_wal_0/state').stat
+
+tests/security/test_storage_boundaries.py:136: AssertionError
+=============================== warnings summary ===============================
+../../axiom-third/venv/lib64/python3.13/site-packages/fastapi/testclient.py:1
+  /data/axiom-third/venv/lib64/python3.13/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/security/test_storage_boundaries.py::test_reject_database_sidecar_symlinks_without_touching_victim[database-evidence]
+FAILED tests/security/test_storage_boundaries.py::test_reject_database_sidecar_symlinks_without_touching_victim[database-upload]
+FAILED tests/security/test_storage_boundaries.py::test_reject_database_sidecar_symlinks_without_touching_victim[wal-evidence]
+FAILED tests/security/test_storage_boundaries.py::test_reject_database_sidecar_symlinks_without_touching_victim[wal-upload]
+FAILED tests/security/test_storage_boundaries.py::test_reject_database_sidecar_symlinks_without_touching_victim[shm-evidence]
+FAILED tests/security/test_storage_boundaries.py::test_reject_database_sidecar_symlinks_without_touching_victim[shm-upload]
+FAILED tests/security/test_storage_boundaries.py::test_reject_symlinked_state_root[evidence]
+FAILED tests/security/test_storage_boundaries.py::test_reject_symlinked_state_root[upload]
+FAILED tests/security/test_storage_boundaries.py::test_namespace_symlink_cannot_write_or_recovery_delete_outside
+FAILED tests/security/test_storage_boundaries.py::test_corrupt_upload_suffix_cannot_resolve_or_delete_outside
+FAILED tests/security/test_storage_boundaries.py::test_health_fails_closed_on_missing_storage_schema[evidence]
+FAILED tests/security/test_storage_boundaries.py::test_health_fails_closed_on_missing_storage_schema[upload]
+FAILED tests/security/test_storage_boundaries.py::test_reopen_refuses_wrong_primary_key_schema
+FAILED tests/security/test_storage_boundaries.py::test_corrupt_graph_fails_before_exposing_payload
+FAILED tests/security/test_storage_boundaries.py::test_purge_removes_inactive_tenants_and_review_entities
+FAILED tests/security/test_storage_boundaries.py::test_upload_purge_removes_inactive_tenant_copy
+FAILED tests/security/test_storage_boundaries.py::test_private_database_and_wal_without_process_umask_change[evidence]
+17 failed, 15 passed, 1 warning in 0.97s

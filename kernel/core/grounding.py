@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import logging
 import re
+from collections import Counter
 
 from kernel.core.data_model import (
     Anchor,
@@ -92,7 +93,13 @@ def levenshtein_ratio(s1: str, s2: str) -> float:
         negative = plus & vertical
     return 1.0 - distance / max(len(s1), len(s2))
 
-def best_fuzzy_match(value: str, text: str) -> tuple[float, tuple[int, int]]:
+def _prepare_fuzzy_text(text: str):
+    spans = [(m.group(0), m.start(), m.end()) for m in re.finditer(r'\S+', text)]
+    return spans, [normalize_text(word) for word, _, _ in spans]
+
+
+def best_fuzzy_match(value: str, text: str, *, score_cutoff: float = 0.0,
+                     _prepared=None) -> tuple[float, tuple[int, int]]:
     """Scan windows of words in text to find best fuzzy substring match.
     Returns (best_ratio, (start_char, end_char)).
 
@@ -105,15 +112,28 @@ def best_fuzzy_match(value: str, text: str) -> tuple[float, tuple[int, int]]:
         return 0.0, (0, 0)
 
     val_words = val_norm.split()
+    # Only acceptance-aware callers opt in. The default still returns the
+    # exact best historical score. Length and character-multiset overlap are
+    # upper bounds on unit-cost Levenshtein similarity, not fuzzy heuristics.
+    val_short = val_norm[:_LEVENSHTEIN_MAX_LEN]
+    val_counts = Counter(val_short) if score_cutoff > 0 else None
     n = len(val_words)
 
     # We want to find exact positions in the original text, so we'll tokenize with spans
-    words_spans = []
-    for m in re.finditer(r'\S+', text):
-        words_spans.append((m.group(0), m.start(), m.end()))
+    words_spans, normalized_words = _prepared or _prepare_fuzzy_text(text)
 
     if not words_spans:
         return 0.0, (0, 0)
+
+    # Exact normalized-window lengths without allocating joined strings for
+    # windows that cannot pass the existing acceptance bound. Empty normalized
+    # tokens contribute neither characters nor separators. These local prefix
+    # arrays retain no source across calls; original spans/order/caps stay intact.
+    if score_cutoff > 0:
+        char_prefix, token_prefix = [0], [0]
+        for word in normalized_words:
+            char_prefix.append(char_prefix[-1] + len(word))
+            token_prefix.append(token_prefix[-1] + bool(word))
 
     best_ratio = 0.0
     best_span = (0, 0)
@@ -144,14 +164,41 @@ def best_fuzzy_match(value: str, text: str) -> tuple[float, tuple[int, int]]:
             if windows_scanned >= _MAX_WINDOWS:
                 break
             windows_scanned += 1
+            if score_cutoff > 0:
+                tokens = token_prefix[i+length] - token_prefix[i]
+                normalized_length = (char_prefix[i+length] - char_prefix[i]
+                                     + max(0, tokens - 1))
+                short_length = min(normalized_length, _LEVENSHTEIN_MAX_LEN)
+                denominator = max(len(val_short), short_length)
+                if not denominator or min(len(val_short), short_length) / denominator < score_cutoff:
+                    continue
             window = words_spans[i:i+length]
-            sub_text = text[window[0][1]:window[-1][2]]
-            sub_norm = normalize_text(sub_text)
+            # Token boundaries are original whitespace boundaries; normalizing
+            # their content once preserves exactly the window normalization.
+            sub_norm = " ".join(word for word in normalized_words[i:i+length] if word)
 
+            if score_cutoff > 0:
+                sub_short = sub_norm[:_LEVENSHTEIN_MAX_LEN]
+                denominator = max(len(val_short), len(sub_short))
+                if not denominator:
+                    continue
+                if min(len(val_short), len(sub_short)) / denominator < score_cutoff:
+                    continue
+                sub_counts = Counter(sub_short)
+                # Same character-multiset upper bound, without allocating a
+                # third Counter and performing its Python __and__ walk.
+                overlap = sum(min(count, sub_counts.get(char, 0))
+                              for char, count in val_counts.items())
+                if overlap / denominator < score_cutoff:
+                    continue
             ratio = levenshtein_ratio(val_norm, sub_norm)
+            if ratio < score_cutoff:
+                continue
             if ratio > best_ratio:
                 best_ratio = ratio
                 best_span = (window[0][1], window[-1][2])
+                if ratio == 1.0:
+                    return best_ratio, best_span
         if windows_scanned >= _MAX_WINDOWS:
             break
 
@@ -196,6 +243,11 @@ class GroundingVerifierImpl:
         self.semantic_threshold = semantic_threshold
         self.visual_threshold = visual_threshold
         self.disabled_stages: set[GroundingMethod] = disabled_stages or set()
+        # Request-scoped caches, replaced when the source-list identity changes.
+        # Never a process-global cache retaining arbitrary user documents.
+        self._source_signature = None
+        self._prepared_chunks = {}
+        self._chunk_embeddings = {}
 
     def verify(self, value: str, source_span: str, chunks: list[Chunk]) -> tuple[GroundingMethod, tuple[Anchor, ...]]:
         """Verify the value/source_span against all chunks in the document.
@@ -206,6 +258,11 @@ class GroundingVerifierImpl:
         """
         if not chunks:
             return GroundingMethod.BLOCK, ()
+        signature = tuple((chunk.chunk_id, chunk.text) for chunk in chunks)
+        if signature != self._source_signature:
+            self._source_signature = signature
+            self._prepared_chunks.clear()
+            self._chunk_embeddings.clear()
 
         # 1. Normalize target text
         target = source_span if source_span else value
@@ -234,7 +291,13 @@ class GroundingVerifierImpl:
             best_ratio = 0.0
             best_anchor = None
             for chunk in chunks:
-                ratio, span = best_fuzzy_match(target, chunk.text)
+                key = (chunk.chunk_id, chunk.text)
+                prepared = self._prepared_chunks.get(key)
+                if prepared is None:
+                    prepared = _prepare_fuzzy_text(chunk.text)
+                    self._prepared_chunks[key] = prepared
+                ratio, span = best_fuzzy_match(target, chunk.text, score_cutoff=self.fuzzy_threshold,
+                                              _prepared=prepared)
                 if ratio >= self.fuzzy_threshold and ratio > best_ratio:
                     best_ratio = ratio
                     best_anchor = Anchor(
@@ -258,7 +321,11 @@ class GroundingVerifierImpl:
                 if not chunk.embedding:
                     # compute embedding on demand if missing
                     # (usually populated at index time)
-                    chunk_emb = get_embedding(chunk.text)
+                    key = (chunk.chunk_id, chunk.text)
+                    chunk_emb = self._chunk_embeddings.get(key)
+                    if chunk_emb is None:
+                        chunk_emb = get_embedding(chunk.text)
+                        self._chunk_embeddings[key] = chunk_emb
                 else:
                     chunk_emb = chunk.embedding
 
