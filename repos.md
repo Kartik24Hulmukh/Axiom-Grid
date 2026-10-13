@@ -21,8 +21,10 @@ Legacy KPX EPUB export uses real EbookLib (LGPL-3.0). Its dependency lives only 
 use or distribution. Existing functionality and tests are retained, not cleared for the
 default install. Without EbookLib, `KPXExporter.export_epub` raises
 `ModuleNotFoundError` and writes no EPUB; `export_all` records an EPUB `FAILED:` result
-but still returns top-level `ok: true` while other exports continue. Thus aggregate
-success is not EPUB success, and a broad pass with preinstalled EbookLib cannot attest
+and returns top-level `ok: false` while preserving genuine successful outputs from
+other formats. This current fail-closed aggregate contract was verified in V8.3/V8.4;
+older reports describing `ok: true` are superseded, not EPUB success. A broad pass
+with preinstalled EbookLib cannot attest
 clean-default-host EPUB availability. The launch ingestor supports PDF/DOCX/text, not
 EPUB. Owners must choose and review a legal/distribution profile: keep this legacy
 feature unsupported by default, or explicitly review an optional LGPL-enabled profile;

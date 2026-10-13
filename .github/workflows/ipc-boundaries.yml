@@ -1,0 +1,39 @@
+name: IPC component admission boundaries
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  ipc-component-boundaries:
+    # Linux asyncio protocol-component tests, NOT native Windows pipe/ACL evidence.
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install minimal pinned component-test tools
+        run: python -m pip install pytest==9.1.1 pytest-asyncio==1.4.0 ruff==0.16.10
+      - name: Lint IPC component and regressions
+        run: >-
+          python -m ruff check --select E9,F
+          kairo-sidecar/sidecar/ipc.py
+          tests/test_ipc_admission_contract.py
+          kairo-sidecar/tests/test_ipc_limits.py
+      - name: Bound admitted work and preserve existing guards
+        env:
+          PYTHONPATH: kairo-sidecar
+        # Avoid unrelated legacy conftest OS stubs; explicit controlled transports/
+        # handlers in these tests are component fault fixtures, not native E2E.
+        run: >-
+          python -m pytest --noconftest --strict-markers --import-mode=importlib
+          -q -p no:cacheprovider
+          tests/test_ipc_admission_contract.py
+          kairo-sidecar/tests/test_ipc_limits.py
+          -W error::ResourceWarning
+          -W error::pytest.PytestUnraisableExceptionWarning

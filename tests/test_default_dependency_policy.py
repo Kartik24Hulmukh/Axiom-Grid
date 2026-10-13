@@ -106,6 +106,40 @@ class TestDefaultDependencyPolicy(unittest.TestCase):
         for path in default_manifests():
             self.assertNotIn("ebooklib", manifest_names(path, ROOT))
 
+    def test_catalog_reports_failed_epub_aggregate(self):
+        text = (ROOT / "repos.md").read_text(encoding="utf-8")
+        self.assertIn("top-level `ok: false`", text)
+        self.assertNotIn("still returns top-level `ok: true`", text)
+        self.assertIn("legal/policy review", text)
+
+    def test_historical_acceptance_is_not_current_production_certification(self):
+        text = (ROOT / "docs/acceptance/README.md").read_text(encoding="utf-8")
+        self.assertIn("Historical", text[:1500])
+        self.assertIn("NO-GO", text[:1500])
+        self.assertNotIn("**Production-ready for**", text)
+        self.assertIn("signed records", text)
+
+    def test_ipc_component_workflow_keeps_native_scope_explicit(self):
+        text = (ROOT / ".github/workflows/ipc-boundaries.yml").read_text(encoding="utf-8")
+        for boundary in (
+            "NOT native Windows", "--noconftest", "--strict-markers",
+            "tests/test_ipc_admission_contract.py",
+            "kairo-sidecar/tests/test_ipc_limits.py", "contents: read",
+            "timeout-minutes: 5", "pytest==9.1.1", "pytest-asyncio==1.4.0",
+            "error::ResourceWarning", "error::pytest.PytestUnraisableExceptionWarning",
+        ):
+            self.assertIn(boundary, text)
+
+    def test_native_compiler_workflow_keeps_release_scope_explicit(self):
+        text = (ROOT / ".github/workflows/compiler-boundaries.yml").read_text(encoding="utf-8")
+        for boundary in (
+            "NOT JVM or offline-slide proof", "bundled-JAR profile",
+            "tests/test_quarkdown_boundary_contract.py", "contents: read",
+            "--noconftest", "timeout-minutes: 5", "pytest==9.1.1",
+            "error::ResourceWarning", "error::pytest.PytestUnraisableExceptionWarning",
+        ):
+            self.assertIn(boundary, text)
+
     def test_guard_rejects_case_extras_markers_urls_and_wrappers(self):
         cases = (
             "PyMuPDF>=1.23.0", "pYmUpDf==1.26 # optional/lazy is NOT an exception",
