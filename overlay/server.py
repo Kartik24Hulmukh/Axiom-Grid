@@ -351,9 +351,12 @@ async def request_id_middleware(request, call_next):
     rid = request.headers.get("x-request-id", "").strip()
     if not rid or len(rid) > _REQUEST_ID_MAX_LEN:
         rid = uuid.uuid4().hex
-    # Sanitize: correlation ids must never carry CR/LF into log streams
-    # (log-injection / response-splitting guard).
-    rid = "".join(ch for ch in rid if ch.isascii() and (ch.isalnum() or ch in "-_.")) or uuid.uuid4().hex
+    else:
+        # Sanitize: correlation ids must never carry CR/LF into log streams
+        # (log-injection / response-splitting guard).
+        rid = "".join(ch for ch in rid if ch.isascii() and (ch.isalnum() or ch in "-_."))
+        if not rid:
+            rid = uuid.uuid4().hex
     request.state.request_id = rid
     response = await call_next(request)
     response.headers["X-Request-Id"] = rid
@@ -396,16 +399,17 @@ async def request_governor_middleware(request, call_next):
     response = await call_next(request)
 
     dt_ms = (time.perf_counter() - t0) * 1000
-    logger.info(
-        "request completed",
-        extra={
-            "request_id": getattr(request.state, "request_id", ""),
-            "path": request.url.path,
-            "status": response.status_code,
-            "latency_ms": round(dt_ms, 2),
-            "client": request.client.host if request.client else "unknown",
-        },
-    )
+    if logger.isEnabledFor(logging.DEBUG):
+        logger.debug(
+            "request completed",
+            extra={
+                "request_id": getattr(request.state, "request_id", ""),
+                "path": request.url.path,
+                "status": response.status_code,
+                "latency_ms": round(dt_ms, 2),
+                "client": request.client.host if request.client else "unknown",
+            },
+        )
     OPS_METRICS["requests_total"] += 1
     OPS_METRICS["latency_ms_total"] += dt_ms
     OPS_METRICS["latency_samples"].append(dt_ms)
@@ -1491,13 +1495,18 @@ def _sanitize_validation_payload(value, _depth: int = 0):
 async def _validation_exception_handler(request, exc):
     """Fail closed with 422 for any unparseable/invalid request payload."""
     try:
-        content = {"detail": jsonable_encoder(_sanitize_validation_payload(exc.errors()))}
+        try:
+            errors = exc.errors(include_input=False, include_url=False)
+        except TypeError:
+            errors = exc.errors()
+        content = {"detail": errors}
     except (TypeError, ValueError, UnicodeError, RecursionError):
         content = {"detail": [{"type": "value_error", "msg": "invalid request payload"}]}
-    logger.warning(
-        "request validation rejected",
-        extra={"path": request.url.path, "status": 422},
-    )
+    if logger.isEnabledFor(logging.DEBUG):
+        logger.debug(
+            "request validation rejected",
+            extra={"path": request.url.path, "status": 422},
+        )
     return JSONResponse(status_code=422, content=content)
 
 

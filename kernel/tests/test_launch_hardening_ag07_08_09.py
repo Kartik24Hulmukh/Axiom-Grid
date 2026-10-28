@@ -82,17 +82,17 @@ def test_pdf_page_flood_rejected(tmp_path, monkeypatch):
 def test_extraction_deadline_returns_504_and_releases_slot(monkeypatch):
     from fastapi.testclient import TestClient
 
+    from kernel.sidecar import isolated_ingest
     from overlay import server
 
     release = threading.Event()
 
-    class HangingIngestor:
-        def ingest(self, path):
-            release.wait(5)
-            raise ValueError("aborted")
+    def blocked(filepath, timeout, *, content=None):
+        release.wait(5)
+        raise isolated_ingest.IsolatedIngestDeadline("timeout")
 
     monkeypatch.setattr(server, "EXTRACTION_DEADLINE_SECONDS", 0.2)
-    monkeypatch.setattr(server, "IngestorImpl", HangingIngestor)
+    monkeypatch.setattr(isolated_ingest, "ingest_document_isolated", blocked)
     before = server._extraction_slots._value
     with TestClient(server.app) as client:
         r = client.post("/api/extract-document", json={"file": "fixtures/demo/sample_nda.docx"})
