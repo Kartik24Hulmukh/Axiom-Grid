@@ -59,8 +59,7 @@ class JSONResponse(_BaseJSONResponse):
         try:
             return super().render(content)
         except (UnicodeEncodeError, ValueError, TypeError, RecursionError):
-            # Second pass over a fully scrubbed tree: surrogates replaced,
-            # non-finite floats -> null, unknown objects -> repr, depth-capped.
+            # Note26 in docs/SERVER_SOURCE_NOTES.md.
             return json.dumps(_json_total(content), ensure_ascii=True).encode("utf-8")
 
 
@@ -138,6 +137,8 @@ from kernel.sidecar.orchestrator import OrchestratorImpl
 from kernel.sidecar.quality_gate import LocalQualityGate
 from kernel.sidecar.security_filter import LocalSecurityFilter
 from overlay.body_limit import BodyLimitMiddleware
+from overlay.request_guards import OriginGateMiddleware, RequestGovernorMiddleware
+from overlay.response_headers import RequestIdMiddleware, SecurityHeadersMiddleware
 from overlay.telemetry import install_tracing, log_context
 from packs.contract.pack import ContractPack
 from packs.generic.pack import GenericPack
@@ -181,8 +182,7 @@ class JsonLogFormatter(logging.Formatter):
             "msg": record.getMessage(),
             "service": "axiom-grid-overlay",
         }
-        # QueueListener has a different contextvars context. An empty snapshot
-        # is meaningful too: never replace it with the listener's context.
+        # Note26 in docs/SERVER_SOURCE_NOTES.md.
         captured_context = getattr(record, "_queued_log_context", None)
         payload.update(log_context() if captured_context is None else captured_context)
         exc_type = getattr(record, "_queued_exc_type", None)
@@ -212,9 +212,7 @@ class _NonBlockingQueueHandler(logging.handlers.QueueHandler):
     """
 
     def prepare(self, record: logging.LogRecord) -> logging.LogRecord:
-        # QueueHandler.prepare normally calls self.format on the producer.
-        # Snapshot only the request-local fields here; JSON encoding belongs to
-        # the listener. Copy first so other handlers still see the original.
+        # Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 23.
         prepared = copy.copy(record)
         prepared._queued_log_context = tuple(log_context().items())
         prepared.message = prepared.getMessage()
@@ -224,8 +222,7 @@ class _NonBlockingQueueHandler(logging.handlers.QueueHandler):
             getattr(prepared.exc_info[0], "__name__", "Exception")
             if prepared.exc_info else None
         )
-        # Never retain traceback frames, exception objects/messages or stacks
-        # in the bounded queue. The formatter emits only the exception type.
+        # Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 24.
         prepared.exc_info = None
         prepared.exc_text = None
         prepared.stack_info = None
@@ -262,8 +259,7 @@ def configure_structured_logging(level: str | None = None) -> None:
         uvicorn_logger.handlers = [queue_handler]
         uvicorn_logger.propagate = False
     root.setLevel((level or os.environ.get("AXIOM_LOG_LEVEL", "INFO")).upper())
-    # Third-party per-request chatter is not observability; keep it at WARNING
-    # so the hot path does not pay a JSON serialisation per upstream call.
+    # Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 25.
     for noisy in ("httpx", "httpcore", "uvicorn.access"):
         logging.getLogger(noisy).setLevel(logging.WARNING)
 
@@ -328,12 +324,18 @@ def _origin_allowed(origin: str) -> bool:
     )
 
 
-@app.middleware("http")
 async def enforce_origin_gate(request, call_next):
     origin = request.headers.get("origin")
     if origin is not None and not _origin_allowed(origin):
         return JSONResponse(status_code=403, content={"detail": "Forbidden: invalid origin"})
     return await call_next(request)
+
+
+app.add_middleware(
+    OriginGateMiddleware,
+    allowed=lambda origin: _origin_allowed(origin),
+    response_class=JSONResponse,
+)
 
 
 # Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 7.
@@ -372,13 +374,11 @@ EXTRACTION_DEADLINE_SECONDS = float(os.environ.get("AXIOM_EXTRACTION_DEADLINE_SE
 _REQUEST_ID_MAX_LEN = 64
 
 
-@app.middleware("http")
 async def request_id_middleware(request, call_next):
     rid = request.headers.get("x-request-id", "").strip()
     if not rid or len(rid) > _REQUEST_ID_MAX_LEN:
         rid = uuid.uuid4().hex
-    # Sanitize: correlation ids must never carry CR/LF into log streams
-    # (log-injection / response-splitting guard).
+    # Note26 in docs/SERVER_SOURCE_NOTES.md.
     rid = "".join(ch for ch in rid if ch.isascii() and (ch.isalnum() or ch in "-_.")) or uuid.uuid4().hex
     request.state.request_id = rid
     response = await call_next(request)
@@ -386,7 +386,10 @@ async def request_id_middleware(request, call_next):
     return response
 
 
-@app.middleware("http")
+# Keep the legacy callable above available as a compatibility/differential oracle.
+app.add_middleware(RequestIdMiddleware, max_len=lambda: _REQUEST_ID_MAX_LEN)
+
+
 async def security_headers_middleware(request, call_next):
     """SEC-003: lock every response down with defense-in-depth security headers."""
     response = await call_next(request)
@@ -403,7 +406,9 @@ async def security_headers_middleware(request, call_next):
     return response
 
 
-@app.middleware("http")
+app.add_middleware(SecurityHeadersMiddleware)
+
+
 async def request_governor_middleware(request, call_next):
     """OPS-001/SEC-004: per-request metrics + body size + CPU-budget guards."""
     t0 = time.perf_counter()
@@ -422,12 +427,18 @@ async def request_governor_middleware(request, call_next):
     response = await call_next(request)
 
     dt_ms = (time.perf_counter() - t0) * 1000
+    _record_completion(request, response.status_code, dt_ms)
+    return response
+
+
+def _record_completion(request, status: int, dt_ms: float) -> None:
+    """Share header-ready completion logging and metrics with the legacy governor."""
     logger.info(
         "request completed",
         extra={
             "request_id": getattr(request.state, "request_id", ""),
             "path": request.url.path,
-            "status": response.status_code,
+            "status": status,
             "latency_ms": round(dt_ms, 2),
             "client": request.client.host if request.client else "unknown",
         },
@@ -436,11 +447,18 @@ async def request_governor_middleware(request, call_next):
     OPS_METRICS["latency_ms_total"] += dt_ms
     OPS_METRICS["latency_samples"].append(dt_ms)
     OPS_METRICS["latency_ms_max"] = max(OPS_METRICS["latency_ms_max"], round(dt_ms, 2))
-    sc = str(response.status_code)
+    sc = str(status)
     OPS_METRICS["status_counts"][sc] = OPS_METRICS["status_counts"].get(sc, 0) + 1
-    if response.status_code >= 500:
+    if status >= 500:
         OPS_METRICS["errors_total"] += 1
-    return response
+
+
+app.add_middleware(
+    RequestGovernorMiddleware,
+    limit=lambda: MAX_UPLOAD_BYTES,
+    response_class=JSONResponse,
+    on_response_start=_record_completion,
+)
 
 
 # Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 12.
@@ -572,8 +590,7 @@ async def rate_limit_middleware(request, call_next):
             for stale_key in stale:
                 _rate_limit_buckets.pop(stale_key, None)
         if len(_rate_limit_buckets) >= _RATE_LIMIT_BUCKET_HARD_CAP and key not in _rate_limit_buckets:
-            # Evict least-recently-seen buckets down to 90% of the cap so we do
-            # not pay the sort on every request during a flood.
+            # Note26 in docs/SERVER_SOURCE_NOTES.md.
             victims = sorted(_rate_limit_buckets, key=lambda k: _rate_limit_buckets[k][-1] if _rate_limit_buckets[k] else 0.0)
             for victim in victims[: len(_rate_limit_buckets) - int(_RATE_LIMIT_BUCKET_HARD_CAP * 0.9)]:
                 _rate_limit_buckets.pop(victim, None)
@@ -714,8 +731,7 @@ async def run_demo(req: DemoRequest):
     file_path = resolve_sandbox_path(req.file)
 
     try:
-        # 1. Create target document
-        # Real provenance digest of the exact bytes fed to the pipeline.
+        # Note26 in docs/SERVER_SOURCE_NOTES.md.
         try:
             file_bytes = await asyncio.to_thread(file_path.read_bytes)
             digest = hashlib.sha256(file_bytes).hexdigest()
@@ -852,8 +868,7 @@ async def record_flywheel_correction(req: CorrectionRequest):
         return {"success": False, "error": str(e)}
 
 
-# Serve only rendered images, never the runtime database, WAL, or audit files.
-# Authentication middleware protects this mount like every document API.
+# Note26 in docs/SERVER_SOURCE_NOTES.md.
 (STATE_DIR / "page_images").mkdir(parents=True, exist_ok=True)
 app.mount("/static/page_images", StaticFiles(
     directory=str(STATE_DIR / "page_images"), check_dir=False
@@ -1026,13 +1041,11 @@ async def extract_document(req: ExtractDocumentRequest):
             from kernel.sidecar.isolated_ingest import ingest_document_isolated
 
             if mode == "process":
-                # Parse the already bounded immutable snapshot, not a second
-                # read of a path that may have changed since admission.
+                # Note26 in docs/SERVER_SOURCE_NOTES.md.
                 chunks, doc, pages = ingest_document_isolated(
                     filepath, timeout=remaining, content=content)
             else:
-                # Explicit development-only escape hatch. Still parse once,
-                # off the event loop, under the existing native-engine guard.
+                # Note26 in docs/SERVER_SOURCE_NOTES.md.
                 with orchestrator_lock:
                     chunks, doc, pages = ingest_document_isolated(
                         filepath, timeout=remaining, content=content)
@@ -1053,8 +1066,7 @@ async def extract_document(req: ExtractDocumentRequest):
             "memo": ClassifiedMemoPack,
             "generic": GenericPack,
         }.get(doc_type, GenericPack)
-        # The store and capacity belong to the actual worker, not its waiter.
-        # Cancelling an HTTP request cannot stop a running Python thread.
+        # Note26 in docs/SERVER_SOURCE_NOTES.md.
         with MemoryStoreImpl(":memory:") as request_store:
             request_orchestrator = OrchestratorImpl(
                 ingestor=captured_ingestor,
@@ -1174,8 +1186,7 @@ async def get_source_render(doc_id: str, page: int = 1, x: float = 0, y: float =
     For text documents, returns the text with the highlighted region marked.
     For PDFs, would render via PyMuPDF (requires the source file path).
     """
-    # In a full implementation, this would render the page as PNG via PyMuPDF
-    # and overlay an SVG bbox. For now, return metadata.
+    # Note26 in docs/SERVER_SOURCE_NOTES.md.
     return {
         "doc_id": doc_id,
         "page": page,
@@ -1341,8 +1352,7 @@ async def livez():
 
 # Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 20.
 READYZ_TTL_SECONDS = float(os.environ.get("AXIOM_READYZ_TTL_SECONDS", "30"))
-# Negative caching is opt-in: the single-flight lock already serialises probes,
-# and failing dependency checks are cheap. Enable for very large fleets.
+# Note26 in docs/SERVER_SOURCE_NOTES.md.
 READYZ_NEGATIVE_TTL_SECONDS = float(os.environ.get("AXIOM_READYZ_NEGATIVE_TTL_SECONDS", "0"))
 _readyz_probe_lock = threading.Lock()
 _readyz_probe_ok = threading.Event()  # retained for legacy tests / introspection
