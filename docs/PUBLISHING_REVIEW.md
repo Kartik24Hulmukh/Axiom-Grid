@@ -25,3 +25,13 @@ contains the actual source diff, including this relocation.
 The exposed chat credential was not used or tested. Publication uses the user's
 connected GitHub MCP authorization. No automatic desktop typing, hidden install,
 assessment aid, production deployment or security-policy bypass is introduced.
+
+## Publication metadata blocker
+
+The connected MCP uploader changed `scripts/axiom-live-e2e.py` from mode100755 to
+100644 while uploading its unchanged validated bytes. Invoking it explicitly with
+Python, as documented/tested, works; direct `./scripts/axiom-live-e2e.py` execution
+requires restoration of its executable bit. This is NOT silently normalized as an
+expected source-tree match. The draft PR must retain this blocker until a mode-
+preserving Git write restores100755. All other supplied content matched the local
+validated source. No merge/deployment should be inferred from publication.
