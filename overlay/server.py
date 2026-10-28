@@ -12,7 +12,6 @@ import concurrent.futures
 import contextlib
 import contextvars
 import copy
-from dataclasses import dataclass
 import hashlib
 import hmac
 import importlib
@@ -31,6 +30,7 @@ import threading
 import time
 import uuid
 from collections import deque
+from dataclasses import dataclass
 from typing import Self
 from urllib.parse import urlsplit
 
@@ -123,8 +123,8 @@ from kernel.core.data_model import (
     Action,
     ActionKind,
     ActionStatus,
-    Correction,
     Chunk,
+    Correction,
     Document,
     ExtractionStatus,
     Page,
@@ -1080,7 +1080,7 @@ async def extract_document(req: ExtractDocumentRequest):
             asyncio.wrap_future(work), timeout=EXTRACTION_DEADLINE_SECONDS)
     except HTTPException:
         raise
-    except asyncio.TimeoutError as exc:
+    except TimeoutError as exc:
         OPS_METRICS["extraction_deadline_total"] = OPS_METRICS.get("extraction_deadline_total", 0) + 1
         logger.warning("extraction exceeded deadline of %.1fs", EXTRACTION_DEADLINE_SECONDS)
         raise HTTPException(
