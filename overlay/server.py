@@ -181,8 +181,14 @@ class JsonLogFormatter(logging.Formatter):
             "msg": record.getMessage(),
             "service": "axiom-grid-overlay",
         }
-        payload.update(log_context())
-        if record.exc_info:
+        # QueueListener has a different contextvars context. An empty snapshot
+        # is meaningful too: never replace it with the listener's context.
+        captured_context = getattr(record, "_queued_log_context", None)
+        payload.update(log_context() if captured_context is None else captured_context)
+        exc_type = getattr(record, "_queued_exc_type", None)
+        if exc_type is not None:
+            payload["exc_type"] = exc_type
+        elif record.exc_info:
             payload["exc_type"] = getattr(record.exc_info[0], "__name__", "Exception")
         for key in ("request_id", "path", "status", "latency_ms", "client"):
             if hasattr(record, key):
@@ -205,6 +211,26 @@ class _NonBlockingQueueHandler(logging.handlers.QueueHandler):
     shed and counted in /metrics - never blocked on.
     """
 
+    def prepare(self, record: logging.LogRecord) -> logging.LogRecord:
+        # QueueHandler.prepare normally calls self.format on the producer.
+        # Snapshot only the request-local fields here; JSON encoding belongs to
+        # the listener. Copy first so other handlers still see the original.
+        prepared = copy.copy(record)
+        prepared._queued_log_context = tuple(log_context().items())
+        prepared.message = prepared.getMessage()
+        prepared.msg = prepared.message
+        prepared.args = None
+        prepared._queued_exc_type = (
+            getattr(prepared.exc_info[0], "__name__", "Exception")
+            if prepared.exc_info else None
+        )
+        # Never retain traceback frames, exception objects/messages or stacks
+        # in the bounded queue. The formatter emits only the exception type.
+        prepared.exc_info = None
+        prepared.exc_text = None
+        prepared.stack_info = None
+        return prepared
+
     def enqueue(self, record: logging.LogRecord) -> None:
         try:
             self.queue.put_nowait(record)
@@ -219,7 +245,7 @@ def configure_structured_logging(level: str | None = None) -> None:
     root = logging.getLogger()
     if not any(isinstance(h, _NonBlockingQueueHandler) for h in root.handlers):
         sink = logging.StreamHandler(sys.stdout)
-        sink.setFormatter(logging.Formatter("%(message)s"))
+        sink.setFormatter(JsonLogFormatter())
         log_queue: queue.Queue = queue.Queue(
             maxsize=int(os.environ.get("AXIOM_LOG_QUEUE_MAX", "4096"))
         )
