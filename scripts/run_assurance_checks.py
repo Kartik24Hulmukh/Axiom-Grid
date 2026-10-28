@@ -30,7 +30,7 @@ def main() -> int:
         ("benchmark-compatibility", [python, "-B", "-m", "unittest", "discover", "-s", "bench", "-p", "test_verifiable_benchmark.py", "-v"]),
         ("claim-guard-logic", [python, "-B", "-m", "unittest", "discover", "-s", "tests", "-p", "test_claim_guard_logic.py", "-v"]),
         ("release-regression-contract", [python, "-B", "-m", "pytest", "-q", "-p", "no:cacheprovider", "tests/test_release_check.py"]),
-        ("release-tool-error-lint", [python, "-m", "ruff", "check", "--select", "E9,F", "scripts/release_evidence.py", "scripts/verify_production_gate.py", "scripts/generate_certification.py", "scripts/verify_launch_checklist.py", "scripts/release_check.py", "scripts/ci/sbom_gate.py", "tests/assurance/test_release_evidence.py", "tests/assurance/test_sbom_gate_fail_closed.py", "tests/test_release_check.py"]),
+        ("release-tool-error-lint", [python, "-m", "ruff", "check", "--select", "E9,F", "scripts/release_evidence.py", "scripts/verify_production_gate.py", "scripts/generate_certification.py", "scripts/verify_launch_checklist.py", "scripts/release_check.py", "scripts/ci/sbom_gate.py", "tests/assurance/test_release_evidence.py", "tests/assurance/test_sbom_gate_fail_closed.py", "tests/test_release_check.py", "scripts/collect_device_profile.py", "tests/assurance/test_device_profile.py"]),
         ("invoice-evidence-contract", [python, "-B", "-m", "pytest", "-q", "-p", "no:cacheprovider", "packs/tests/test_invoice_pack.py", "packs/tests/test_invoice_semantic_evidence.py"]),
         ("frontend", ["node", "--test", *frontend]),
         ("preview-source-guard", [python, "-B", "scripts/check_authorized_preview.py"]),
