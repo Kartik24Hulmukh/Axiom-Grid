@@ -1,0 +1,391 @@
+{
+  "scope": "public-source-sampling-only",
+  "production_qualified": false,
+  "upstream_code_executed": false,
+  "repositories": [
+    {
+      "repository": "artcraftx",
+      "revision": "c6b5d338303251d8bcb93ec6806b412f95127936",
+      "tree_truncated": false,
+      "tree_entries": 5350,
+      "sampled_files": [
+        "Cargo.toml",
+        "README.md",
+        "crates/artcraftx/Cargo.toml",
+        "crates/artcraftx/capabilities/default.json",
+        "crates/artcraftx/src/commands/credentials/credential_payload.rs",
+        "crates/artcraftx/src/commands/credentials/list_credentials_command.rs",
+        "crates/artcraftx/src/commands/credentials/open_web_login_command.rs",
+        "crates/artcraftx/src/credentials/credential_toml.rs",
+        "crates/artcraftx/src/lib.rs",
+        "crates/artcraftx/src/state/data_dir/subdirectory/app_credentials_dir.rs",
+        "crates/artcraftx/src/windows/login_window/utils/extract_login_window_cookies.rs",
+        "crates/artcraftx/tauri.conf.json",
+        "frontend/package.json"
+      ]
+    },
+    {
+      "repository": "cadcraft",
+      "revision": "336243e0afb3019feee58d0d4fc0d218f25530e7",
+      "tree_truncated": false,
+      "tree_entries": 1117,
+      "sampled_files": [
+        "ATTRIBUTION.md",
+        "Cargo.toml",
+        "LICENSE-APACHE",
+        "LICENSE-MIT",
+        "NOTICE",
+        "README.md"
+      ]
+    },
+    {
+      "repository": "craft-ai-integrations",
+      "revision": "60b84aed84a172e2bc7f82fbda4a6ecd4a74d4a9",
+      "tree_truncated": false,
+      "tree_entries": 626,
+      "sampled_files": [
+        "Cargo.toml",
+        "LICENSE-APACHE",
+        "LICENSE-MIT",
+        "README.md",
+        "SECURITY.md",
+        "crates/ai-client/src/client.rs",
+        "crates/ai-comfy-env/src/download.rs",
+        "crates/ai-comfy-env/src/download/transport.rs",
+        "crates/ai-core/src/consent.rs",
+        "crates/ai-core/src/endpoint.rs",
+        "crates/ai-core/src/provider.rs",
+        "crates/ai-core/src/secret.rs",
+        "crates/ai-engine/src/provider.rs",
+        "crates/ai-engine/src/registry.rs",
+        "crates/ai-engine/src/runner.rs",
+        "crates/ai-http/src/lib.rs",
+        "crates/ai-native/Cargo.toml",
+        "crates/ai-native/src/lib.rs",
+        "crates/ai-native/src/secrets/crypto.rs",
+        "crates/ai-native/src/secrets/file.rs",
+        "crates/ai-native/src/secrets/keychain.rs",
+        "crates/ai-native/src/secrets/layered.rs",
+        "docs/CORE-SYNC.md",
+        "docs/PLATFORM-CONTRACT.md",
+        "docs/custom-connections-and-sources.md"
+      ]
+    },
+    {
+      "repository": "craft-common-actions",
+      "revision": "fa5ef18780cf5e7d5d3b8de068de56cffc83cac5",
+      "tree_truncated": false,
+      "tree_entries": 85,
+      "sampled_files": [
+        ".github/workflows/release.yml",
+        ".github/workflows/supply-chain.yml",
+        "README.md"
+      ]
+    },
+    {
+      "repository": "craft-contrib",
+      "revision": "88cb930e18df6c1660e6a369d52bf881c4d75e9e",
+      "tree_truncated": false,
+      "tree_entries": 8,
+      "sampled_files": [
+        "README.md"
+      ]
+    },
+    {
+      "repository": "craft-launcher",
+      "revision": "deccd0ac1e83313c4e433f49bdfff3b42ba9a716",
+      "tree_truncated": false,
+      "tree_entries": 283,
+      "sampled_files": [
+        "ATTRIBUTION.md",
+        "Cargo.toml",
+        "LICENSE-APACHE",
+        "LICENSE-MIT",
+        "NOTICE",
+        "README.md",
+        "crates/core/src/feed.rs",
+        "crates/core/src/protocol.rs",
+        "crates/core/src/release.rs",
+        "crates/native/Cargo.toml",
+        "crates/native/src/backend.rs",
+        "crates/native/src/http.rs",
+        "crates/native/src/install.rs",
+        "crates/native/src/process.rs",
+        "crates/native/src/self_update.rs",
+        "crates/native/src/source.rs"
+      ]
+    },
+    {
+      "repository": "craft-libs",
+      "revision": "b4afa6d22ae41bd36524c32dbcab3ff257ae4cdd",
+      "tree_truncated": false,
+      "tree_entries": 1173,
+      "sampled_files": [
+        "ATTRIBUTION.md",
+        "Cargo.toml",
+        "LICENSE-APACHE",
+        "LICENSE-MIT",
+        "NOTICE",
+        "README.md",
+        "crates/ai-core/Cargo.toml",
+        "crates/update/Cargo.toml",
+        "crates/update/src/http.rs",
+        "crates/update/src/install.rs",
+        "crates/update/src/lib.rs",
+        "crates/update/src/self_update.rs",
+        "crates/update/src/source.rs"
+      ]
+    },
+    {
+      "repository": "deckcraft",
+      "revision": "f893f6af7d36a5409fd804e81a34fd895cfefedf",
+      "tree_truncated": false,
+      "tree_entries": 884,
+      "sampled_files": [
+        "Cargo.toml",
+        "LICENSE-APACHE",
+        "LICENSE-MIT",
+        "README.md",
+        "apps/deckcraft-cli/src/main.rs",
+        "crates/engine/src/lib.rs",
+        "crates/mcp/src/lib.rs",
+        "crates/pdf/src/lib.rs",
+        "crates/pptx/Cargo.toml",
+        "crates/pptx/src/lib.rs",
+        "crates/pptx/src/opc.rs",
+        "crates/pptx/src/read.rs"
+      ]
+    },
+    {
+      "repository": "designcraft",
+      "revision": "3a1edcd76dc30a2219624ce1d30f27adc61df083",
+      "tree_truncated": false,
+      "tree_entries": 1015,
+      "sampled_files": [
+        "ASSETS.md",
+        "Cargo.toml",
+        "LICENSE-APACHE",
+        "LICENSE-MIT",
+        "NOTICE",
+        "README.md"
+      ]
+    },
+    {
+      "repository": "effectcraft",
+      "revision": "c99684e28e2242d81c3c3b960b88eb84fddd190c",
+      "tree_truncated": false,
+      "tree_entries": 1538,
+      "sampled_files": [
+        "ATTRIBUTION.md",
+        "Cargo.toml",
+        "LICENSE-APACHE",
+        "LICENSE-MIT",
+        "NOTICE",
+        "README.md"
+      ]
+    },
+    {
+      "repository": "figcraft",
+      "revision": "2af5e232d5dd86321e4671655de60f9ae031c53a",
+      "tree_truncated": false,
+      "tree_entries": 1443,
+      "sampled_files": [
+        "ATTRIBUTION.md",
+        "Cargo.toml",
+        "LICENSE-APACHE",
+        "LICENSE-MIT",
+        "NOTICE",
+        "README.md",
+        "crates/format/src/lib.rs",
+        "crates/layout/Cargo.toml",
+        "crates/layout/src/lib.rs",
+        "crates/mcp/src/server.rs",
+        "crates/plugin/Cargo.toml",
+        "crates/plugin/src/lib.rs",
+        "crates/plugin/src/manifest.rs",
+        "crates/plugin/src/sandbox.rs",
+        "docs/mcp.md",
+        "docs/plugins.md"
+      ]
+    },
+    {
+      "repository": "filmcraft",
+      "revision": "8d925e9df32d8755f22bd2635e400a6b3e93f69c",
+      "tree_truncated": false,
+      "tree_entries": 1833,
+      "sampled_files": [
+        "ATTRIBUTION.md",
+        "Cargo.toml",
+        "LICENSE-APACHE",
+        "LICENSE-MIT",
+        "NOTICE",
+        "README.md"
+      ]
+    },
+    {
+      "repository": "gridcraft",
+      "revision": "146161b4b450a56e5e59a083ba0478582d1e602b",
+      "tree_truncated": false,
+      "tree_entries": 840,
+      "sampled_files": [
+        "Cargo.toml",
+        "LICENSE-APACHE",
+        "LICENSE-MIT",
+        "README.md",
+        "apps/gridcraft-cli/src/main.rs",
+        "crates/mcp/src/lib.rs",
+        "crates/numfmt/Cargo.toml",
+        "crates/numfmt/src/lib.rs",
+        "crates/xlsx/Cargo.toml",
+        "crates/xlsx/src/lib.rs",
+        "crates/xlsx/src/package.rs",
+        "crates/xlsx/src/tests/malformed.rs"
+      ]
+    },
+    {
+      "repository": "iOfficeAI/OfficeCLI",
+      "revision": "89905744ed6dbb87fb6807a0d9fda6ed3da1c18d",
+      "tree_truncated": false,
+      "tree_entries": 1351,
+      "sampled_files": [
+        "LICENSE",
+        "README.md",
+        "SECURITY.md",
+        "src/officecli/Core/Plugins/PluginProcess.cs",
+        "src/officecli/Core/Plugins/PluginRegistry.cs",
+        "src/officecli/Core/SkillInstaller.cs",
+        "src/officecli/Program.cs",
+        "src/officecli/officecli.csproj"
+      ]
+    },
+    {
+      "repository": "lightcraft",
+      "revision": "77c0a6adfa7db6e4f79b80843c0c578e5f16dee1",
+      "tree_truncated": false,
+      "tree_entries": 1477,
+      "sampled_files": [
+        "Cargo.toml",
+        "LICENSE-APACHE",
+        "LICENSE-MIT",
+        "NOTICE",
+        "README.md"
+      ]
+    },
+    {
+      "repository": "opendataloader-project/opendataloader-pdf",
+      "revision": "94a17ec03c7e902706a92a0bd4e8918e979c4967",
+      "tree_truncated": false,
+      "tree_entries": 502,
+      "sampled_files": [
+        "LICENSE",
+        "README.md",
+        "THIRD_PARTY/THIRD_PARTY_LICENSES.md",
+        "java/pom.xml",
+        "python/opendataloader-pdf/pyproject.toml",
+        "python/opendataloader-pdf/src/opendataloader_pdf/runner.py",
+        "python/opendataloader-pdf/src/opendataloader_pdf/wrapper.py"
+      ]
+    },
+    {
+      "repository": "pdfcraft",
+      "revision": "7555be3c7ef1d2dc22ae1327791552812603d520",
+      "tree_truncated": false,
+      "tree_entries": 2115,
+      "sampled_files": [
+        "Cargo.toml",
+        "LICENSE-APACHE",
+        "LICENSE-MIT",
+        "README.md",
+        "apps/pdfcraft-cli/src/main.rs",
+        "crates/automation/src/file_access.rs",
+        "crates/automation/src/lib.rs",
+        "crates/cos/Cargo.toml",
+        "crates/cos/src/lib.rs",
+        "crates/export/src/lib.rs",
+        "crates/ocr/src/lib.rs",
+        "crates/redact/src/lib.rs"
+      ]
+    },
+    {
+      "repository": "photocraft",
+      "revision": "8988161e90b97608cfe8b8970d0692491fb2ed04",
+      "tree_truncated": false,
+      "tree_entries": 3035,
+      "sampled_files": [
+        "ATTRIBUTION.md",
+        "Cargo.toml",
+        "LICENSE-APACHE",
+        "LICENSE-MIT",
+        "NOTICE",
+        "README.md",
+        "crates/automation/Cargo.toml",
+        "crates/automation/src/headless.rs",
+        "crates/automation/src/security.rs",
+        "crates/automation/src/server.rs",
+        "crates/psd/Cargo.toml",
+        "crates/psd/src/file.rs",
+        "crates/psd/src/lib.rs",
+        "crates/psd/tests/it/corpus.rs",
+        "docs/control-protocol.md",
+        "docs/mcp.md"
+      ]
+    },
+    {
+      "repository": "soundcraft",
+      "revision": "8ca6939981a1cf5d4b0f39cbcd2b0c6a3dedadb0",
+      "tree_truncated": false,
+      "tree_entries": 735,
+      "sampled_files": [
+        "ATTRIBUTION.md",
+        "Cargo.toml",
+        "LICENSE-APACHE",
+        "LICENSE-MIT",
+        "NOTICE",
+        "README.md"
+      ]
+    },
+    {
+      "repository": "vectorcraft",
+      "revision": "56804f6d7e961a7d6bfb8e3d46c168b15e1feee2",
+      "tree_truncated": false,
+      "tree_entries": 2594,
+      "sampled_files": [
+        "ASSETS.md",
+        "Cargo.toml",
+        "LICENSE-APACHE",
+        "LICENSE-MIT",
+        "NOTICE",
+        "README.md",
+        "crates/engine/Cargo.toml",
+        "crates/mcp/Cargo.toml",
+        "crates/mcp/src/headless.rs",
+        "crates/mcp/src/server.rs",
+        "crates/mcp/src/tools/definitions.rs",
+        "crates/svg/Cargo.toml",
+        "crates/svg/src/lib.rs",
+        "docs/control-protocol.md",
+        "docs/mcp.md"
+      ]
+    },
+    {
+      "repository": "wordcraft",
+      "revision": "aadb077e072b7de05f724e359d8db82e151f125c",
+      "tree_truncated": false,
+      "tree_entries": 1170,
+      "sampled_files": [
+        "Cargo.toml",
+        "LICENSE-APACHE",
+        "LICENSE-MIT",
+        "README.md",
+        "apps/wordcraft-cli/src/main.rs",
+        "crates/docx/Cargo.toml",
+        "crates/docx/src/lib.rs",
+        "crates/docx/src/package.rs",
+        "crates/mcp/src/lib.rs",
+        "crates/mcp/src/tests.rs",
+        "crates/pdf/src/lib.rs",
+        "docs/brand/LICENSE-brand.txt"
+      ]
+    }
+  ]
+}

@@ -130,3 +130,7 @@ are separate. No blanket distribution/license clearance is implied.
 ### Expected model identity
 
 The focused native runtime now requires an independently approved `AXIOM_MODEL_DIGEST` alongside the exact model name. Readiness and every generation check reported identity; this is not backend/weights attestation. See [setup](QUICKSTART.md), [identity policy](docs/MODEL_IDENTITY_POLICY.md) and [qualification evidence and remaining blockers](docs/RELEASE_QUALIFICATION.md).
+
+### Integration and target-device decisions
+
+See the [pinned Storytold and shortlist review](docs/INTEGRATION_DECISIONS.md) before adding application, plugin or provider dependencies. No Craft suite was installed or enabled. The opt-in [device profile collector](docs/DEVICE_QUALIFICATION.md) gathers bounded facts to inform a named target profile; it does not test readiness, inference, native behavior or offline operation.

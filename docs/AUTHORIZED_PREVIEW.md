@@ -35,9 +35,15 @@ A local-network server is a different multi-user architecture, not an offline to
 
 ## Production blockers still open
 
-Native builds/tests and actual window behavior; model/backend provenance enforcement
-at generation; disconnected E2E; secure Windows automatic pairing; private-key custody;
+Actual target-device window behavior and real-model native E2E; backend/weight
+authenticity beyond reported identity checks; disconnected E2E; secure Windows
+automatic pairing; private-key custody;
 full-service parser/OS sandbox qualification (one extraction route now uses a
 validated single child parse; see PARSER_BOUNDARY.md); legal-v3 trust/effect semantics; installer signing/upgrade/
 uninstall; dependency/model license review; external security review; retention and
 incident operations; actual customer value, repeat use and economics.
+
+Focused native CI builds/tests and expected-model report checks have passed their
+scoped gates; they do not close the target-device, backend-attestation or offline
+items above. See MODEL_IDENTITY_POLICY.md and RELEASE_QUALIFICATION.md. The opt-in
+DEVICE_QUALIFICATION.md collector gathers bounded profile information only.
