@@ -89,7 +89,7 @@ No real-model quality or production qualification follows from these determinist
 
 - Select an exact target OS/build, CPU/RAM/GPU, backend version and model assets.
   No such customer device profile has yet been qualified here.
-- The new [expected-identity policy](MODEL_IDENTITY_POLICY.md) adds required approved configuration, shared readiness/generation preflight and response-model consistency. Local Rust compilation/execution is unavailable; exact-head remote CI is required before accepting those contracts. Even passing report checks cannot attest a dishonest backend or eliminate substitution between checks; artifact/backend provenance remains separate.
+- The [expected-identity policy](MODEL_IDENTITY_POLICY.md) adds required approved configuration, shared readiness/generation preflight and response-model consistency. PR #42 exact-head CI and the [separate main workflow](https://github.com/Kartik24Hulmukh/Axiom-Grid/actions/runs/40761267340) passed the focused runtime gates, including nine model-identity contract tests, formatting, Clippy and release build. Local Rust execution remained unavailable. This is scoped CI evidence, not actual target-device behavior; passing report checks cannot attest a dishonest backend or eliminate substitution between checks. Artifact/backend provenance remains separate.
 - Run real compiled UI + real-model end-to-end tests on that profile, including
   disconnected cold start, missing assets, bounded resources, cancellation/quit,
   failure recovery and protected pairing. A dropped HTTP request does not prove
@@ -107,3 +107,7 @@ No real-model quality or production qualification follows from these determinist
 The authoritative usage boundary is [AUTHORIZED_PREVIEW.md](AUTHORIZED_PREVIEW.md):
 visible explicit input, review and manual copy on authorized devices/tasks. No
 covert deployment, automatic application typing or assessment-policy bypass.
+
+The [opt-in device profile](DEVICE_QUALIFICATION.md) supplies bounded metadata only,
+not a native/model/offline test or qualified hardware profile. New third-party
+integrations remain deferred under [INTEGRATION_DECISIONS.md](INTEGRATION_DECISIONS.md).

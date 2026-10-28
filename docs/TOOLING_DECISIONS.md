@@ -9,3 +9,8 @@ The supplied `repos.md` is a discovery list, not an approval or installation man
 | [llama.cpp](https://github.com/ggml-org/llama.cpp) | Candidate hardware-specific local inference benchmark | Defer until target OS/RAM/GPU/model are specified. It is not a drop-in implementation of the current Ollama endpoints. A future adapter must preserve preflight, identity/error contracts, bounded output and cancellation limitations. MIT code does not license every model asset. |
 
 Mass multi-agent simulation is not independent customer validation. The highest-value work here is evidence quality: meaningful negative cases, strict corpus accounting, fail-closed model report checks, real-device qualification and consent-based task pilots. Measure task completion, incorrect suggestions, recovery, repeat use and willingness to pay before expanding features. No tool choice establishes demand, a valuation or a “100×” improvement.
+
+For the pinned Storytold suite, OfficeCLI and OpenDataLoader source review, see
+[INTEGRATION_DECISIONS.md](INTEGRATION_DECISIONS.md). No dependency or general-purpose
+MCP server was enabled. [DEVICE_QUALIFICATION.md](DEVICE_QUALIFICATION.md) describes
+the opt-in profile collector; its output is context, not a readiness verdict.
