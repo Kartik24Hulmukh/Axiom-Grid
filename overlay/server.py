@@ -11,6 +11,8 @@ import asyncio
 import concurrent.futures
 import contextlib
 import contextvars
+import copy
+from dataclasses import dataclass
 import hashlib
 import hmac
 import importlib
@@ -22,6 +24,7 @@ import os
 import pathlib
 import queue
 import re
+import stat
 import sys
 import tempfile
 import threading
@@ -40,16 +43,7 @@ from fastapi.responses import JSONResponse as _BaseJSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-# ------------------------------------------------------------------
-# SEC-015: lone UTF-16 surrogates (e.g. JSON "\udcff") are *valid JSON* and
-# valid Python str, so they pass the byte-level SEC-014 sanitizer, but
-# `str.encode("utf-8")` raises UnicodeEncodeError. Starlette's JSONResponse
-# encodes inside `render()` in the ASGI send path -- *after* every handler
-# try/except -- so one hostile escape turned every ingress route into a 500.
-# Native fix: (a) the response layer is made total (it can never raise on any
-# content), (b) ingress models reject surrogates up-front with an honest 422
-# before the payload can reach sqlite3 / the pipeline, which would also panic.
-# ------------------------------------------------------------------
+# Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 1.
 _SURROGATE_RE = re.compile(r"[\ud800-\udfff]")
 
 
@@ -130,8 +124,10 @@ from kernel.core.data_model import (
     ActionKind,
     ActionStatus,
     Correction,
+    Chunk,
     Document,
     ExtractionStatus,
+    Page,
 )
 from kernel.core.provenance import ProvenanceLogImpl
 from kernel.sidecar.action_executor import ActionExecutorImpl
@@ -157,18 +153,14 @@ async def _lifespan(_app: FastAPI):
     global _extraction_pool
     memory_store.reopen()
     if _extraction_pool._shutdown:
-        # Recreate at the CONFIGURED capacity, not a hard-coded four: silently
-        # reverting to four workers after a restart collapses extraction
-        # throughput at the intended replica size (worker-starvation premortem).
+        # Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 2.
         _extraction_pool = concurrent.futures.ThreadPoolExecutor(
             max_workers=EXTRACTION_WORKERS, thread_name_prefix="axiom-extract"
         )
     try:
         yield
     finally:
-        # ASGI server has drained ingress; do not close state while work runs.
-        # Running Python threads cannot be forcibly stopped: supervisors still
-        # need a termination grace period for a genuinely hung native parser.
+        # Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 3.
         await asyncio.to_thread(_extraction_pool.shutdown, wait=True, cancel_futures=True)
         memory_store.close()
 
@@ -177,11 +169,7 @@ app = FastAPI(title="Axiom-Grid Overlay API", lifespan=_lifespan, default_respon
 logger = logging.getLogger("overlay.server")
 
 
-# ZERO-DAY FIX (2026-09-16): safe RequestValidationError handler.
-# ------------------------------------------------------------------
-# OPS-002: structured JSON logging (one JSON object per line; safe for
-# Loki/Datadog/CloudWatch ingestion). Opt out with AXIOM_LOG_FORMAT=text.
-# ------------------------------------------------------------------
+# Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 4.
 class JsonLogFormatter(logging.Formatter):
     """Render log records as single-line JSON with stable field names."""
 
@@ -241,9 +229,7 @@ def configure_structured_logging(level: str | None = None) -> None:
         handler = _NonBlockingQueueHandler(log_queue)
         handler.setFormatter(JsonLogFormatter())
         root.addHandler(handler)
-    # Uvicorn installs its own synchronous stderr handlers before importing
-    # the app. Route lifecycle/error logs through the same bounded queue too:
-    # otherwise shutdown INFO messages can block behind a saturated sink.
+    # Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 5.
     queue_handler = next(h for h in root.handlers if isinstance(h, _NonBlockingQueueHandler))
     for name in ("uvicorn", "uvicorn.error", "uvicorn.access"):
         uvicorn_logger = logging.getLogger(name)
@@ -259,12 +245,7 @@ def configure_structured_logging(level: str | None = None) -> None:
 configure_structured_logging()
 
 
-# ------------------------------------------------------------------
-# SEC-007: strict, explicit CORS. Default is deny-all cross-origin: the
-# overlay is same-origin by design. Operators opt in per-origin via
-# AXIOM_CORS_ORIGINS (comma-separated, exact scheme://host[:port]). The
-# wildcard "*" is rejected when credentials would be allowed.
-# ------------------------------------------------------------------
+# Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 6.
 def _cors_origins() -> list[str]:
     raw = os.environ.get("AXIOM_CORS_ORIGINS", "")
     origins = [o.strip() for o in raw.split(",") if o.strip()]
@@ -329,16 +310,9 @@ async def enforce_origin_gate(request, call_next):
     return await call_next(request)
 
 
-# ------------------------------------------------------------------
-# Production hardening middleware (SEC-003/004, OPS-001)
-# ------------------------------------------------------------------
+# Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 7.
 
-# SEC-004: regex-heavy packs run against a bounded thread pool so a hostile
-# oversized document cannot monopolise the async event loop (CPU-starvation
-# DoS guard). Bounded at 4 workers; 100x stress proved lock-safe behaviour.
-# Capacity now scales with the host instead of being pinned at 4: a 16-core
-# production box admits 32 concurrent extractions (8x) while a laptop keeps the
-# old safe floor. Override explicitly with AXIOM_EXTRACTION_WORKERS.
+# Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 8.
 EXTRACTION_WORKERS = max(
     4,
     int(os.environ.get("AXIOM_EXTRACTION_WORKERS") or 0)
@@ -348,11 +322,7 @@ _extraction_pool = concurrent.futures.ThreadPoolExecutor(
     max_workers=EXTRACTION_WORKERS, thread_name_prefix="axiom-extract"
 )
 
-# OPS-004: backpressure on the extraction pool. A ThreadPoolExecutor queue is
-# unbounded, so under a spike far beyond 4 workers requests pile up, latency
-# balloons past any SLO, and clients time out while the server still burns
-# CPU on dead work. A semaphore of workers + small queue turns overload into
-# a fast, honest 503 (fail-fast, load-shedding) instead of a slow collapse.
+# Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 9.
 _EXTRACTION_QUEUE_DEPTH = int(os.environ.get("AXIOM_EXTRACTION_QUEUE_DEPTH", "16"))
 _extraction_slots = threading.BoundedSemaphore(EXTRACTION_WORKERS + _EXTRACTION_QUEUE_DEPTH)
 _EXTRACTION_CAPACITY = EXTRACTION_WORKERS + _EXTRACTION_QUEUE_DEPTH
@@ -368,18 +338,11 @@ OPS_METRICS = {
 }
 
 MAX_UPLOAD_BYTES = int(os.environ.get("AXIOM_MAX_UPLOAD_BYTES", str(2 * 1024 * 1024)))
-# AG-07: a hung or pathological parse must not hold the client (or the load
-# balancer) hostage. The waiter gives up at this deadline with an honest 504;
-# the admission slot is released by the worker's done-callback, never early,
-# so capacity accounting stays exact. Expanded-work caps live in the ingestor.
+# Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 10.
 EXTRACTION_DEADLINE_SECONDS = float(os.environ.get("AXIOM_EXTRACTION_DEADLINE_SECONDS", "30"))
 
 
-# ------------------------------------------------------------------
-# OPS-003: request-id correlation. Honour a client-supplied X-Request-Id
-# (bounded, sanitized) or mint one; echo it on every response so client
-# support tickets can be joined to the structured JSON log stream.
-# ------------------------------------------------------------------
+# Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 11.
 _REQUEST_ID_MAX_LEN = 64
 
 
@@ -454,26 +417,7 @@ async def request_governor_middleware(request, call_next):
     return response
 
 
-# ------------------------------------------------------------------
-# SEC-006: bearer / API-key authentication for the public API surface
-# ------------------------------------------------------------------
-#
-# Threat model: the overlay was born as a same-origin desktop sidecar, where
-# the origin gate (SEC-002) is sufficient. The moment it is exposed as a
-# network API every mutating endpoint (/demo, /apply, /correct, /api/*) is
-# callable by anyone who can reach the socket. SEC-006 closes that.
-#
-#   AXIOM_API_KEYS      comma-separated list of accepted keys. When set, every
-#                       non-exempt route requires `Authorization: Bearer <key>`
-#                       or `X-API-Key: <key>`. Unset => local-first mode
-#                       (auth disabled, origin gate still enforced).
-#   AXIOM_REQUIRE_AUTH  "1"/"true" => production posture. If no keys are
-#                       configured the API FAILS CLOSED with 503 on protected
-#                       routes instead of silently running open.
-#
-# Keys are compared via sha256 digests with hmac.compare_digest (constant-time,
-# length-independent). The digest prefix doubles as a stable per-tenant id so
-# the rate limiter (SEC-005) can apply a per-key quota tier instead of per-IP.
+# Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 12.
 
 _AUTH_EXEMPT_PATHS = {"/", "/healthz", "/api/health", "/livez", "/readyz", "/metrics", "/dashboard", "/docs", "/openapi.json", "/redoc"}
 _AUTH_EXEMPT_PREFIXES: tuple[str, ...] = ()
@@ -551,18 +495,14 @@ async def api_key_auth_middleware(request, call_next):
     return await call_next(request)
 
 
-# ------------------------------------------------------------------
-# SEC-005: token-bucket rate limiting (per-client-IP) production hardening
-# ------------------------------------------------------------------
+# Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 13.
 
 _RATE_LIMIT_PER_MIN = int(os.environ.get("AXIOM_RATE_LIMIT_PER_MIN", "300"))
 _RATE_LIMIT_WINDOW_S = 60.0
 _RATE_LIMIT_EXEMPT_PATHS = {"/healthz", "/api/health", "/livez", "/readyz", "/metrics"}
 _rate_limit_buckets: dict[str, deque[float]] = {}
 _RATE_LIMIT_BUCKET_HIGH_WATER = int(os.environ.get("AXIOM_RATE_LIMIT_BUCKET_HIGH_WATER", "500"))
-# Hard ceiling on distinct buckets regardless of freshness: beyond this the
-# least-recently-seen buckets are evicted so memory is O(hard_cap) even under
-# a rotating-source flood (100x load premortem #1).
+# Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 14.
 _RATE_LIMIT_BUCKET_HARD_CAP = max(_RATE_LIMIT_BUCKET_HIGH_WATER, int(os.environ.get("AXIOM_RATE_LIMIT_BUCKET_HARD_CAP", "5000")))
 _TRUST_PROXY = os.environ.get("AXIOM_TRUST_PROXY", "").lower() in {"1", "true", "yes"}
 _rate_limit_lock = threading.Lock()
@@ -572,17 +512,11 @@ _RATE_LIMIT_PER_MIN_AUTH = int(os.environ.get("AXIOM_RATE_LIMIT_PER_MIN_AUTH", "
 
 
 def _client_key(request) -> str:
-    # SEC-006 tier: a valid API key gets its own (larger) bucket keyed by
-    # tenant id, so one noisy tenant behind a shared NAT/LB IP cannot starve
-    # the others, and per-tenant quotas can be metered/billed later.
+    # Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 15.
     tenant = _authenticate(request) if _API_KEY_DIGESTS else None
     if tenant:
         return f"tenant:{tenant}"
-    # SEC-008: X-Forwarded-For is attacker-controlled unless a trusted reverse
-    # proxy is guaranteed to overwrite it. Only honour it when the operator
-    # explicitly declares that topology (AXIOM_TRUST_PROXY=1); otherwise a
-    # client could rotate the header to mint a fresh bucket per request and
-    # bypass the limit entirely while growing the bucket table.
+    # Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 16.
     if _TRUST_PROXY:
         fwd = request.headers.get("x-forwarded-for")
         if fwd:
@@ -684,12 +618,7 @@ orchestrator = OrchestratorImpl(
 
 action_executor = ActionExecutorImpl(provenance_log)
 
-# --- Pipeline concurrency: launch-blocker #1 fix ------------------------------
-# Previously every /demo and /apply call serialized on one global mutex, which
-# shed 80-91% of requests under load. The shared services (ProvenanceLogImpl,
-# MemoryStoreImpl) are now individually thread-safe (@synchronized_class), so
-# the HTTP layer needs *bounded* concurrency to protect CPU/memory, not mutual
-# exclusion. Tune with AXIOM_PIPELINE_CONCURRENCY.
+# Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 17.
 PIPELINE_CONCURRENCY = max(
     1,
     int(os.environ.get("AXIOM_PIPELINE_CONCURRENCY") or 0)
@@ -982,6 +911,57 @@ class GraphQueryRequest(IngressModel):
     query: str | None = Field(default=None, max_length=1024)
 
 
+@dataclass(frozen=True)
+class _CapturedIngestor:
+    """Read-only replay of one parse; never opens or reparses a source file.
+
+    Copy on capture and replay also isolates Chunk.embedding (a mutable list
+    despite the frozen graph dataclasses) and the caller's result containers.
+    """
+
+    _chunks: tuple[Chunk, ...]
+    _document: Document
+    _pages: tuple[Page, ...]
+
+    @classmethod
+    def capture(cls, chunks: list[Chunk], document: Document, pages: list[Page]):
+        return cls(tuple(copy.deepcopy(chunks)), document, tuple(pages))
+
+    def ingest(self, path: str) -> tuple[list[Chunk], Document, list[Page]]:
+        if path != self._document.source_path:
+            raise ValueError("Captured ingestion belongs to a different source")
+        return copy.deepcopy(list(self._chunks)), self._document, list(self._pages)
+
+
+def _extraction_isolation_mode() -> str:
+    """Only an explicit thread setting opts out of killable API parsing."""
+    mode = os.environ.get("AXIOM_EXTRACTION_ISOLATION", "process")
+    if mode not in ("process", "thread"):
+        raise ValueError("AXIOM_EXTRACTION_ISOLATION must be process or thread")
+    return mode
+
+
+def _capture_extraction_source(filepath: str) -> bytes:
+    """Bounded regular-file capture; reject final-component replacement.
+
+    This is not a complete path sandbox: ancestor-directory races and a
+    compromised local account remain outside this parser resource boundary.
+    """
+    if not all(hasattr(os, flag) for flag in ("O_NOFOLLOW", "O_NONBLOCK")) or os.name != "posix":
+        raise OSError("Safe document capture requires POSIX file-open protections")
+    fd = os.open(filepath, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    with os.fdopen(fd, "rb") as source:
+        info = os.fstat(source.fileno())
+        if not stat.S_ISREG(info.st_mode):
+            raise OSError("Document source must be a regular file")
+        if info.st_size > MAX_UPLOAD_BYTES:
+            raise HTTPException(status_code=413, detail="Document exceeds byte budget")
+        content = source.read(MAX_UPLOAD_BYTES + 1)
+    if len(content) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail="Document exceeds byte budget")
+    return content
+
+
 @app.post("/api/extract-document")
 async def extract_document(req: ExtractDocumentRequest):
     """Extract fields from a document with grounding metadata.
@@ -989,9 +969,7 @@ async def extract_document(req: ExtractDocumentRequest):
     Returns fields with value, grounded status, bbox, cascade method,
     confidence, and source_link for each extracted field.
     """
-    # Admission covers all document I/O, classification and pipeline work.
-    # Acquiring only at submit time let rejected requests fill the default
-    # executor and retain full document strings before the capacity check.
+    # Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 18.
     slots = _extraction_slots
     if not slots.acquire(blocking=False):
         OPS_METRICS["extraction_shed_total"] = OPS_METRICS.get("extraction_shed_total", 0) + 1
@@ -1001,47 +979,46 @@ async def extract_document(req: ExtractDocumentRequest):
             headers={"Retry-After": "1"},
         )
 
+    deadline = time.monotonic() + EXTRACTION_DEADLINE_SECONDS
+
     def _run_admitted():
         file_path = resolve_sandbox_path(req.file)
         filepath = str(file_path)
         try:
-            with open(filepath, "rb") as source:
-                content = source.read(MAX_UPLOAD_BYTES + 1)
-            if len(content) > MAX_UPLOAD_BYTES:
-                raise HTTPException(status_code=413, detail="Document exceeds byte budget")
-            text = content.decode("utf-8", errors="ignore")
+            content = _capture_extraction_source(filepath)
         except OSError as exc:
             logger.exception("unable to read document for extraction")
             raise HTTPException(status_code=422, detail="Unable to read document") from exc
 
-        if file_path.suffix.lower() not in (".txt", ".md"):
-            # Binary containers are not UTF-8 text. Classify parsed content,
-            # otherwise real PDF/DOCX invoices silently select GenericPack.
-            try:
-                from kernel.sidecar.isolated_ingest import (
-                    IsolatedIngestDeadline,
-                    IsolatedIngestResourceError,
-                    ingest_isolated,
-                    isolation_enabled,
-                )
-                if isolation_enabled():
-                    # Killable child process with rlimits: a hung/adversarial
-                    # parser cannot pin a service thread or the GIL (AG-21).
-                    texts = ingest_isolated(
-                        filepath, timeout=max(5.0, EXTRACTION_DEADLINE_SECONDS - 2.0))
-                    text = "\n\n".join(texts)
-                else:
-                    with orchestrator_lock:
-                        chunks, _, _ = IngestorImpl().ingest(filepath)
-                    text = "\n\n".join(chunk.text for chunk in chunks)
-            except IsolatedIngestDeadline as exc:
-                raise HTTPException(status_code=504, detail="Isolated parsing exceeded its deadline", headers={"Retry-After": "5"}) from exc
-            except IsolatedIngestResourceError as exc:
-                raise HTTPException(status_code=422, detail="Document exceeds isolated parsing resource limits") from exc
-            except (ValueError, RuntimeError) as exc:
-                raise HTTPException(status_code=422, detail="Document format is unsupported, invalid, or unavailable") from exc
+        if file_path.suffix.lower() not in (".txt", ".md", ".pdf", ".docx"):
+            raise HTTPException(status_code=422, detail="Document format is unsupported, invalid, or unavailable")
+        try:
+            mode = _extraction_isolation_mode()
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise TimeoutError("Extraction deadline elapsed before parsing")
+            from kernel.sidecar.isolated_ingest import ingest_document_isolated
+
+            if mode == "process":
+                # Parse the already bounded immutable snapshot, not a second
+                # read of a path that may have changed since admission.
+                chunks, doc, pages = ingest_document_isolated(
+                    filepath, timeout=remaining, content=content)
+            else:
+                # Explicit development-only escape hatch. Still parse once,
+                # off the event loop, under the existing native-engine guard.
+                with orchestrator_lock:
+                    chunks, doc, pages = ingest_document_isolated(
+                        filepath, timeout=remaining, content=content)
+            captured_ingestor = _CapturedIngestor.capture(chunks, doc, pages)
+        except TimeoutError as exc:
+            raise HTTPException(status_code=504, detail="Isolated parsing exceeded its deadline", headers={"Retry-After": "5"}) from exc
+        except Exception as exc:  # parser/config boundary: never fall back
+            raise HTTPException(status_code=422, detail="Document format is unsupported, invalid, or unavailable") from exc
 
         from kairo.core.classifier import classify_document
+        captured_chunks, _, _ = captured_ingestor.ingest(filepath)
+        text = "\n\n".join(chunk.text for chunk in captured_chunks)
         doc_type = classify_document(text)
         pack_class = {
             "invoice": InvoicePack,
@@ -1050,12 +1027,11 @@ async def extract_document(req: ExtractDocumentRequest):
             "memo": ClassifiedMemoPack,
             "generic": GenericPack,
         }.get(doc_type, GenericPack)
-        doc = Document(source_path=filepath)
         # The store and capacity belong to the actual worker, not its waiter.
         # Cancelling an HTTP request cannot stop a running Python thread.
         with MemoryStoreImpl(":memory:") as request_store:
             request_orchestrator = OrchestratorImpl(
-                ingestor=IngestorImpl(),
+                ingestor=captured_ingestor,
                 security_filter=LocalSecurityFilter(enable_pii_scan=False),
                 inference_gateway=TieredInferenceGateway(tier3_enabled=False),
                 quality_gate=LocalQualityGate(request_store),
@@ -1317,9 +1293,7 @@ async def get_source_provenance(extraction_id: str):
     }
 
 
-# ------------------------------------------------------------------
-# Production ops endpoints: liveness, readiness, metrics
-# ------------------------------------------------------------------
+# Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 19.
 
 @app.get("/healthz")
 async def healthz():
@@ -1339,14 +1313,7 @@ async def livez():
     return {"status": "alive", "uptime_seconds": round(time.time() - OPS_METRICS["started_at"], 2)}
 
 
-# AG-09: readiness must not lie. The previous implementation cached one
-# successful synthetic probe for the life of the process, so a pod whose
-# parsers, state directory or worker pool later broke stayed in rotation.
-# Now a verified-ready verdict is only trusted for READYZ_TTL_SECONDS, a
-# failing verdict is cached briefly (negative TTL) so a load balancer polling
-# many replicas cannot stampede the pipeline, and exactly one probe runs at a
-# time per process (single-flight). Recovery is automatic: the next probe
-# after the TTL re-validates and restores routing.
+# Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 20.
 READYZ_TTL_SECONDS = float(os.environ.get("AXIOM_READYZ_TTL_SECONDS", "30"))
 # Negative caching is opt-in: the single-flight lock already serialises probes,
 # and failing dependency checks are cheap. Enable for very large fleets.
@@ -1473,9 +1440,7 @@ async def metrics(format: str = "json"):
         lines=[f"axiom_requests_total {total}",f"axiom_errors_total {data['errors_total']}",
                f"axiom_auth_rejections_total {data['auth_rejections_total']}",f"axiom_extraction_shed_total {data['extraction_shed_total']}",f"axiom_log_dropped_total {data['log_dropped_total']}",f"axiom_rate_limit_buckets {data['active_rate_limit_buckets']}"]
         lines += [f'axiom_http_status_total{{code="{code}"}} {count}' for code,count in data["status_counts"].items()]
-        # Latency summary (Prometheus summary-style quantiles). Alerting on P95/P99 requires this
-        # exposition; the JSON form alone is not scrapeable. Quantiles are over the bounded in-process
-        # sample window, so each worker reports its own distribution (aggregate with max() by pod).
+        # Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 21.
         lines += ["# TYPE axiom_request_latency_ms summary"]
         lines += [f'axiom_request_latency_ms{{quantile="{q}"}} {v}' for q, v in
                   (("0.5", data["latency_percentiles"]["p50"]), ("0.9", data["latency_percentiles"]["p90"]),
@@ -1488,16 +1453,7 @@ async def metrics(format: str = "json"):
     return data
 
 
-# ------------------------------------------------------------------
-# SEC-014 (zero-day): RequestValidationError serialization panic.
-# FastAPI's jsonable_encoder renders raw bytes with `lambda o: o.decode()`.
-# A client POSTing non-UTF-8 garbage (e.g. Content-Type:
-# application/octet-stream) therefore raises UnicodeDecodeError *inside* the
-# ASGI error path, which escapes Starlette as an unhandled 500 panic instead
-# of an honest 422. We sanitize the validation payload (lossy-replace
-# undecodable bytes, cap echoed blob size) before encoding, so malformed
-# input always fails closed, fast, and without leaking a stack trace.
-# ------------------------------------------------------------------
+# Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 22.
 _MAX_ECHOED_INPUT_BYTES = 256
 
 
