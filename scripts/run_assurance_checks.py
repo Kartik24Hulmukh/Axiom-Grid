@@ -43,6 +43,8 @@ def main() -> int:
             "overlay/tests/test_worker_lifecycle.py",
             "overlay/tests/test_logging_queue_snapshot.py",
             "overlay/tests/test_validation_hygiene_contract.py",
+            "overlay/tests/test_response_middleware_contract.py",
+            "overlay/tests/test_request_guard_contract.py",
             "kernel/tests/test_launch_hardening_ag07_08_09.py::test_extraction_deadline_returns_504_and_releases_slot",
             "overlay/tests/test_extraction_admission.py",
             "overlay/tests/test_extraction_context.py",
