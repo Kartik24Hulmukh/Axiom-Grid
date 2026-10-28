@@ -2,6 +2,15 @@
 
 ## Current publication update
 
+PR34 is merged at b7d497aef4d236c290b360e5bb330012bf585fb7 after all six
+review-head checks passed. However, separate main CI run40749401103 failed the
+unchanged latency gate atP50=225.070125ms (512passed,1failed). Production
+qualification remains blocked. See POST_MERGE_GATE_FOLLOWUP.md for the bounded
+auth/rate ASGI follow-up and actual latest results; the snapshots below remain
+historical. Existing Pages website publishing also ran after the merge.
+
+### Earlier four-wrapper candidate snapshot
+
 A reviewed ASGI candidate now removes four middleware task wrappers while
 preserving scoped request/header/security/logging/metrics contracts. Its
 independent118cases and selected322-test profile pass, but the unchanged full
