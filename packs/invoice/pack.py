@@ -158,14 +158,28 @@ class InvoicePack:
         emit("tax_amount", taxes, 0.85)  # Explicit zero is valid; absence is unknown.
 
         terms = []
+        # Explicit terms labels identify the role of free-form text. Generic
+        # payment labels may instead contain a paid amount or receipt status;
+        # accept them only when the entire value is a recognized terms form.
+        generic_terms = (
+            r"(?:net[ \t]*[0-9]+|due[ \t]+(?:on|upon)[ \t]+receipt|"
+            r"due[ \t]+immediately[ \t]+upon[ \t]+receipt|immediate|"
+            r"immediately[ \t]+upon[ \t]+receipt|[0-9]+/[0-9]+[ \t]+net[ \t]*[0-9]+|"
+            r"within[ \t]+[0-9]+[ \t]+days|[0-9]+[ \t]+(?:dagar|tage))"
+        )
         for line, chunk in records:
-            match = re.fullmatch(r"(?:payment[ \t]+terms|terms|payment|betalningsvillkor|betalning|zahlungsbedingungen|zahlung)[ \t]*:[ \t]*(.+)", line, re.I)
+            match = re.fullmatch(r"(?:payment[ \t]+terms|terms|betalningsvillkor|zahlungsbedingungen)[ \t]*:[ \t]*(.+)", line, re.I)
             if match:
                 terms.append((match[1], match[1], chunk))
-            else:
-                match = re.fullmatch(r"((?:payment[ \t]+)?due[ \t]+(?:immediately[ \t]+)?(?:upon[ \t]+)?receipt)", line, re.I)
-                if match:
-                    terms.append(("Due on Receipt", match[1], chunk))
+                continue
+            match = re.fullmatch(r"(?:payment|betalning|zahlung)[ \t]*:[ \t]*(.+)", line, re.I)
+            if match:
+                if re.fullmatch(generic_terms, match[1], re.I):
+                    terms.append((match[1], match[1], chunk))
+                continue
+            match = re.fullmatch(r"((?:payment[ \t]+)?due[ \t]+(?:immediately[ \t]+)?(?:upon[ \t]+)?receipt)", line, re.I)
+            if match:
+                terms.append(("Due on Receipt", match[1], chunk))
         emit("payment_terms", terms, 0.85)  # No default Net 30 obligation.
 
         # Line items — handle table format and bullet-point format

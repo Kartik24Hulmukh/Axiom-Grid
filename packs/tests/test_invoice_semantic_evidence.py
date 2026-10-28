@@ -171,3 +171,35 @@ def test_invoice_hash_label_establishes_context_without_header():
 
 def test_conflicting_currency_symbol_does_not_override_explicit_code():
     assert "currency" not in extract("INVOICE\nNorthstar Binding Studio\nCurrency: USD\nTotal: €10.00")
+
+
+@pytest.mark.parametrize("label", ["Payment", "Betalning", "Zahlung"])
+@pytest.mark.parametrize("value", ["$120.00", "120.00", "EUR 120.00", "Received", "Paid", "Pending",
+                                   "Received Net 30", "Net 30 received", "Due on Receipt; paid $120.00"])
+def test_generic_payment_amounts_and_statuses_are_not_terms(label, value):
+    result = extract(f"INVOICE\nNorthstar Binding Studio\n{label}: {value}")
+    assert "payment_terms" not in result
+
+
+@pytest.mark.parametrize("label", ["Payment", "Betalning", "Zahlung"])
+@pytest.mark.parametrize("value", ["Net30", "Net 30", "Due on Receipt", "Due upon receipt", "2/10 Net 30",
+                                   "within 14 days"])
+def test_generic_payment_recognized_terms_preserved(label, value):
+    result = extract(f"INVOICE\nNorthstar Binding Studio\n{label}: {value}")
+    assert result["payment_terms"].value == value
+    assert result["payment_terms"].source_span == value
+
+
+@pytest.mark.parametrize("label,value", [("Betalning", "30 dagar"), ("Zahlung", "30 Tage")])
+def test_translated_generic_payment_duration_terms(label, value):
+    assert extract(f"INVOICE\nNorthstar Binding Studio\n{label}: {value}")["payment_terms"].value == value
+
+
+@pytest.mark.parametrize("label", ["Payment Terms", "Terms", "Betalningsvillkor", "Zahlungsbedingungen"])
+def test_explicit_terms_labels_preserve_freeform_terms(label):
+    value = "Half on signing; balance on delivery"
+    assert extract(f"INVOICE\nNorthstar Binding Studio\n{label}: {value}")["payment_terms"].value == value
+
+
+def test_generic_payment_label_cannot_consume_next_line_terms():
+    assert "payment_terms" not in extract("INVOICE\nNorthstar Binding Studio\nPayment:\nNet 30")
