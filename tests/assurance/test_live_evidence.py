@@ -73,9 +73,16 @@ class ProbeEvidenceTests(unittest.TestCase):
 
     def test_reported_inventory_identity_is_strict(self):
         identity = {"name": "fixture:latest", "digest": "a" * 64, "size": 1024}
-        ready = {"ready": True, "configured_model": identity["name"], "installed_models": [identity]}
+        ready = {"ready": True, "configured_model": identity["name"], "installed_models": [identity],
+                 "expected_digest": "a" * 64, "identity_check_scope": "reported-only"}
         self.assertEqual(probe.reported_model_identity(ready), identity)
-        for bad in [{**ready, "ready": 1}, {**ready, "installed_models": []},
+        for bad in [{**ready, "expected_digest": None},
+                    {**ready, "expected_digest": "A" * 64},
+                    {**ready, "expected_digest": "b" * 64},
+                    {**ready, "identity_check_scope": None},
+                    {**ready, "identity_check_scope": "attested"},
+                    {**ready, "configured_model": "bad name"},
+                    {**ready, "ready": 1}, {**ready, "installed_models": []},
                     {**ready, "installed_models": [identity, identity]},
                     {**ready, "installed_models": [{**identity, "size": True}]},
                     {**ready, "installed_models": [{**identity, "digest": ""}]}]:
@@ -127,7 +134,8 @@ class ProbeEvidenceTests(unittest.TestCase):
     def test_complete_probe_with_synthetic_http_contract(self):
         # Tests the probe, NOT a real runtime/model. No socket is opened.
         identity = {"name": "fixture:latest", "digest": "a" * 64, "size": 1024}
-        ready = {"ready": True, "configured_model": identity["name"], "installed_models": [identity]}
+        ready = {"ready": True, "configured_model": identity["name"], "installed_models": [identity],
+                 "expected_digest": "a" * 64, "identity_check_scope": "reported-only"}
         for invalid in (None, "count", "active_cancel", "idle_cancel"):
             release = threading.Event()
             active = threading.Event()

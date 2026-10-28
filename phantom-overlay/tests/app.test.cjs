@@ -4,7 +4,10 @@ const vm = require('node:vm');
 const fs = require('node:fs');
 const path = require('node:path');
 const script = fs.readFileSync(path.join(__dirname, '..', 'dist', 'app.js'), 'utf8');
-function setup(invoke, readiness = () => Promise.resolve({ready:true,configured_model:'test:latest',installed_models:[{name:'test:latest'}]})) {
+function readyInfo(model = 'test:latest') {
+ return {ready:true,configured_model:model,expected_digest:'a'.repeat(64),identity_check_scope:'reported-only',installed_models:[{name:model}]};
+}
+function setup(invoke, readiness = () => Promise.resolve(readyInfo())) {
   const elements = {};
   const document = {getElementById(id) { return elements[id] ||= {value:'',textContent:'',disabled:false,addEventListener(type,fn){this[type]=fn;}}; }};
   const window = invoke ? {__TAURI__:{core:{invoke}}} : {};
@@ -64,13 +67,13 @@ test('generation cannot start before readiness resolves', async () => {
  let calls=0, ready; const el=setup(async()=>{calls++;},()=>new Promise(r=>{ready=r;}));
  await tick();el('context').value='Test'; await el('generate').click();
  assert.equal(calls,0); assert.equal(el('generate').disabled,true);
- ready({ready:true,configured_model:'test',installed_models:[]}); await tick();
+ ready(readyInfo('test')); await tick();
  assert.equal(el('generate').disabled,false);
 });
 test('stale readiness cannot overwrite a newer failure', async () => {
  const checks=[];const el=setup(async()=>'',()=>new Promise((resolve,reject)=>checks.push({resolve,reject})));
  const retry=el('retry-model').click(); checks[1].reject(Error('offline')); await retry;
- checks[0].resolve({ready:true,configured_model:'stale',installed_models:[]}); await tick();
+ checks[0].resolve(readyInfo('stale')); await tick();
  assert.match(el('model-status').textContent,/offline/); assert.equal(el('generate').disabled,true);
 });
 test('readiness retry never enables generation while pending', async () => {
@@ -81,7 +84,7 @@ test('readiness retry never enables generation while pending', async () => {
 });
 test('generation completion preserves a failed readiness gate', async () => {
  let finish, healthy=true;const el=setup(()=>new Promise(r=>{finish=r;}),async()=>{
- if(!healthy)throw Error('offline');return {ready:true,configured_model:'test',installed_models:[]};
+ if(!healthy)throw Error('offline');return readyInfo('test');
  });await tick();el('context').value='Test';const run=el('generate').click();
  healthy=false;await el('retry-model').click();finish('done');await run;
  assert.equal(el('generate').disabled,true);
@@ -108,4 +111,30 @@ test('malformed readiness never unlocks generation', async () => {
  let calls=0;const el=setup(async()=>{calls++;},async()=>({ready:'yes',installed_models:[]}));
  await tick();el('context').value='Test';await el('generate').click();
  assert.equal(el('generate').disabled,true);assert.equal(calls,0);
+});
+
+for (const change of [
+ {expected_digest:undefined}, {expected_digest:'a'.repeat(63)},
+ {expected_digest:'A'.repeat(64)}, {identity_check_scope:undefined},
+ {identity_check_scope:'attested'}, {configured_model:'unsafe model'},
+ {configured_model:''}, {configured_model:'model\n'}, {ready:'true'}
+]) {
+ test(`incompatible identity metadata cannot enable generation: ${JSON.stringify(change)}`, async () => {
+  let calls=0;const el=setup(async()=>{calls++;},async()=>({...readyInfo(),...change}));
+  await tick();el('context').value='Test';await el('generate').click();
+  assert.equal(el('generate').disabled,true);assert.equal(calls,0);
+ });
+}
+test('legacy name-only readiness is incompatible, not ready', async () => {
+ const el=setup(async()=>'',async()=>({ready:true,configured_model:'test',installed_models:[]}));
+ await tick();assert.equal(el('generate').disabled,true);
+ assert.match(el('model-status').textContent,/incompatible model identity protocol/);
+});
+test('identity mismatch is actionable without claiming merely uninstalled', async () => {
+ const el=setup(async()=>'',async()=>({...readyInfo(),ready:false}));
+ await tick();assert.match(el('model-status').textContent,/approved name, digest and installed inventory/);
+ assert.equal(el('generate').disabled,true);
+});
+test('successful readiness is reported identity, not attestation', async () => {
+ const el=setup(async()=>'');await tick();assert.match(el('model-status').textContent,/not attestation/);
 });
