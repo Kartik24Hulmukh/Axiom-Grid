@@ -38,23 +38,30 @@ async fn slow_model(
     let (e, c) = (entered.clone(), completed.clone());
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
     let port = listener.local_addr().unwrap().port();
-    let mock = Router::new().route(
-        "/api/generate",
-        post(move || {
-            let (e, c) = (e.clone(), c.clone());
-            async move {
-                e.notify_one();
-                tokio::time::sleep(delay).await;
-                c.store(true, Ordering::SeqCst);
-                Json(serde_json::json!({"response":"finished anyway","done":true}))
-            }
-        }),
-    );
+    let mock = Router::new()
+        .route(
+            "/api/tags",
+            axum::routing::get(|| async {
+                Json(serde_json::json!({"models": [{"name": "test", "size": 1234, "digest": "a".repeat(64)}]}))
+            }),
+        )
+        .route(
+            "/api/generate",
+            post(move || {
+                let (e, c) = (e.clone(), c.clone());
+                async move {
+                    e.notify_one();
+                    tokio::time::sleep(delay).await;
+                    c.store(true, Ordering::SeqCst);
+                    Json(serde_json::json!({"model":"test", "response":"finished anyway","done":true}))
+                }
+            }),
+        );
     let server = tokio::spawn(async move {
         axum::serve(listener, mock).await.unwrap();
     });
     let app = router(
-        AppState::local("test".into())
+        AppState::local("test".into(), "a".repeat(64))
             .unwrap()
             .with_loopback_port(port),
         token(),
@@ -98,7 +105,7 @@ async fn cancel_aborts_in_flight_generation_and_frees_the_slot() {
         String::from_utf8(to_bytes(aborted.into_body(), 1000).await.unwrap().to_vec()).unwrap();
     assert!(text.contains("cancelled") && !text.contains("finished anyway"));
 
-    // The model connection was dropped, so the mock never ran to completion.
+    // This transport mock did not complete; real-backend compute termination is not proven.
     tokio::time::sleep(Duration::from_millis(1800)).await;
     assert!(
         !completed.load(Ordering::SeqCst),
@@ -120,7 +127,7 @@ async fn cancel_aborts_in_flight_generation_and_frees_the_slot() {
 
 #[tokio::test]
 async fn cancel_is_idempotent_when_nothing_is_running() {
-    let app = router(AppState::local("test".into()).unwrap(), token());
+    let app = router(AppState::local("test".into(), "a".repeat(64)).unwrap(), token());
     for _ in 0..2 {
         let res = app
             .clone()
@@ -136,7 +143,7 @@ async fn cancel_is_idempotent_when_nothing_is_running() {
 
 #[tokio::test]
 async fn cancel_requires_native_authentication() {
-    let app = router(AppState::local("test".into()).unwrap(), token());
+    let app = router(AppState::local("test".into(), "a".repeat(64)).unwrap(), token());
     let anonymous = Request::builder()
         .method("POST")
         .uri("/cancel")

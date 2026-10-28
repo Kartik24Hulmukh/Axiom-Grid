@@ -9,6 +9,11 @@ use tower::ServiceExt;
 fn token() -> ApiToken {
     ApiToken::parse("a".repeat(64)).unwrap()
 }
+fn inventory(model: &'static str) -> axum::routing::MethodRouter {
+    axum::routing::get(move || async move {
+        Json(serde_json::json!({"models": [{"name": model, "size": 1234, "digest": "a".repeat(64)}]}))
+    })
+}
 fn request(body: &str) -> axum::http::request::Builder {
     let _ = body;
     Request::builder()
@@ -21,21 +26,23 @@ fn request(body: &str) -> axum::http::request::Builder {
 async fn app_with_mock(response: serde_json::Value) -> (Router, tokio::task::JoinHandle<()>) {
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
     let port = listener.local_addr().unwrap().port();
-    let server = Router::new().route(
-        "/api/generate",
-        post(move |Json(input): Json<serde_json::Value>| async move {
-            assert_eq!(input["model"], "test:latest");
-            assert_eq!(input["stream"], false);
-            assert_eq!(input["prompt"], "Rewrite this");
-            Json(response)
-        }),
-    );
+    let server = Router::new()
+        .route("/api/tags", inventory("test:latest"))
+        .route(
+            "/api/generate",
+            post(move |Json(input): Json<serde_json::Value>| async move {
+                assert_eq!(input["model"], "test:latest");
+                assert_eq!(input["stream"], false);
+                assert_eq!(input["prompt"], "Rewrite this");
+                Json(response)
+            }),
+        );
     let task = tokio::spawn(async move {
         axum::serve(listener, server).await.unwrap();
     });
     (
         router(
-            AppState::local("test:latest".into())
+            AppState::local("test:latest".into(), "a".repeat(64))
                 .unwrap()
                 .with_loopback_port(port),
             token(),
@@ -51,7 +58,10 @@ fn invalid_token_config_fails_closed() {
 }
 #[tokio::test]
 async fn authenticated_preview_roundtrip() {
-    let (app, task) = app_with_mock(serde_json::json!({"response":"Hello 🌍", "done":true})).await;
+    let (app, task) = app_with_mock(serde_json::json!({
+        "model":"test:latest", "response":"Hello 🌍", "done":true
+    }))
+    .await;
     let res = app
         .oneshot(
             request("")
@@ -70,7 +80,7 @@ async fn authenticated_preview_roundtrip() {
 }
 #[tokio::test]
 async fn rejects_untrusted_clients() {
-    let app = router(AppState::local("test".into()).unwrap(), token());
+    let app = router(AppState::local("test".into(), "a".repeat(64)).unwrap(), token());
     let no_token = Request::builder()
         .method("POST")
         .uri("/materialize")
@@ -97,7 +107,7 @@ async fn rejects_untrusted_clients() {
 }
 #[tokio::test]
 async fn bounded_explicit_input_and_removed_routes() {
-    let app = router(AppState::local("test".into()).unwrap(), token());
+    let app = router(AppState::local("test".into(), "a".repeat(64)).unwrap(), token());
     for (body, status) in [
         (r#"{"context":" "}"#.to_string(), 400),
         ("{}".into(), 422),
@@ -142,10 +152,10 @@ async fn bounded_explicit_input_and_removed_routes() {
 #[tokio::test]
 async fn invalid_model_output_fails_without_leaking_content() {
     for output in [
-        serde_json::json!({"response":"", "done":true}),
-        serde_json::json!({"response":"partial secret", "done":false}),
+        serde_json::json!({"model":"test:latest", "response":"", "done":true}),
+        serde_json::json!({"model":"test:latest", "response":"partial secret", "done":false}),
         serde_json::json!({"error":"secret"}),
-        serde_json::json!({"response":"x".repeat(270000),"done":true}),
+        serde_json::json!({"model":"test:latest", "response":"x".repeat(270000),"done":true}),
     ] {
         let (app, task) = app_with_mock(output).await;
         let r = app
@@ -174,19 +184,21 @@ async fn concurrent_generation_is_rejected() {
     let b = release.clone();
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
     let port = listener.local_addr().unwrap().port();
-    let mock = Router::new().route(
-        "/api/generate",
-        post(move || async move {
-            a.notify_one();
-            b.notified().await;
-            Json(serde_json::json!({"response":"Done","done":true}))
-        }),
-    );
+    let mock = Router::new()
+        .route("/api/tags", inventory("test"))
+        .route(
+            "/api/generate",
+            post(move || async move {
+                a.notify_one();
+                b.notified().await;
+                Json(serde_json::json!({"model":"test", "response":"Done","done":true}))
+            }),
+        );
     let server = tokio::spawn(async move {
         axum::serve(listener, mock).await.unwrap();
     });
     let app = router(
-        AppState::local("test".into())
+        AppState::local("test".into(), "a".repeat(64))
             .unwrap()
             .with_loopback_port(port),
         token(),
@@ -228,21 +240,23 @@ async fn redirects_and_http_errors_are_not_success() {
     ] {
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
         let port = listener.local_addr().unwrap().port();
-        let mock = Router::new().route(
-            "/api/generate",
-            post(move || async move {
-                (
-                    status,
-                    [("location", "http://127.0.0.1:1/never-follow")],
-                    "sensitive server detail",
-                )
-            }),
-        );
+        let mock = Router::new()
+            .route("/api/tags", inventory("test"))
+            .route(
+                "/api/generate",
+                post(move || async move {
+                    (
+                        status,
+                        [("location", "http://127.0.0.1:1/never-follow")],
+                        "sensitive server detail",
+                    )
+                }),
+            );
         let server = tokio::spawn(async move {
             axum::serve(listener, mock).await.unwrap();
         });
         let app = router(
-            AppState::local("test".into())
+            AppState::local("test".into(), "a".repeat(64))
                 .unwrap()
                 .with_loopback_port(port),
             token(),
@@ -261,7 +275,7 @@ async fn redirects_and_http_errors_are_not_success() {
 }
 #[tokio::test]
 async fn health_is_not_model_readiness() {
-    let app = router(AppState::local("missing".into()).unwrap(), token());
+    let app = router(AppState::local("missing".into(), "a".repeat(64)).unwrap(), token());
     let r = app
         .oneshot(
             Request::builder()
@@ -284,8 +298,8 @@ async fn authenticated_readiness_reports_exact_model_inventory() {
         "/api/tags",
         axum::routing::get(|| async {
             Json(serde_json::json!({"models":[
-                {"name":"test:latest","size":1234,"digest":"sha256:abc"},
-                {"name":"test:other","size":9,"digest":"sha256:def"}
+                {"name":"test:latest","size":1234,"digest":format!("sha256:{}", "A".repeat(64))},
+                {"name":"test:other","size":9,"digest":"b".repeat(64)}
             ]}))
         }),
     );
@@ -293,7 +307,7 @@ async fn authenticated_readiness_reports_exact_model_inventory() {
         axum::serve(listener, mock).await.unwrap();
     });
     let app = router(
-        AppState::local("test:latest".into())
+        AppState::local("test:latest".into(), "a".repeat(64))
             .unwrap()
             .with_loopback_port(port),
         token(),
@@ -312,6 +326,9 @@ async fn authenticated_readiness_reports_exact_model_inventory() {
     assert_eq!(value["ready"], true);
     assert_eq!(value["configured_model"], "test:latest");
     assert_eq!(value["installed_models"][0]["size"], 1234);
+    assert_eq!(value["installed_models"][0]["digest"], "a".repeat(64));
+    assert_eq!(value["expected_digest"], "a".repeat(64));
+    assert_eq!(value["identity_check_scope"], "reported-only");
     server.abort();
 }
 
@@ -329,7 +346,7 @@ async fn readiness_requires_auth_and_exact_tag() {
         axum::serve(listener, mock).await.unwrap();
     });
     let app = router(
-        AppState::local("model:latest".into())
+        AppState::local("model:latest".into(), "a".repeat(64))
             .unwrap()
             .with_loopback_port(port),
         token(),
@@ -384,7 +401,7 @@ async fn readiness_rejects_oversized_and_redirected_inventory() {
             .unwrap();
         });
         let app = router(
-            AppState::local("test:latest".into())
+            AppState::local("test:latest".into(), "a".repeat(64))
                 .unwrap()
                 .with_loopback_port(port),
             token(),
@@ -412,21 +429,23 @@ async fn redirect_with_valid_generation_json_is_not_success() {
     let server = tokio::spawn(async move {
         axum::serve(
             listener,
-            Router::new().route(
-                "/api/generate",
-                post(|| async {
-                    (
-                        StatusCode::FOUND,
-                        Json(serde_json::json!({"response":"must reject", "done":true})),
-                    )
-                }),
-            ),
+            Router::new()
+                .route("/api/tags", inventory("test:latest"))
+                .route(
+                    "/api/generate",
+                    post(|| async {
+                        (
+                            StatusCode::FOUND,
+                            Json(serde_json::json!({"model":"test:latest", "response":"must reject", "done":true})),
+                        )
+                    }),
+                ),
         )
         .await
         .unwrap();
     });
     let app = router(
-        AppState::local("test:latest".into())
+        AppState::local("test:latest".into(), "a".repeat(64))
             .unwrap()
             .with_loopback_port(port),
         token(),

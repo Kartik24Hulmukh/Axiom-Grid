@@ -18,11 +18,17 @@ async function checkReadiness() {
   try {
     const info = await window.__TAURI__.core.invoke("model_readiness");
     if (current !== readinessCheck) return;
-    modelReady = info.ready === true;
-    const count = Array.isArray(info.installed_models) ? info.installed_models.length : 0;
-    status.textContent = modelReady
-      ? `Ready: ${info.configured_model} (${count} installed model${count === 1 ? "" : "s"}).`
-      : `Not ready: configured model ${info.configured_model} is not installed. Install it explicitly, then retry.`;
+    const identityProtocol = info !== null && typeof info === "object"
+      && info.identity_check_scope === "reported-only"
+      && typeof info.expected_digest === "string" && /^[a-f0-9]{64}$/.test(info.expected_digest)
+      && typeof info.configured_model === "string" && /^[!-~]{1,256}$/.test(info.configured_model);
+    modelReady = identityProtocol && info.ready === true;
+    const count = Array.isArray(info?.installed_models) ? info.installed_models.length : 0;
+    status.textContent = !identityProtocol
+      ? "Not ready: incompatible model identity protocol. Start the updated runtime with an approved model name and digest."
+      : modelReady
+        ? `Ready: ${info.configured_model} (${count} installed model${count === 1 ? "" : "s"}); reported identity matches configuration, not attestation.`
+        : `Not ready: expected identity for ${info.configured_model} is not satisfied. Verify the approved name, digest and installed inventory, then retry.`;
     updateGenerate();
   } catch (error) {
     if (current !== readinessCheck) return;

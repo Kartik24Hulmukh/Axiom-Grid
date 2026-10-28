@@ -57,7 +57,7 @@ replace the root release-status document automatically. Former planted-pass
 shortcuts are rejected. The focused assurance runner includes negative contracts
 for the new tools, not merely a happy-path report snapshot.
 
-## Observed deterministic benchmark coverage failure — still open
+## Historical deterministic coverage failure and new semantic findings
 
 A single local invocation of the final evaluator on the working tree based on
 `47a0543cc50557e143e5d3b3f306a6329d870ac7` ran the actual held-out invoice fixtures
@@ -77,26 +77,17 @@ were altered to manufacture success. Independent review also corrected the
 intermediate wrapper's dirname-based fallback to GenericPack: that earlier
 working-tree run's 50% refusal result is superseded and is not an InvoicePack result.
 
-Positive aggregate counts also do not prove full-corpus completeness: the legacy
-harness may skip an individual missing document. That separate completeness gate
-remains open.
+The current wrapper now validates both indexed corpora, snapshots their bytes, rejects missing/unindexed/symlinked sources and reconciles each document, field and aggregate count. This does not change the inherited harness everywhere else in the monorepo.
 
-The evaluator's negative/positive contract unit tests passing **does not mean this
-benchmark passed**. Add meaningful, independently reviewed negative fixtures and
-remeasure before treating this profile as regression-clean. No real-model quality
-or production qualification follows from these deterministic fixture measurements.
+A subsequent single actual deterministic observation added four independently hand-authored negative documents without changing the three positives or thresholds. All seven documents were accounted for: grounded answers **39/39**, refusals **18/24 (75%, FAIL)**, false refusals **0/39**, ungrounded renders **0**. Exit was **1**, with regression/release/production flags false. Six lexically grounded but semantically wrong extractions exposed newline-spanning invoice labels, due-vs-issue date confusion, absent-tax defaults, arbitrary heading-as-vendor and provisional competing totals. The historical failure is retained; it is not erased by contract-test passes. Pack corrections and any later measurement must be identified separately.
+
+No real-model quality or production qualification follows from these deterministic fixture measurements.
 
 ## Remaining blockers — not solved by these changes
 
 - Select an exact target OS/build, CPU/RAM/GPU, backend version and model assets.
   No such customer device profile has yet been qualified here.
-- Native runtime readiness currently accepts a matching inventory name even when
-  digest/size are missing or duplicate entries conflict. Generation has no expected
-  digest preflight, and its response model identity is not checked. These are
-  source-derived counterexamples, **not locally executed Rust reproductions**.
-  Add an approved expected-identity policy and tests before relying on readiness.
-  Even a matching reported digest cannot attest a dishonest backend or eliminate
-  substitution between checks; artifact/backend provenance remains separate.
+- The new [expected-identity policy](MODEL_IDENTITY_POLICY.md) adds required approved configuration, shared readiness/generation preflight and response-model consistency. Local Rust compilation/execution is unavailable; exact-head remote CI is required before accepting those contracts. Even passing report checks cannot attest a dishonest backend or eliminate substitution between checks; artifact/backend provenance remains separate.
 - Run real compiled UI + real-model end-to-end tests on that profile, including
   disconnected cold start, missing assets, bounded resources, cancellation/quit,
   failure recovery and protected pairing. A dropped HTTP request does not prove
