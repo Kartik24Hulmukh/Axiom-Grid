@@ -98,9 +98,9 @@ samples: ## Run Q&A on all bundled samples (grounded + refusal demo)
 	@echo ""
 	@echo "=== Samples demo complete ==="
 
-release-check: ## Release gate automation — asserts all 4 gates + air-gap + verifier on held-out corpus
+release-check: ## Deterministic regression evaluator only; never production clearance
 	$(PYTHON) scripts/release_check.py
-	@echo "RELEASE-CHECK: see RELEASE_REPORT.md"
+	@echo "REGRESSION ONLY: no production qualification or implicit release report"
 
 lint: ## Ruff gates exactly as CI focused-runtime runs them (repo root)
 	python3 -m ruff check --select E9,F overlay kernel kairo/context/compressor.py scripts/stress_sec006_gauntlet.py stress_test.py

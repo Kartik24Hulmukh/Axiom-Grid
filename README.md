@@ -25,6 +25,9 @@ between archived local-validation verdicts and current GitHub publication/CI sta
 permission does not grant permission for AI in an assessment. No covert deployment,
 concealed assessment aid or bypass of institutional security policy is supported.
 
+See [release qualification and retired certification tools](docs/RELEASE_QUALIFICATION.md)
+for evidence requirements and the remaining native/model/distribution blockers.
+
 ## Review and validation commands
 
 These commands test deliberately narrow behavior; passing them does not qualify a
