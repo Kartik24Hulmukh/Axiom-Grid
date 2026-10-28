@@ -5,6 +5,7 @@ FastAPI service serving the premium glass-chrome UX for de-identification triage
 Allows viewing source documents, highlights bbox, and accept/edit/reject.
 """
 
+# Explanatory source notes: docs/SERVER_SOURCE_NOTES.md
 from __future__ import annotations
 
 import asyncio
@@ -43,7 +44,7 @@ from fastapi.responses import JSONResponse as _BaseJSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-# Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 1.
+# Source note1.
 _SURROGATE_RE = re.compile(r"[\ud800-\udfff]")
 
 
@@ -59,7 +60,7 @@ class JSONResponse(_BaseJSONResponse):
         try:
             return super().render(content)
         except (UnicodeEncodeError, ValueError, TypeError, RecursionError):
-            # Note26 in docs/SERVER_SOURCE_NOTES.md.
+            # Source note26.
             return json.dumps(_json_total(content), ensure_ascii=True).encode("utf-8")
 
 
@@ -137,6 +138,7 @@ from kernel.sidecar.orchestrator import OrchestratorImpl
 from kernel.sidecar.quality_gate import LocalQualityGate
 from kernel.sidecar.security_filter import LocalSecurityFilter
 from overlay.body_limit import BodyLimitMiddleware
+from overlay.request_gates import ApiKeyAuthMiddleware, RateLimitMiddleware
 from overlay.request_guards import OriginGateMiddleware, RequestGovernorMiddleware
 from overlay.response_headers import RequestIdMiddleware, SecurityHeadersMiddleware
 from overlay.telemetry import install_tracing, log_context
@@ -154,14 +156,14 @@ async def _lifespan(_app: FastAPI):
     global _extraction_pool
     memory_store.reopen()
     if _extraction_pool._shutdown:
-        # Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 2.
+        # Source note2.
         _extraction_pool = concurrent.futures.ThreadPoolExecutor(
             max_workers=EXTRACTION_WORKERS, thread_name_prefix="axiom-extract"
         )
     try:
         yield
     finally:
-        # Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 3.
+        # Source note3.
         await asyncio.to_thread(_extraction_pool.shutdown, wait=True, cancel_futures=True)
         memory_store.close()
 
@@ -170,7 +172,7 @@ app = FastAPI(title="Axiom-Grid Overlay API", lifespan=_lifespan, default_respon
 logger = logging.getLogger("overlay.server")
 
 
-# Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 4.
+# Source note4.
 class JsonLogFormatter(logging.Formatter):
     """Render log records as single-line JSON with stable field names."""
 
@@ -182,7 +184,7 @@ class JsonLogFormatter(logging.Formatter):
             "msg": record.getMessage(),
             "service": "axiom-grid-overlay",
         }
-        # Note26 in docs/SERVER_SOURCE_NOTES.md.
+        # Source note26.
         captured_context = getattr(record, "_queued_log_context", None)
         payload.update(log_context() if captured_context is None else captured_context)
         exc_type = getattr(record, "_queued_exc_type", None)
@@ -212,7 +214,7 @@ class _NonBlockingQueueHandler(logging.handlers.QueueHandler):
     """
 
     def prepare(self, record: logging.LogRecord) -> logging.LogRecord:
-        # Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 23.
+        # Source note23.
         prepared = copy.copy(record)
         prepared._queued_log_context = tuple(log_context().items())
         prepared.message = prepared.getMessage()
@@ -222,7 +224,7 @@ class _NonBlockingQueueHandler(logging.handlers.QueueHandler):
             getattr(prepared.exc_info[0], "__name__", "Exception")
             if prepared.exc_info else None
         )
-        # Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 24.
+        # Source note24.
         prepared.exc_info = None
         prepared.exc_text = None
         prepared.stack_info = None
@@ -252,14 +254,14 @@ def configure_structured_logging(level: str | None = None) -> None:
         handler = _NonBlockingQueueHandler(log_queue)
         handler.setFormatter(JsonLogFormatter())
         root.addHandler(handler)
-    # Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 5.
+    # Source note5.
     queue_handler = next(h for h in root.handlers if isinstance(h, _NonBlockingQueueHandler))
     for name in ("uvicorn", "uvicorn.error", "uvicorn.access"):
         uvicorn_logger = logging.getLogger(name)
         uvicorn_logger.handlers = [queue_handler]
         uvicorn_logger.propagate = False
     root.setLevel((level or os.environ.get("AXIOM_LOG_LEVEL", "INFO")).upper())
-    # Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 25.
+    # Source note25.
     for noisy in ("httpx", "httpcore", "uvicorn.access"):
         logging.getLogger(noisy).setLevel(logging.WARNING)
 
@@ -267,7 +269,7 @@ def configure_structured_logging(level: str | None = None) -> None:
 configure_structured_logging()
 
 
-# Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 6.
+# Source note6.
 def _cors_origins() -> list[str]:
     raw = os.environ.get("AXIOM_CORS_ORIGINS", "")
     origins = [o.strip() for o in raw.split(",") if o.strip()]
@@ -338,9 +340,9 @@ app.add_middleware(
 )
 
 
-# Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 7.
+# Source note7.
 
-# Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 8.
+# Source note8.
 EXTRACTION_WORKERS = max(
     4,
     int(os.environ.get("AXIOM_EXTRACTION_WORKERS") or 0)
@@ -350,7 +352,7 @@ _extraction_pool = concurrent.futures.ThreadPoolExecutor(
     max_workers=EXTRACTION_WORKERS, thread_name_prefix="axiom-extract"
 )
 
-# Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 9.
+# Source note9.
 _EXTRACTION_QUEUE_DEPTH = int(os.environ.get("AXIOM_EXTRACTION_QUEUE_DEPTH", "16"))
 _extraction_slots = threading.BoundedSemaphore(EXTRACTION_WORKERS + _EXTRACTION_QUEUE_DEPTH)
 _EXTRACTION_CAPACITY = EXTRACTION_WORKERS + _EXTRACTION_QUEUE_DEPTH
@@ -366,11 +368,11 @@ OPS_METRICS = {
 }
 
 MAX_UPLOAD_BYTES = int(os.environ.get("AXIOM_MAX_UPLOAD_BYTES", str(2 * 1024 * 1024)))
-# Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 10.
+# Source note10.
 EXTRACTION_DEADLINE_SECONDS = float(os.environ.get("AXIOM_EXTRACTION_DEADLINE_SECONDS", "30"))
 
 
-# Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 11.
+# Source note11.
 _REQUEST_ID_MAX_LEN = 64
 
 
@@ -378,7 +380,7 @@ async def request_id_middleware(request, call_next):
     rid = request.headers.get("x-request-id", "").strip()
     if not rid or len(rid) > _REQUEST_ID_MAX_LEN:
         rid = uuid.uuid4().hex
-    # Note26 in docs/SERVER_SOURCE_NOTES.md.
+    # Source note26.
     rid = "".join(ch for ch in rid if ch.isascii() and (ch.isalnum() or ch in "-_.")) or uuid.uuid4().hex
     request.state.request_id = rid
     response = await call_next(request)
@@ -461,7 +463,7 @@ app.add_middleware(
 )
 
 
-# Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 12.
+# Source note12.
 
 _AUTH_EXEMPT_PATHS = {"/", "/healthz", "/api/health", "/livez", "/readyz", "/metrics", "/dashboard", "/docs", "/openapi.json", "/redoc"}
 _AUTH_EXEMPT_PREFIXES: tuple[str, ...] = ()
@@ -514,13 +516,9 @@ def _authenticate(request) -> str | None:
     return match
 
 
-@app.middleware("http")
-async def api_key_auth_middleware(request, call_next):
-    """SEC-006: bearer/API-key gate. 401 + WWW-Authenticate on bad/missing key,
-    503 when production posture is demanded but no keys are configured
-    (fail closed, never fail open)."""
+def _api_key_auth_response(request):
     if not _auth_enabled() or _is_auth_exempt(request.url.path):
-        return await call_next(request)
+        return None
     if not _API_KEY_DIGESTS:
         OPS_METRICS["auth_rejections_total"] = OPS_METRICS.get("auth_rejections_total", 0) + 1
         return JSONResponse(
@@ -536,17 +534,30 @@ async def api_key_auth_middleware(request, call_next):
             headers={"WWW-Authenticate": 'Bearer realm="axiom-grid"'},
         )
     request.state.tenant = tenant
+    return None
+
+
+async def api_key_auth_middleware(request, call_next):
+    """SEC-006: bearer/API-key gate. 401 + WWW-Authenticate on bad/missing key,
+    503 when production posture is demanded but no keys are configured
+    (fail closed, never fail open)."""
+    response = _api_key_auth_response(request)
+    if response is not None:
+        return response
     return await call_next(request)
 
 
-# Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 13.
+app.add_middleware(ApiKeyAuthMiddleware, gate=_api_key_auth_response)
+
+
+# Source note13.
 
 _RATE_LIMIT_PER_MIN = int(os.environ.get("AXIOM_RATE_LIMIT_PER_MIN", "300"))
 _RATE_LIMIT_WINDOW_S = 60.0
 _RATE_LIMIT_EXEMPT_PATHS = {"/healthz", "/api/health", "/livez", "/readyz", "/metrics"}
 _rate_limit_buckets: dict[str, deque[float]] = {}
 _RATE_LIMIT_BUCKET_HIGH_WATER = int(os.environ.get("AXIOM_RATE_LIMIT_BUCKET_HIGH_WATER", "500"))
-# Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 14.
+# Source note14.
 _RATE_LIMIT_BUCKET_HARD_CAP = max(_RATE_LIMIT_BUCKET_HIGH_WATER, int(os.environ.get("AXIOM_RATE_LIMIT_BUCKET_HARD_CAP", "5000")))
 _TRUST_PROXY = os.environ.get("AXIOM_TRUST_PROXY", "").lower() in {"1", "true", "yes"}
 _rate_limit_lock = threading.Lock()
@@ -556,11 +567,11 @@ _RATE_LIMIT_PER_MIN_AUTH = int(os.environ.get("AXIOM_RATE_LIMIT_PER_MIN_AUTH", "
 
 
 def _client_key(request) -> str:
-    # Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 15.
+    # Source note15.
     tenant = _authenticate(request) if _API_KEY_DIGESTS else None
     if tenant:
         return f"tenant:{tenant}"
-    # Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 16.
+    # Source note16.
     if _TRUST_PROXY:
         fwd = request.headers.get("x-forwarded-for")
         if fwd:
@@ -571,14 +582,9 @@ def _client_key(request) -> str:
     return client.host if client else "unknown"
 
 
-@app.middleware("http")
-async def rate_limit_middleware(request, call_next):
-    """SEC-005: sliding-window per-IP rate limit. Fails closed with 429 +
-    Retry-After once a client exceeds AXIOM_RATE_LIMIT_PER_MIN requests in a
-    60s window. Health/readiness probes are exempt so orchestrators (k8s)
-    never get throttled out of their own liveness checks."""
+def _rate_limit_response(request):
     if request.url.path in _RATE_LIMIT_EXEMPT_PATHS or _RATE_LIMIT_PER_MIN <= 0:
-        return await call_next(request)
+        return None
 
     key = _client_key(request)
     now = time.monotonic()
@@ -590,7 +596,7 @@ async def rate_limit_middleware(request, call_next):
             for stale_key in stale:
                 _rate_limit_buckets.pop(stale_key, None)
         if len(_rate_limit_buckets) >= _RATE_LIMIT_BUCKET_HARD_CAP and key not in _rate_limit_buckets:
-            # Note26 in docs/SERVER_SOURCE_NOTES.md.
+            # Source note26.
             victims = sorted(_rate_limit_buckets, key=lambda k: _rate_limit_buckets[k][-1] if _rate_limit_buckets[k] else 0.0)
             for victim in victims[: len(_rate_limit_buckets) - int(_RATE_LIMIT_BUCKET_HARD_CAP * 0.9)]:
                 _rate_limit_buckets.pop(victim, None)
@@ -606,7 +612,21 @@ async def rate_limit_middleware(request, call_next):
                 headers={"Retry-After": str(retry_after)},
             )
         bucket.append(now)
+    return None
+
+
+async def rate_limit_middleware(request, call_next):
+    """SEC-005: sliding-window per-IP rate limit. Fails closed with 429 +
+    Retry-After once a client exceeds AXIOM_RATE_LIMIT_PER_MIN requests in a
+    60s window. Health/readiness probes are exempt so orchestrators (k8s)
+    never get throttled out of their own liveness checks."""
+    response = _rate_limit_response(request)
+    if response is not None:
+        return response
     return await call_next(request)
+
+
+app.add_middleware(RateLimitMiddleware, gate=_rate_limit_response)
 
 
 def resolve_sandbox_path(file_path_str: str) -> pathlib.Path:
@@ -661,7 +681,7 @@ orchestrator = OrchestratorImpl(
 
 action_executor = ActionExecutorImpl(provenance_log)
 
-# Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 17.
+# Source note17.
 PIPELINE_CONCURRENCY = max(
     1,
     int(os.environ.get("AXIOM_PIPELINE_CONCURRENCY") or 0)
@@ -731,7 +751,7 @@ async def run_demo(req: DemoRequest):
     file_path = resolve_sandbox_path(req.file)
 
     try:
-        # Note26 in docs/SERVER_SOURCE_NOTES.md.
+        # Source note26.
         try:
             file_bytes = await asyncio.to_thread(file_path.read_bytes)
             digest = hashlib.sha256(file_bytes).hexdigest()
@@ -742,7 +762,7 @@ async def run_demo(req: DemoRequest):
             sha256=digest,
         )
 
-        # 2. Run Orchestrator (off event loop, bounded concurrency; services are individually thread-safe)
+        # Source note27.
         def _run_pipeline(document):
             with orchestrator_lock:
                 return orchestrator.run(document)
@@ -868,7 +888,7 @@ async def record_flywheel_correction(req: CorrectionRequest):
         return {"success": False, "error": str(e)}
 
 
-# Note26 in docs/SERVER_SOURCE_NOTES.md.
+# Source note26.
 (STATE_DIR / "page_images").mkdir(parents=True, exist_ok=True)
 app.mount("/static/page_images", StaticFiles(
     directory=str(STATE_DIR / "page_images"), check_dir=False
@@ -1010,7 +1030,7 @@ async def extract_document(req: ExtractDocumentRequest):
     Returns fields with value, grounded status, bbox, cascade method,
     confidence, and source_link for each extracted field.
     """
-    # Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 18.
+    # Source note18.
     slots = _extraction_slots
     if not slots.acquire(blocking=False):
         OPS_METRICS["extraction_shed_total"] = OPS_METRICS.get("extraction_shed_total", 0) + 1
@@ -1041,11 +1061,11 @@ async def extract_document(req: ExtractDocumentRequest):
             from kernel.sidecar.isolated_ingest import ingest_document_isolated
 
             if mode == "process":
-                # Note26 in docs/SERVER_SOURCE_NOTES.md.
+                # Source note26.
                 chunks, doc, pages = ingest_document_isolated(
                     filepath, timeout=remaining, content=content)
             else:
-                # Note26 in docs/SERVER_SOURCE_NOTES.md.
+                # Source note26.
                 with orchestrator_lock:
                     chunks, doc, pages = ingest_document_isolated(
                         filepath, timeout=remaining, content=content)
@@ -1066,7 +1086,7 @@ async def extract_document(req: ExtractDocumentRequest):
             "memo": ClassifiedMemoPack,
             "generic": GenericPack,
         }.get(doc_type, GenericPack)
-        # Note26 in docs/SERVER_SOURCE_NOTES.md.
+        # Source note26.
         with MemoryStoreImpl(":memory:") as request_store:
             request_orchestrator = OrchestratorImpl(
                 ingestor=captured_ingestor,
@@ -1157,7 +1177,7 @@ async def ask_document(req: AskDocumentRequest):
         logger.exception("unhandled error in /api/ask-document")
         raise HTTPException(status_code=500, detail="ask-document failed") from exc
 
-    # Simple keyword matching: find field whose name or value matches question keywords
+    # Source note27.
     question_lower = question.lower()
     for field_name, field_data in result["fields"].items():
         if field_name.replace("_", " ") in question_lower or field_name in question_lower:
@@ -1186,7 +1206,7 @@ async def get_source_render(doc_id: str, page: int = 1, x: float = 0, y: float =
     For text documents, returns the text with the highlighted region marked.
     For PDFs, would render via PyMuPDF (requires the source file path).
     """
-    # Note26 in docs/SERVER_SOURCE_NOTES.md.
+    # Source note26.
     return {
         "doc_id": doc_id,
         "page": page,
@@ -1330,7 +1350,7 @@ async def get_source_provenance(extraction_id: str):
     }
 
 
-# Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 19.
+# Source note19.
 
 @app.get("/healthz")
 async def healthz():
@@ -1350,9 +1370,9 @@ async def livez():
     return {"status": "alive", "uptime_seconds": round(time.time() - OPS_METRICS["started_at"], 2)}
 
 
-# Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 20.
+# Source note20.
 READYZ_TTL_SECONDS = float(os.environ.get("AXIOM_READYZ_TTL_SECONDS", "30"))
-# Note26 in docs/SERVER_SOURCE_NOTES.md.
+# Source note26.
 READYZ_NEGATIVE_TTL_SECONDS = float(os.environ.get("AXIOM_READYZ_NEGATIVE_TTL_SECONDS", "0"))
 _readyz_probe_lock = threading.Lock()
 _readyz_probe_ok = threading.Event()  # retained for legacy tests / introspection
@@ -1476,7 +1496,7 @@ async def metrics(format: str = "json"):
         lines=[f"axiom_requests_total {total}",f"axiom_errors_total {data['errors_total']}",
                f"axiom_auth_rejections_total {data['auth_rejections_total']}",f"axiom_extraction_shed_total {data['extraction_shed_total']}",f"axiom_log_dropped_total {data['log_dropped_total']}",f"axiom_rate_limit_buckets {data['active_rate_limit_buckets']}"]
         lines += [f'axiom_http_status_total{{code="{code}"}} {count}' for code,count in data["status_counts"].items()]
-        # Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 21.
+        # Source note21.
         lines += ["# TYPE axiom_request_latency_ms summary"]
         lines += [f'axiom_request_latency_ms{{quantile="{q}"}} {v}' for q, v in
                   (("0.5", data["latency_percentiles"]["p50"]), ("0.9", data["latency_percentiles"]["p90"]),
@@ -1489,7 +1509,7 @@ async def metrics(format: str = "json"):
     return data
 
 
-# Implementation notes: docs/SERVER_SOURCE_NOTES.md, note 22.
+# Source note22.
 _MAX_ECHOED_INPUT_BYTES = 256
 
 

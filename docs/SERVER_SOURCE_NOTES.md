@@ -342,3 +342,19 @@ Preserved from the reviewed ASGI server; relocation changes no Python AST.
 # Negative caching is opt-in: the single-flight lock already serialises probes,
 # and failing dependency checks are cheap. Enable for very large fleets.
 ```
+
+## Note 27 — Long standalone explanatory comments (transport only)
+
+Preserved verbatim from the auth/rate follow-up; Python AST unchanged.
+
+### Reviewed source line 764
+
+```text
+        # 2. Run Orchestrator (off event loop, bounded concurrency; services are individually thread-safe)
+```
+
+### Reviewed source line 1179
+
+```text
+    # Simple keyword matching: find field whose name or value matches question keywords
+```
