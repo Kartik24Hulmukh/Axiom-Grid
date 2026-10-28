@@ -2,6 +2,18 @@
 
 ## Current publication update
 
+A reviewed ASGI candidate now removes four middleware task wrappers while
+preserving scoped request/header/security/logging/metrics contracts. Its
+independent118cases and selected322-test profile pass, but the unchanged full
+local gate still fails the latency requirement:511passed,1failed,1skipped,
+P50=201.674716ms against<200ms on the2CPU host. This failure is retained, not
+rounded down or retried away. See RELEASE_GATE_FOLLOWUP.md for every iteration
+and qualification boundary. Exact final-head remote CI must be assessed anew;
+preview-code integration is not production release or a hardware-independent
+SLO claim. The source/workflow latency gate is unchanged.
+
+### Earlier publication and lint-repair snapshot
+
 PR36 is now merged into the assurance REVIEW branch at
 8c7aad8d2ed853cb55682ed8c25750321a9a427a. The stack was explicitly unstacked
 using GitHub's UI, which confirmed base branches and commit histories were
@@ -47,7 +59,7 @@ The exposed chat credential was not used or tested. Publication uses the user's
 connected GitHub MCP authorization. No automatic desktop typing, hidden install,
 assessment aid, production deployment or security-policy bypass is introduced.
 
-## Publication metadata blocker
+## Historical publication metadata blocker (closed above)
 
 The connected MCP uploader changed `scripts/axiom-live-e2e.py` from mode100755 to
 100644 while uploading its unchanged validated bytes. Invoking it explicitly with
@@ -57,7 +69,7 @@ expected source-tree match. The draft PR must retain this blocker until a mode-
 preserving Git write restores100755. All other supplied content matched the local
 validated source. No merge/deployment should be inferred from publication.
 
-## Follow-up
+## Historical follow-up
 
 See RELEASE_GATE_FOLLOWUP.md for the corrected permission regression, unchanged
 latency failure, reproducible runtime CI and mode-only PR #36. The mode repair is

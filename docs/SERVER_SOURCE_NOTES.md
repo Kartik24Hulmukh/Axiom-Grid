@@ -239,3 +239,25 @@ The line ranges below refer to the pre-relocation file in the previous delivery.
 # input always fails closed, fast, and without leaking a stack trace.
 # ------------------------------------------------------------------
 ```
+
+## Note 23 — Queue-handler producer snapshot
+
+```text
+        # QueueHandler.prepare normally calls self.format on the producer.
+        # Snapshot only the request-local fields here; JSON encoding belongs to
+        # the listener. Copy first so other handlers still see the original.
+```
+
+## Note 24 — Queued exception retention
+
+```text
+        # Never retain traceback frames, exception objects/messages or stacks
+        # in the bounded queue. The formatter emits only the exception type.
+```
+
+## Note 25 — Third-party logging level rationale
+
+```text
+    # Third-party per-request chatter is not observability; keep it at WARNING
+    # so the hot path does not pay a JSON serialisation per upstream call.
+```

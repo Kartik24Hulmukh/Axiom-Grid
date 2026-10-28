@@ -166,3 +166,76 @@ plus both lint gates and source/whitespace checks. These runs overlap; do not
 sum them. Final-head remote CI must finish and be assessed separately before a
 code integration decision. Real desktop/local-model/network-offline/installer,
 external review and business/customer/traction gates remain outside these checks.
+
+## Exact-head runtime latency failure after lint repair
+
+At head c7bcd7a4346c8b54ee7ab215f892ca98d81ddf0c, run40743941799
+completed with five successful checks and a failed focused-runtime job. The
+authenticated service log identifies the unchanged threaded surrogate-burst
+600-request/100-worker P50<200ms assertion: P50=286.956224ms,
+P95=448.183918ms, P99=466.860002ms. This is a real release-gate failure,
+not a lint failure, and the earlier passing remote run does not supersede it.
+No main merge or production release is authorized by these results.
+
+Seven separately bounded local downstream checks passed on the same c7 head:
+concurrency posture, undrained-log/shutdown spike, ops/readiness/security-header
+smoke, deterministic memo fixture evaluation, adversarial memo evaluation,
+synthetic authenticated loopback traffic and mixed local stress. These do not
+override the failed service gate or establish real-model/native/offline quality.
+
+A separate narrow optimization is under review: replace only the request-ID
+and security-header BaseHTTPMiddleware wrappers with pure-ASGI equivalents,
+keeping their order, filtering, response headers, shared request state,
+streaming and cancellation behavior. Logging levels, validation hygiene, auth,
+rate limits, body limits, workload, thresholds and warning gates are unchanged.
+Final results and exact-head remote CI remain required before integration.
+
+The first two-wrapper conversion passed50 independent contract cases and static
+lint. Its full local gate still failed:443passed,1failed,1skipped in35.93s;
+P50=233.657022ms, P95=645.355697ms, P99=693.360968ms. These are separate
+uncontrolled runs, not a claimed performance improvement. A further scoped
+conversion of the origin and request-governor wrappers is under review, with
+shared logging/metrics behavior and independent differential contracts. Auth,
+rate-limit, body-limit, tracing and CORS layers remain otherwise unchanged.
+
+## Reviewed four-wrapper ASGI candidate — local validation
+
+The final candidate converts request-ID, security-header, origin and governor
+wrappers to small pure-ASGI modules in their original registration positions.
+Legacy callables remain available; governor completion uses the same shared
+INFO logging/metrics block, observed at headers ready rather than successful
+body delivery. Early rejections preserve existing counter/header semantics.
+Streaming messages/receive are not buffered, and exceptions/cancellation are
+not swallowed. Dynamic policy, limit and metric references remain effective.
+Three explanatory logging comment blocks are preserved verbatim in
+SERVER_SOURCE_NOTES.md notes23–25 to fit the connected uploader's request cap;
+that relocation changes no executable AST.
+
+Independent review: **118 contract cases passed** (50response +68guard),
+with ResourceWarning and unraisable warnings treated as errors; Ruff passed.
+These cover differential legacy behavior, order, state/header isolation,
+streaming/trailers, non-HTTP passthrough, start-send failure, cancellation,
+header-ready completion counts, policy/limit mutation and early rejections.
+
+The full local service gate still **FAILS**:511passed,1failed,1skipped,
+1dependency deprecation warning in31.29s. The sole failure remains the exact
+unchanged600request/100thread surrogate-burst assertion, P50=201.674716ms
+against required<200ms (P95=422.283538ms, P99=442.519578ms). It has zero5xx
+and healthy recovery; realchmod integration skips because this privileged
+host can read mode000. Host:Linux x86_64,2logicalCPUs. No controlled speedup
+claim, retry-until-green, threshold weakening, log suppression or async-client
+substitution follows. The service test, CI workflow and dependency lock are
+byte-identical to c7bcd7a; source fingerprints and failed-run logs are retained.
+
+Selected assurance passed **322 tests** (overlapping the full-suite/independent
+counts; do not sum), plus both configured lint gates, source and whitespace
+checks. Final-head remote CI and review must be assessed before preview-code
+integration. Local host-dependent timing remains explicitly unqualified, even
+if remote CI passes. No compiled-desktop/local-model/offline/installer or
+production/customer/traction certification is established by these tests.
+
+All seven bounded downstream local checks also passed on this ASGI source:
+concurrency posture, undrained-log/shutdown spike, ops/readiness/security-header
+smoke, deterministic memo fixtures, adversarial memo fixtures, synthetic
+authenticated loopback traffic and mixed local stress. They do not override the
+failed full-service latency gate or imply real-model/native/network qualification.
