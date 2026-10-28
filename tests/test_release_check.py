@@ -3,11 +3,13 @@
 These tests exercise the evaluator, not live model behavior or qualification.
 """
 import hashlib
+from copy import deepcopy
 import importlib.util
 import json
 import math
 import pathlib
 import re
+import shutil
 import subprocess
 import sys
 import types
@@ -226,7 +228,7 @@ def test_benchmark_invocation_uses_explicit_invoice_pack_and_isolated(monkeypatc
     harness = types.ModuleType("bench.harness")
     def benchmark(config):
         configurations.append(config)
-        return evidence()
+        return covered_report(check._load_profile_manifest())
     harness.run_benchmark = benchmark
     invoice = types.ModuleType("packs.invoice.pack")
     invoice.InvoicePack = invoice_pack
@@ -244,11 +246,14 @@ def test_benchmark_invocation_uses_explicit_invoice_pack_and_isolated(monkeypatc
         return subprocess.CompletedProcess(command, 0, "", "")
     monkeypatch.setattr(check.subprocess, "run", run)
     report = check._run_bench("fixtures/held_out", str(tmp_path / "bench.json"))
-    assert report == evidence()
+    expected = covered_report(check._load_profile_manifest())
+    expected["profile_coverage"] = check._validate_report_coverage(expected, check._load_profile_manifest())
+    assert report == expected
     command, kwargs = calls[0]
     assert command[:2] == [sys.executable, "-c"]
-    assert configurations == [[{"name": "held_out-invoice", "class": invoice_pack,
-                                "dir": str(check.REPO_ROOT / "fixtures/held_out")}]]
+    assert configurations == [[{"name": name, "class": invoice_pack,
+                                 "dir": str(check.REPO_ROOT / relative)}
+                                for name, relative in check.PROFILE_PACKS]]
     assert kwargs["cwd"] != str(check.REPO_ROOT)
     assert not pathlib.Path(kwargs["cwd"]).exists()
     assert kwargs["env"]["KAIRO_GATEWAY_TEST_MODE"] == "true"
@@ -427,3 +432,233 @@ def test_cohort_mismatch_fails_main_without_qualification(happy, capsys):
     assert result["regression_passed"] is False
     assert result["production_qualified"] is False
     check._check_cloud_tier_policy_rejection.assert_not_called()
+
+
+# Full-shape synthetic reports for the new independent coverage contract.
+def covered_report(manifest):
+    columns = ("answerable_fields", "unanswerable_fields", "grounded_answers",
+               "correct_refusals", "false_refusals", "ungrounded_renders")
+    docs = []
+    packs = {p["name"]: dict.fromkeys(columns, 0) | {"total_documents": 0}
+             for p in manifest["packs"]}
+    for expected in manifest["documents"]:
+        a = len(expected["answerable"]); u = len(check.INVOICE_FIELDS)-a
+        doc = {k: expected[k] for k in ("pack", "fixture_id", "file")}
+        doc.update(answerable_fields=a, unanswerable_fields=u, grounded_answers=a,
+                   correct_refusals=u, false_refusals=0, ungrounded_renders=0)
+        doc["field_details"] = [{"field": f,
+            "status": "grounded" if f in expected["answerable"] else "correct_refusal",
+            "grounded": f in expected["answerable"], "rendered": f in expected["answerable"]}
+            for f in check.INVOICE_FIELDS]
+        docs.append(doc)
+        packs[expected["pack"]]["total_documents"] += 1
+        for c in columns: packs[expected["pack"]][c] += doc[c]
+    for row in packs.values(): row["ungrounded_render_count"] = row.pop("ungrounded_renders")
+    a = sum(d["answerable_fields"] for d in docs)
+    u = sum(d["unanswerable_fields"] for d in docs)
+    gates = {"grounded_answer_rate": {"measured": 100, "numerator": a, "denominator": a},
+             "refusal_on_unanswerable": {"measured": 100, "numerator": u, "denominator": u},
+             "false_refusal_rate": {"measured": 0, "numerator": 0, "denominator": a},
+             "ungrounded_render_count": {"measured": 0}}
+    return {"gates": gates, "per_document": docs, "packs": packs,
+            "corpus_hash": manifest["corpus_hash"]}
+
+
+@pytest.fixture
+def profile_copy(monkeypatch, tmp_path):
+    for _, relative in check.PROFILE_PACKS:
+        shutil.copytree(check.REPO_ROOT / relative, tmp_path / relative)
+    monkeypatch.setattr(check, "REPO_ROOT", tmp_path)
+    return tmp_path
+
+
+def rewrite_index(root, edit, relative="fixtures/held_out_negative"):
+    index = root / relative / "ground_truth.json"
+    data = json.loads(index.read_text())
+    edit(data)
+    index.write_text(json.dumps(data))
+
+
+def test_fixed_profile_covers_both_datasets_and_independent_negatives():
+    manifest = check._load_profile_manifest()
+    assert len(manifest["packs"]) == 2
+    assert len(manifest["documents"]) == 7
+    assert len({d["fixture_id"] for d in manifest["documents"]}) == 7
+    result = check._validate_report_coverage(covered_report(manifest),manifest)
+    assert result["answerable_fields"] == 39
+    assert result["unanswerable_fields"] == 24
+    assert result["document_count"] == 7
+    assert all(check._evaluate(check._compute_gate_metrics(covered_report(manifest)),
+                              dict.fromkeys(check.CHECK_NAMES,True)).values())
+
+
+def test_negative_ground_truth_is_source_justified_not_positive_copies():
+    root = check.REPO_ROOT / "fixtures/held_out_negative"
+    records = json.loads((root/"ground_truth.json").read_text())["fixtures"]
+    by_id = {r["fixture_id"]:r for r in records}
+    assert len(by_id) >= 3
+    positive = {p.read_bytes() for p in (check.REPO_ROOT/"fixtures/held_out").glob("*.txt")}
+    for row in records:
+        text = (root/row["file"]).read_text()
+        assert (root/row["file"]).read_bytes() not in positive
+        assert row["rationale"].strip()
+        assert set(row["ground_truth"]) == set(check.INVOICE_FIELDS)
+        assert row["ground_truth"]["tax_amount"] is None
+        assert row["ground_truth"]["payment_terms"] is None
+        assert "Tax:" not in text and "Payment Terms:" not in text
+    sparse = by_id["negative_sparse_invoice"]
+    assert sparse["ground_truth"] == dict.fromkeys(check.INVOICE_FIELDS) | {
+        "vendor_name":"Northstar Binding Studio", "currency":"EUR", "total_amount":84.0}
+    text = (root/sparse["file"]).read_text()
+    assert "Northstar Binding Studio" in text and "€84.00" in text and "Currency: EUR" in text
+    assert "Date:" not in text and "Number:" not in text
+    due = by_id["negative_due_only_invoice"]
+    assert due["ground_truth"]["invoice_date"] is None
+    assert due["ground_truth"]["due_date"] == "2026-11-12"
+    assert "Due Date: 2026-11-12" in (root/due["file"]).read_text()
+    assert "Invoice Date:" not in (root/due["file"]).read_text()
+    note = by_id["negative_noninvoice_note"]
+    assert all(value is None for value in note["ground_truth"].values())
+    text = (root/note["file"]).read_text()
+    assert "nature note" in text and "no payment is requested" in text
+    ambiguous = by_id["negative_ambiguous_totals"]
+    assert ambiguous["ground_truth"]["total_amount"] is None
+    text = (root/ambiguous["file"]).read_text()
+    assert "$120.00" in text and "$145.00" in text
+    assert "provisional" in text and "Neither is approved" in text
+
+
+@pytest.mark.parametrize("relative", ["fixtures/held_out", "fixtures/held_out_negative"])
+def test_missing_index_document_or_empty_dataset_fails_before_subprocess(profile_copy, relative, tmp_path):
+    directory = profile_copy/relative
+    index = directory/"ground_truth.json"
+    original = index.read_bytes()
+    index.unlink()
+    with pytest.raises(ValueError): check._run_bench("fixtures/held_out",str(tmp_path/"out.json"))
+    index.write_bytes(original)
+    records = json.loads(original)["fixtures"]
+    (directory/records[0]["file"]).unlink()
+    with pytest.raises(ValueError): check._load_profile_manifest()
+    index.write_text('{"fixtures": []}')
+    with pytest.raises(ValueError): check._load_profile_manifest()
+
+
+@pytest.mark.parametrize("edit", [
+    lambda d: d["fixtures"].append(deepcopy(d["fixtures"][0])),
+    lambda d: d["fixtures"][1].update(file=d["fixtures"][0]["file"]),
+    lambda d: d["fixtures"][0].update(file="../outside.txt"),
+    lambda d: d["fixtures"][0].update(file="/tmp/outside.txt"),
+    lambda d: d["fixtures"][0].update(file="nested/file.txt"),
+    lambda d: d["fixtures"][0].update(fixture_id=""),
+    lambda d: d["fixtures"][0].update(ground_truth={}),
+    lambda d: d["fixtures"][0].update(ground_truth={"vendor_name": "fabricated"}),
+    lambda d: d["fixtures"][0].update(file=True),
+    lambda d: d["fixtures"].append(None),
+])
+def test_invalid_index_configuration_rejected(profile_copy, edit):
+    rewrite_index(profile_copy,edit)
+    with pytest.raises(ValueError): check._load_profile_manifest()
+
+
+def test_global_id_uniqueness_and_unindexed_files(profile_copy):
+    positive = json.loads((profile_copy/"fixtures/held_out/ground_truth.json").read_text())["fixtures"][0]["fixture_id"]
+    rewrite_index(profile_copy,lambda d:d["fixtures"][0].update(fixture_id=positive))
+    with pytest.raises(ValueError): check._load_profile_manifest()
+
+
+def test_unindexed_empty_and_symlink_documents_rejected(profile_copy):
+    extra = profile_copy/"fixtures/held_out_negative/unindexed.txt"
+    extra.write_text("not indexed")
+    with pytest.raises(ValueError): check._load_profile_manifest()
+    extra.unlink()
+    source = profile_copy/"fixtures/held_out_negative/sparse_invoice.txt"
+    original = source.read_text(); source.write_text(" ")
+    with pytest.raises(ValueError): check._load_profile_manifest()
+    source.unlink(); target = profile_copy/"outside.txt"; target.write_text(original)
+    source.symlink_to(target)
+    with pytest.raises(ValueError): check._load_profile_manifest()
+
+
+def test_malformed_duplicate_index_and_unsupported_profile_rejected(profile_copy):
+    index = profile_copy/"fixtures/held_out_negative/ground_truth.json"
+    for raw in ('[]', '{', '{"fixtures":[],"fixtures":[]}', '{"fixtures":NaN}'):
+        index.write_text(raw)
+        with pytest.raises(ValueError): check._load_profile_manifest()
+    with pytest.raises(ValueError): check._load_profile_manifest("fixtures/invoice")
+
+
+@pytest.mark.parametrize("mutate", [
+    lambda r:r["per_document"].pop(),
+    lambda r:r["per_document"].append(deepcopy(r["per_document"][0])),
+    lambda r:r["per_document"][0].update(fixture_id="unknown"),
+    lambda r:r["per_document"][0].update(file="other.txt"),
+    lambda r:r["per_document"][0].update(pack="generic"),
+    lambda r:r["per_document"][0].update(answerable_fields=True),
+    lambda r:r["per_document"][0].update(answerable_fields=0),
+    lambda r:r["per_document"][0].update(grounded_answers=0),
+    lambda r:r["per_document"][0]["field_details"].pop(),
+    lambda r:r["per_document"][0]["field_details"].append({}),
+    lambda r:r["per_document"][0]["field_details"][0].update(status="correct_refusal"),
+    lambda r:r["per_document"][0]["field_details"][0].update(grounded=False),
+    lambda r:r["per_document"][0]["field_details"][1].update(field="vendor_name"),
+    lambda r:r["packs"]["held_out-invoice"].update(total_documents=2),
+    lambda r:r["packs"]["held_out-invoice"].update(grounded_answers=0),
+    lambda r:r["packs"].pop("held_out-negative-invoice"),
+    lambda r:r.update(corpus_hash="stale"),
+    lambda r:r["gates"]["grounded_answer_rate"].update(denominator=1),
+    lambda r:r["gates"]["refusal_on_unanswerable"].update(numerator=0),
+    lambda r:r["gates"]["ungrounded_render_count"].update(measured=1),
+])
+def test_missing_duplicate_stale_or_inconsistent_report_coverage_rejected(mutate):
+    manifest = check._load_profile_manifest(); report = covered_report(manifest)
+    mutate(report)
+    with pytest.raises(ValueError): check._validate_report_coverage(report,manifest)
+
+
+def test_changed_source_bytes_reject_stale_report(profile_copy):
+    old = check._load_profile_manifest(); report = covered_report(old)
+    source = profile_copy/"fixtures/held_out_negative/sparse_invoice.txt"
+    source.write_text(source.read_text()+"\nAdditional source text.\n")
+    with pytest.raises(ValueError): check._validate_report_coverage(report,check._load_profile_manifest())
+
+
+def test_profile_change_during_subprocess_rejected(monkeypatch,profile_copy,tmp_path):
+    def run(command,**kwargs):
+        report = covered_report(check._load_profile_manifest())
+        pathlib.Path(command[-1]).write_text(json.dumps(report))
+        source = profile_copy/"fixtures/held_out_negative/sparse_invoice.txt"
+        source.write_text(source.read_text()+"\nChanged during run.\n")
+        return subprocess.CompletedProcess(command,0,"","")
+    monkeypatch.setattr(check.subprocess,"run",run)
+    with pytest.raises(ValueError,match="changed during"):
+        check._run_bench("fixtures/held_out",str(tmp_path/"report.json"))
+
+
+def test_truthful_incorrect_refusal_remains_valid_coverage_but_fails_threshold():
+    manifest = check._load_profile_manifest(); report = covered_report(manifest)
+    doc = next(d for d in report["per_document"] if d["fixture_id"] == "negative_noninvoice_note")
+    field = next(f for f in doc["field_details"] if f["field"] == "vendor_name")
+    field.update(status="incorrect_answer", grounded=True, rendered=True)
+    doc["correct_refusals"] -= 1
+    report["packs"][doc["pack"]]["correct_refusals"] -= 1
+    gate = report["gates"]["refusal_on_unanswerable"]
+    gate["numerator"] -= 1
+    gate["measured"] = round(gate["numerator"] / gate["denominator"] * 100, 4)
+    coverage = check._validate_report_coverage(report,manifest)
+    assert coverage["document_count"] == 7
+    metrics = check._compute_gate_metrics(report)
+    assert check._evaluate(metrics,dict.fromkeys(check.CHECK_NAMES,True))["refusal_on_unanswerable"] is False
+
+
+def test_truthful_false_refusal_preserves_positive_cohort_coverage():
+    manifest = check._load_profile_manifest(); report = covered_report(manifest)
+    doc = report["per_document"][0]
+    doc["field_details"][0].update(status="false_refusal",grounded=False,rendered=False)
+    doc["grounded_answers"] -= 1; doc["false_refusals"] += 1
+    report["packs"][doc["pack"]]["grounded_answers"] -= 1
+    report["packs"][doc["pack"]]["false_refusals"] += 1
+    for name, delta in (("grounded_answer_rate",-1),("false_refusal_rate",1)):
+        gate = report["gates"][name]; gate["numerator"] += delta
+        gate["measured"] = round(gate["numerator"] / gate["denominator"] * 100,4)
+    check._validate_report_coverage(report,manifest)
+    assert check._compute_gate_metrics(report)["rate_counts"]["false_refusal_rate"]["numerator"] == 1

@@ -149,6 +149,11 @@ def reported_model_identity(ready):
     if (not isinstance(ready, dict) or ready.get("ready") is not True
             or not isinstance(ready.get("configured_model"), str)
             or not ready["configured_model"] or len(ready["configured_model"]) > 256
+            or any(not 33 <= ord(c) <= 126 for c in ready["configured_model"])
+            or ready.get("identity_check_scope") != "reported-only"
+            or not isinstance(ready.get("expected_digest"), str)
+            or len(ready["expected_digest"]) != 64
+            or any(c not in "0123456789abcdef" for c in ready["expected_digest"])
             or not isinstance(ready.get("installed_models"), list)):
         raise ValueError("Invalid model readiness report")
     matches = [m for m in ready["installed_models"]
@@ -159,6 +164,7 @@ def reported_model_identity(ready):
     digest = model.get("digest")
     if (not isinstance(digest, str) or len(digest) != 64
             or any(c not in "0123456789abcdef" for c in digest)
+            or digest != ready["expected_digest"]
             or type(model.get("size")) is not int or model["size"] <= 0):
         raise ValueError("Model inventory requires a reported digest and positive byte size")
     return {"name": model["name"], "digest": digest, "size": model["size"]}

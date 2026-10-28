@@ -29,17 +29,25 @@ use tokio::sync::{oneshot, Semaphore};
 pub struct AppState {
     client: reqwest::Client,
     model: String,
+    expected_digest: String,
     inference_url: String,
     tags_url: String,
     slots: Arc<Semaphore>,
     cancel_slot: Arc<Mutex<Option<oneshot::Sender<()>>>>,
 }
 impl AppState {
-    pub fn local(model: String) -> anyhow::Result<Self> {
+    /// Configure an independently supplied expected reported identity, never TOFU.
+    /// Names are exact ASCII graphic strings (1..=256 bytes), with no aliasing or trimming.
+    pub fn local(model: String, expected_digest: String) -> anyhow::Result<Self> {
         anyhow::ensure!(
-            !model.trim().is_empty() && model.len() <= 256,
-            "Invalid model name"
+            !model.is_empty() && model.len() <= 256 && model.bytes().all(|b| b.is_ascii_graphic()),
+            "Invalid model name: require 1..=256 ASCII characters without whitespace or controls"
         );
+        let expected_digest = normalize_digest(&expected_digest).ok_or_else(|| {
+            anyhow::anyhow!(
+                "Invalid expected model digest: require 64 hex digits, optionally prefixed sha256:"
+            )
+        })?;
         Ok(Self {
             client: reqwest::Client::builder()
                 .no_proxy()
@@ -48,6 +56,7 @@ impl AppState {
                 .timeout(Duration::from_secs(90))
                 .build()?,
             model,
+            expected_digest,
             inference_url: "http://127.0.0.1:11434/api/generate".into(),
             tags_url: "http://127.0.0.1:11434/api/tags".into(),
             slots: Arc::new(Semaphore::new(1)),
@@ -74,6 +83,7 @@ pub struct PreviewResponse {
 }
 #[derive(Deserialize)]
 struct OllamaResponse {
+    model: String,
     response: String,
     done: bool,
 }
@@ -100,9 +110,31 @@ pub struct ModelInfo {
 pub struct ReadinessResponse {
     pub ready: bool,
     pub configured_model: String,
+    pub expected_digest: String,
+    pub identity_check_scope: String,
     pub installed_models: Vec<ModelInfo>,
 }
-async fn readiness(State(state): State<AppState>) -> Result<Json<ReadinessResponse>, ApiError> {
+/// Canonical bare lowercase SHA-256 report, not a signature or weights attestation.
+fn normalize_digest(value: &str) -> Option<String> {
+    let normalized = value.to_ascii_lowercase();
+    let hex = normalized.strip_prefix("sha256:").unwrap_or(&normalized);
+    (hex.len() == 64 && hex.bytes().all(|b| b.is_ascii_hexdigit())).then(|| hex.to_string())
+}
+
+/// Shared policy over untrusted reports. Even matching reports can lie, and a
+/// mutable name may change between inventory and generation; no locality or
+/// backend/weights attestation is established by this check.
+fn inventory_matches(state: &AppState, tags: &OllamaTags) -> bool {
+    let mut matches = tags.models.iter().filter(|model| model.name == state.model);
+    let Some(model) = matches.next() else {
+        return false;
+    };
+    matches.next().is_none()
+        && model.size > 0
+        && normalize_digest(&model.digest).as_deref() == Some(state.expected_digest.as_str())
+}
+
+async fn fetch_inventory(state: &AppState) -> Result<OllamaTags, ApiError> {
     let response = state
         .client
         .get(&state.tags_url)
@@ -122,19 +154,26 @@ async fn readiness(State(state): State<AppState>) -> Result<Json<ReadinessRespon
     let bytes = bounded_body(response, "Local model inventory exceeds safety limit").await?;
     let tags: OllamaTags = serde_json::from_slice(&bytes)
         .map_err(|_| (StatusCode::BAD_GATEWAY, "Invalid local model inventory"))?;
-    let ready = tags.models.iter().any(|m| m.name == state.model);
+    Ok(tags)
+}
+
+async fn readiness(State(state): State<AppState>) -> Result<Json<ReadinessResponse>, ApiError> {
+    let tags = fetch_inventory(&state).await?;
+    let ready = inventory_matches(&state, &tags);
     let installed_models = tags
         .models
         .into_iter()
         .map(|m| ModelInfo {
             name: m.name,
             size: m.size,
-            digest: m.digest,
+            digest: normalize_digest(&m.digest).unwrap_or(m.digest),
         })
         .collect();
     Ok(Json(ReadinessResponse {
         ready,
         configured_model: state.model.clone(),
+        expected_digest: state.expected_digest.clone(),
+        identity_check_scope: "reported-only".into(),
         installed_models,
     }))
 }
@@ -181,6 +220,16 @@ async fn bounded_body(
 }
 
 async fn generate(state: &AppState, prompt: String) -> Result<PreviewResponse, ApiError> {
+    // Fresh preflight on every explicit request, inside the slot/cancellation scope.
+    // Never send context when the inventory report fails the configured policy.
+    let tags = fetch_inventory(state).await?;
+    if !inventory_matches(state, &tags) {
+        return Err((
+            StatusCode::SERVICE_UNAVAILABLE,
+            "Reported model identity does not match configured expectation",
+        ));
+    }
+    // Exact mutable name only: digest-addressed execution is not assumed supported.
     let response = state.client.post(&state.inference_url).json(&serde_json::json!({
         "model": state.model, "prompt": prompt, "system": ai::KAIRO_SYSTEM_PROMPT,
         "stream": false, "options": {"num_predict": 2048}
@@ -195,6 +244,13 @@ async fn generate(state: &AppState, prompt: String) -> Result<PreviewResponse, A
     let bytes = bounded_body(response, "Local model output exceeds safety limit").await?;
     let output: OllamaResponse = serde_json::from_slice(&bytes)
         .map_err(|_| (StatusCode::BAD_GATEWAY, "Invalid local model response"))?;
+    // No implicit aliases: a missing model field fails deserialization above.
+    if output.model != state.model {
+        return Err((
+            StatusCode::BAD_GATEWAY,
+            "Local model response identity does not match",
+        ));
+    }
     if !output.done || output.response.trim().is_empty() {
         return Err((
             StatusCode::BAD_GATEWAY,
@@ -224,9 +280,8 @@ async fn preview(
         )
     })?;
     let cancel_rx = arm_cancel(&state);
-    // Racing the model request against the cancel signal drops the in-flight
-    // reqwest future on cancel, which closes the loopback connection so the
-    // local model stops generating instead of running to completion.
+    // Cancellation drops the in-flight inventory/generation HTTP future. This
+    // acknowledges a runtime request abort, not proven backend compute termination.
     let result = tokio::select! {
         r = generate(&state, input.context) => r,
         _ = cancel_rx => Err((

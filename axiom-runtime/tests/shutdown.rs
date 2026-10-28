@@ -19,6 +19,7 @@ fn sigterm_drains_idle_and_stalled_connections_within_deadline() {
         let mut child = ChildGuard(
             Command::new(env!("CARGO_BIN_EXE_axiom-grid"))
                 .env("AXIOM_MODEL", "shutdown-test-no-inference")
+                .env("AXIOM_MODEL_DIGEST", "a".repeat(64))
                 .env("AXIOM_API_TOKEN", "a".repeat(64))
                 .stdout(Stdio::null())
                 .stderr(Stdio::null())

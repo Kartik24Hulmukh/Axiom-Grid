@@ -126,3 +126,7 @@ users, comparative outcomes, repeat purchases and viable support economics.
 
 Root source is MIT; consult `LICENSE`. Dependency, model, asset and service terms
 are separate. No blanket distribution/license clearance is implied.
+
+### Expected model identity
+
+The focused native runtime now requires an independently approved `AXIOM_MODEL_DIGEST` alongside the exact model name. Readiness and every generation check reported identity; this is not backend/weights attestation. See [setup](QUICKSTART.md), [identity policy](docs/MODEL_IDENTITY_POLICY.md) and [qualification evidence and remaining blockers](docs/RELEASE_QUALIFICATION.md).

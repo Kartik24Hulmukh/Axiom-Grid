@@ -1,0 +1,6 @@
+INVOICE
+Copper Finch Repair
+Invoice Number: CF-735
+Due Date: 2026-11-12
+Currency: GBP
+Total Amount Due: £210.00

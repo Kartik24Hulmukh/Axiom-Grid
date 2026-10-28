@@ -18,7 +18,7 @@ function app(cancel = () => Promise.resolve(true)) {
   Object.defineProperty(document, 'activeElement', {get() {throw Error('outside-field capture forbidden');}});
   const window = {__TAURI__:{core:{invoke(name, args) {
     calls.push({name, args});
-    if (name === 'model_readiness') return Promise.resolve({ready:true, configured_model:'fixture', installed_models:[]});
+    if (name === 'model_readiness') return Promise.resolve({ready:true, configured_model:'fixture', expected_digest:'a'.repeat(64), identity_check_scope:'reported-only', installed_models:[]});
     if (name === 'trigger_materialize') return new Promise(resolve => { finish = resolve; });
     if (name === 'cancel_materialize') return cancel();
     throw Error(`unapproved command ${name}`);

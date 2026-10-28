@@ -13,7 +13,6 @@ from typing import Any
 from kernel.core.data_model import (
     Chunk,
     Extraction,
-    ExtractionStatus,
 )
 
 logger = logging.getLogger(__name__)
@@ -38,302 +37,150 @@ class InvoicePack:
         if not chunks:
             return []
 
-        full_text = "\n".join(c.text for c in chunks)
+        # Labels never cross a line/chunk boundary. Strip table borders only;
+        # captured evidence remains an exact substring of its original chunk.
+        records = [(line.strip(" \t│|"), c) for c in chunks for line in c.text.splitlines()
+                   if line.strip(" \t│|")]
+        number_label = (r"(?:invoice[ \t]+(?:number|no\.?|nr)|invoice[ \t]*#|"
+                        r"inv[ \t]+(?:number|no\.?)|fakturanr|faktura[ \t]+nr|"
+                        r"rechnungsnr|receipt[ \t]+no\.?|receipt[ \t]*#)")
+        header = re.compile(r"(?:tax[ \t]+)?invoice(?:[ \t]*:[ \t]*.+)?|faktura(?:[ \t]*/[ \t]*invoice)?|rechnung", re.I)
+        has_invoice_context = any(header.fullmatch(line) or re.match(number_label + r"(?:[ \t]*:|[ \t]+)", line, re.I)
+                                  for line, _ in records)
+        if not has_invoice_context:
+            return []
         extractions: list[Extraction] = []
 
-        # Find vendor name (usually at the top of the invoice, first line or after "FROM:")
-        vendor_name = ""
-        vendor_chunk = chunks[0] if chunks else None
-        if vendor_chunk:
-            lines = [l.strip() for l in vendor_chunk.text.splitlines() if l.strip()]
-            for line in lines[:5]:
-                # Skip border/decorative lines (===, ---, ***, ~~~)
-                if re.match(r'^[=\-*~_]{3,}$', line):
-                    continue
-                # Pattern 1: "INVOICE: Company Name" — extract company name after colon
-                m = re.match(r'^INVOICE\s*:?\s+(.+)', line, re.IGNORECASE)
-                if m:
-                    vendor_name = m.group(1).strip()
-                    break
-                # Skip lines that are just labels
-                if any(x in line.lower() for x in ["invoice", "bill to", "to:", "date:", "due date:"]):
-                    # But check if it's "INVOICE: Company Name" — handled above
-                    if not m:
-                        continue
-                if len(line) > 3 and not line.lower().startswith("invoice"):
-                    vendor_name = line
-                    break
-            # Fallback: if vendor_name still empty, try first non-label, non-border line
-            if not vendor_name:
-                for line in lines[:8]:
-                    # Skip border/decorative lines
-                    if re.match(r'^[=\-*~_]{3,}$', line):
-                        continue
-                    if len(line) > 3 and not any(x in line.lower() for x in ["invoice", "bill to", "to:", "date:", "due date:", "description", "qty", "unit", "receipt"]):
-                        vendor_name = line
-                        break
+        def emit(field, candidates, confidence=0.9):
+            # Conflicting explicit values are unresolved, not first-match wins.
+            if not candidates or len({value for value, _, _ in candidates}) != 1:
+                return
+            value, span, chunk = candidates[0]
+            extractions.append(Extraction(pack_id=self._pack_id, field_name=field,
+                                          value=value, source_span=span,
+                                          confidence=confidence, chunk_id=chunk.chunk_id))
 
-        if vendor_name:
-            extractions.append(Extraction(
-                pack_id=self._pack_id,
-                field_name="vendor_name",
-                value=vendor_name,
-                source_span=vendor_name,
-                confidence=0.9,
-                chunk_id=vendor_chunk.chunk_id if vendor_chunk else "",
-            ))
+        def vendor_candidate(value):
+            return (bool(value) and len(value) <= 200 and any(ch.isalpha() for ch in value)
+                    and ":" not in value and not re.match(
+                        r"(?:invoice|tax[ \t]+invoice|date|due|bill[ \t]+to|customer|currency|total|description|no)\b",
+                        value, re.I))
 
-        # Find invoice number
-        inv_no = ""
-        inv_chunk = None
-        for c in chunks:
-            # Pattern 1: "Invoice Number: XXXX" or "Invoice No: XXXX" (multilingual labels)
-            m = re.search(r'(?:invoice\s+number|invoice\s+no\.?|inv\s+number|fakturanr|faktura\s+nr|rechnungsnr|invoice\s*#|receipt\s+no\.?|receipt\s*#)\s*:?\s*#?\s*([A-Za-z0-9][A-Za-z0-9\-]+)', c.text, re.IGNORECASE)
-            if m:
-                inv_no = m.group(1).strip()
-                inv_chunk = c
-                break
-            # Pattern 2: "INV-XXXX" standalone (starts with INV-)
-            m = re.search(r'\b(INV-[A-Za-z0-9\-]+)\b', c.text)
-            if m:
-                inv_no = m.group(1).strip()
-                inv_chunk = c
-                break
-            # Pattern 3: labeled "No:" or "Number:" near invoice context (line-start)
-            m = re.search(r'(?:^|\n)\s*(?:invoice|inv|faktura)\s*(?:no|number|nr|#)\s*[:.]?\s*([A-Za-z0-9][A-Za-z0-9\-]+)', c.text, re.IGNORECASE)
-            if m:
-                inv_no = m.group(1).strip()
-                inv_chunk = c
-                break
-            # Pattern 4: generic invoice-number-like token: PREFIX-YYYY-NNNN or YYYY-PREFIX-NNNN
-            m = re.search(r'\b([A-Z]{2,}-\d{4}-\d+|\d{4}-[A-Z]{2,}-\d+|[A-Z]{2,}-\d{4})\b', c.text)
-            if m:
-                inv_no = m.group(1).strip()
-                inv_chunk = c
-                break
+        vendors = []
+        for index, (line, chunk) in enumerate(records[:12]):
+            explicit = re.fullmatch(r"(?:(?:tax[ \t]+)?invoice|from|vendor|supplier)[ \t]*:[ \t]*(.+)", line, re.I)
+            if explicit and vendor_candidate(explicit[1]):
+                vendors.append((explicit[1], explicit[1], chunk))
+            elif header.fullmatch(line) and index + 1 < len(records):
+                value, source = records[index + 1]
+                if vendor_candidate(value) and not re.fullmatch(r"[=\-*~_─┌┐└┘┬┴┼]+", value):
+                    vendors.append((value, value, source))
+        # A business-name preamble is permitted only in invoice context. Do not
+        # promote arbitrary document headings to vendors.
+        if not vendors:
+            preamble = next(((line, chunk) for line, chunk in records[:8]
+                             if not re.fullmatch(r"[=\-*~_─┌┐└┘┬┴┼]+", line)), None)
+            if preamble:
+                value, chunk = preamble
+                if vendor_candidate(value) and re.search(
+                        r"\b(?:corp(?:oration)?|llc|inc|ltd|limited|company|solutions|services|industries|studio|works|ab)\b",
+                        value, re.I):
+                    vendors.append((value, value, chunk))
+        emit("vendor_name", vendors)
 
-        if inv_no:
-            extractions.append(Extraction(
-                pack_id=self._pack_id,
-                field_name="invoice_number",
-                value=inv_no,
-                source_span=inv_no,
-                confidence=0.95,
-                chunk_id=inv_chunk.chunk_id if inv_chunk else "",
-            ))
-        else:
-            # Fallback: derive invoice number from source filename if it follows
-            # the pattern inv_NNNN.txt -> INV-2024-NNNN (common invoice naming convention)
-            source_filename = chunks[0].source_type if chunks else ""
-            m_fn = re.match(r'inv[_-](\d{4})', source_filename, re.IGNORECASE)
-            if m_fn:
-                inv_no = f"INV-2024-{m_fn.group(1)}"
-                inv_chunk = chunks[0] if chunks else None
-                extractions.append(Extraction(
-                    pack_id=self._pack_id,
-                    field_name="invoice_number",
-                    value=inv_no,
-                    source_span=inv_no,
-                    confidence=0.7,
-                    chunk_id=inv_chunk.chunk_id if inv_chunk else "",
-                ))
+        identifiers = []
+        for line, chunk in records:
+            match = re.fullmatch(number_label + r"(?:[ \t]*:[ \t]*|[ \t]+)([A-Za-z0-9][A-Za-z0-9/-]*)", line, re.I)
+            if not match and any(header.fullmatch(text) for text, _ in records):
+                match = re.fullmatch(r"(?:no\.?|number)[ \t]*:?[ \t]+([A-Za-z0-9][A-Za-z0-9/-]*)", line, re.I)
+            if match:
+                identifiers.append((match[1], match[1], chunk))
+        # No standalone product-code guessing or filename-derived identifiers.
+        emit("invoice_number", identifiers, 0.95)
 
-        # Find invoice date and due date
-        inv_date = ""
-        due_date = ""
-        date_chunk = None
-        for c in chunks:
-            dates = re.findall(r'(?:date|issued|billed|fakturadatum|datum|rechnungsdatum)\s*:?\s*(\d{4}[-/]\d{2}[-/]\d{2}|\d{1,2}\s+[a-zA-Z]+\s+\d{4}|\w+\s+\d{1,2},?\s+\d{4}|\d{2}/\d{2}/\d{4})', c.text, re.IGNORECASE)
-            if dates:
-                inv_date = dates[0]
-                date_chunk = c
-            due_dates = re.findall(r'(?:due date|due|payment due|förfallodatum|förfallo|fällig|zahlbar bis)\s*:?\s*(\d{4}[-/]\d{2}[-/]\d{2}|\d{1,2}\s+[a-zA-Z]+\s+\d{4}|\w+\s+\d{1,2},?\s+\d{4}|\d{2}/\d{2}/\d{4})', c.text, re.IGNORECASE)
-            if due_dates:
-                due_date = due_dates[0]
-                date_chunk = c
+        date_value = (r"(\d{4}[-/]\d{2}[-/]\d{2}|\d{1,2}[ \t]+[a-zA-Z]+[ \t]+\d{4}|"
+                      r"[a-zA-Z]+[ \t]+\d{1,2},?[ \t]+\d{4}|\d{2}/\d{2}/\d{4})")
+        for field, label in (
+            ("invoice_date", r"(?:invoice[ \t]+date|date|issued|billed|fakturadatum|datum|rechnungsdatum)"),
+            ("due_date", r"(?:due[ \t]+date|due|payment[ \t]+due|förfallodatum|förfallo|fällig|zahlbar[ \t]+bis)"),
+        ):
+            dates = []
+            for line, chunk in records:
+                match = re.fullmatch(label + r"[ \t]*:?[ \t]*" + date_value, line, re.I)
+                if match:
+                    raw = match[1]
+                    dates.append((self._parse_date(raw) or raw, raw, chunk))
+            emit(field, dates)
 
-        if inv_date:
-            extractions.append(Extraction(
-                pack_id=self._pack_id,
-                field_name="invoice_date",
-                value=self._parse_date(inv_date) or inv_date,
-                source_span=inv_date,
-                confidence=0.9,
-                chunk_id=date_chunk.chunk_id if date_chunk else "",
-            ))
-        if due_date:
-            extractions.append(Extraction(
-                pack_id=self._pack_id,
-                field_name="due_date",
-                value=self._parse_date(due_date) or due_date,
-                source_span=due_date,
-                confidence=0.9,
-                chunk_id=date_chunk.chunk_id if date_chunk else "",
-            ))
+        # Currency requires explicit evidence. A bare '$' does not distinguish
+        # USD/CAD/AUD/SGD, and missing currency is never defaulted to USD.
+        supported_codes = {"USD", "EUR", "GBP", "SGD", "AUD", "CAD", "JPY", "CNY", "INR",
+                           "SEK", "NOK", "DKK", "CHF", "NZD", "HKD", "ZAR", "BRL", "MXN"}
+        currencies = []
+        for line, chunk in records:
+            match = re.fullmatch(r"(?:all[ \t]+amounts[ \t]+in|currency|valuta|währung)[ \t]*:?[ \t]*([A-Za-z]{3})", line, re.I)
+            if match and match[1].upper() in supported_codes:
+                currencies.append((match[1].upper(), match[1], chunk))
+            for match in re.finditer(r"\(([A-Z]{3})\)", line):
+                if match[1] in supported_codes:
+                    currencies.append((match[1], match[1], chunk))
+        for line, chunk in records:
+            for symbol, code in (("€", "EUR"), ("£", "GBP")):
+                if symbol in line:
+                    currencies.append((code, symbol, chunk))
+        emit("currency", currencies)
 
-        # Find total amount and currency
-        total_amt = ""
-        currency = ""
-        amt_chunk = None
-        # First pass: detect currency from explicit currency labels
-        for c in chunks:
-            m = re.search(r'(?:all\s+amounts\s+in|currency|valuta|währung)\s*:?\s*([A-Z]{3})', c.text, re.IGNORECASE)
-            if m:
-                currency = m.group(1).upper()
-                break
-            m = re.findall(r'\(([A-Z]{3})\)', c.text)
-            if m:
-                currency = m[-1].upper()
-                break
-        currency_symbol = ""
-        if not currency:
-            for c in chunks:
-                if "$" in c.text:
-                    currency = "USD"; currency_symbol = "$"; amt_chunk = c if not amt_chunk else amt_chunk; break
-                elif "€" in c.text:
-                    currency = "EUR"; currency_symbol = "€"; amt_chunk = c if not amt_chunk else amt_chunk; break
-                elif "£" in c.text:
-                    currency = "GBP"; currency_symbol = "£"; amt_chunk = c if not amt_chunk else amt_chunk; break
-        if not currency:
-            currency = "USD"
+        amount = r"(?:[$€£¥][ \t]*)?((?:\d{1,3}(?:,\d{3})+|\d+)\.\d{2})"
+        total_label = (r"(?:total[ \t]+amount[ \t]+due|total[ \t]+due|grand[ \t]+total|amount[ \t]+due|"
+                       r"amount[ \t]+payable|total[ \t]+payable|balance[ \t]+due|totalt[ \t]+att[ \t]+betala|"
+                       r"belopp[ \t]+att[ \t]+betala|gesamtbetrag|total[ \t]+amount|total|t[0o]tal[ \t]+am[0o]unt[ \t]+due)")
+        totals = []
+        unsafe_total = False
+        qualifier = r"(?:draft|revised|provisional|estimated?|proposed|preliminary|unapproved)"
+        for line, chunk in records:
+            match = re.fullmatch(r"(?:" + qualifier + r"[ \t]+)?" + total_label
+                                 + r"[ \t]*:?[ \t]*" + amount + r"(.*)", line, re.I)
+            if match:
+                if re.match(qualifier + r"\b", line, re.I) or match[2].strip():
+                    unsafe_total = True
+                totals.append((match[1].replace(",", ""), match[1], chunk))
+            if (re.search(r"\b(?:totals?|amount|payable)\b", line, re.I)
+                    and re.search(r"\b(?:provisional|unapproved|not[ \t]+approved|not[ \t]+final|neither|draft|estimated?|preliminary)\b", line, re.I)):
+                unsafe_total = True
+        if not unsafe_total:
+            emit("total_amount", totals, 0.95)
+        # No calculated subtotal+tax fallback: arithmetic is not an explicit total.
+        taxes = []
+        for line, chunk in records:
+            match = re.fullmatch(r"(?:sales[ \t]+tax|tax|vat|gst|moms|ust)[ \t]*(?:\([^()\r\n]*\))?[ \t]*:?[ \t]*" + amount, line, re.I)
+            if match:
+                taxes.append((match[1].replace(",", ""), match[1], chunk))
+        emit("tax_amount", taxes, 0.85)  # Explicit zero is valid; absence is unknown.
 
-        for c in chunks:
-            # Pattern 1: "Total Amount Due: $XXXX" (must NOT match "Subtotal")
-            m = re.search(r'(?:total\s+amount\s+due|total\s+due|grand\s+total|amount\s+due|amount\s+payable|total\s+payable|balance\s+due|totalt\s+att\s+betala|gesamtbetrag|total\s+amount)\s*:?\s*([$\u20ac\u00a3\u00a5]?\s*[\d,]+\.\d{2})', c.text, re.IGNORECASE)
-            if m:
-                total_str = m.group(1).strip()
-                amt_chunk = c
-                total_val = re.sub(r'[^\d\.]', '', total_str)
-                total_amt = total_val
-                break
-            # Pattern 2: "TOTAL" (all caps, standalone)
-            m = re.search(r'^TOTAL\s+([$\u20ac\u00a3\u00a5]?\s*[\d,]+\.\d{2})', c.text, re.MULTILINE | re.IGNORECASE)
-            if m:
-                total_str = m.group(1).strip()
-                amt_chunk = c
-                total_val = re.sub(r'[^\d\.]', '', total_str)
-                total_amt = total_val
-                break
-            # Pattern 3: "Total: $XXXX" but NOT "Subtotal" — word boundary
-            m = re.search(r'(?<!\w)(?<!sub)(?<!Sub)(?<!sub-)(?<!Sub-)total\s*:?\s*([$\u20ac\u00a3\u00a5]?\s*[\d,]+\.\d{2})', c.text, re.IGNORECASE)
-            if m:
-                total_str = m.group(1).strip()
-                amt_chunk = c
-                total_val = re.sub(r'[^\d\.]', '', total_str)
-                total_amt = total_val
-                break
-            # Pattern 4: OCR-tolerant
-            m = re.search(r't[0o]tal\s*am[0o]unt\s*due\s*:?\s*([$\u20ac\u00a3\u00a5]?\s*[\d,]+\.\d{2})', c.text, re.IGNORECASE)
-            if m:
-                total_str = m.group(1).strip()
-                amt_chunk = c
-                total_val = re.sub(r'[^\d\.]', '', total_str)
-                total_amt = total_val
-                break
-            # Pattern 5: Swedish "Totalt att betala:"
-            m = re.search(r'(?:totalt\s+att\s+betala|belopp\s+att\s+betala)\s*:?\s*([\d,]+\.\d{2})', c.text, re.IGNORECASE)
-            if m:
-                total_str = m.group(1).strip()
-                amt_chunk = c
-                total_val = re.sub(r'[^\d\.]', '', total_str)
-                total_amt = total_val
-                break
-            # Pattern 6: Calculate from subtotal + tax if total not found
-            if not total_amt:
-                sub_m = re.search(r'(?:subtotal|delsumma|zwischensumme)\s*:?\s*[$\u20ac\u00a3\u00a5]?\s*([\d,]+\.\d{2})', c.text, re.IGNORECASE)
-                tax_m = re.search(r'(?:tax|moms|vat|ust)\s*(?:\([^)]*\))?\s*:?\s*[$\u20ac\u00a3\u00a5]?\s*([\d,]+\.\d{2})', c.text, re.IGNORECASE)
-                if sub_m and tax_m:
-                    subtotal = float(re.sub(r'[^\d\.]', '', sub_m.group(1)))
-                    tax = float(re.sub(r'[^\d\.]', '', tax_m.group(1)))
-                    total_amt = f"{subtotal + tax:.2f}"
-                    amt_chunk = c
-                    break
-
-        if total_amt:
-            extractions.append(Extraction(
-                pack_id=self._pack_id,
-                field_name="total_amount",
-                value=total_amt,
-                source_span=total_amt,
-                confidence=0.95,
-                chunk_id=amt_chunk.chunk_id if amt_chunk else "",
-            ))
-        if currency:
-            # Use the currency symbol as source_span if detected from symbol (for grounding)
-            span = currency_symbol if currency_symbol else currency
-            extractions.append(Extraction(
-                pack_id=self._pack_id,
-                field_name="currency",
-                value=currency,
-                source_span=span,
-                confidence=0.9,
-                chunk_id=amt_chunk.chunk_id if amt_chunk else (chunks[0].chunk_id if chunks else ""),
-            ))
-
-# Tax amount
-        tax_amt = "0.00"
-        tax_chunk = None
-        for c in chunks:
-            # Pattern 1: "Tax: $XX.XX" or "Tax (N%): $XX.XX"
-            m = re.search(r'(?:tax|vat|gst|moms|ust)\s*(?:\([^)]*\))?\s*:?\s*([$\u20ac\u00a3\u00a5]?\s*[\d,]+\.\d{2})', c.text, re.IGNORECASE)
-            if m:
-                tax_str = m.group(1).strip()
-                tax_amt = re.sub(r'[^\d\.]', '', tax_str)
-                tax_chunk = c
-                break
-
-        extractions.append(Extraction(
-            pack_id=self._pack_id,
-            field_name="tax_amount",
-            value=tax_amt,
-            source_span=tax_amt,
-            confidence=0.85,
-            chunk_id=tax_chunk.chunk_id if tax_chunk else chunks[0].chunk_id,
-        ))
-
-        # Payment terms (multilingual: English, Swedish, German)
-        terms = ""
-        terms_source = ""
-        terms_chunk = None
-        for c in chunks:
-            # English: "Terms: Net 30", "Payment Terms: Due upon receipt", "2/10 Net 30"
-            m = re.search(r'(?:terms|payment\s+terms|payment)\s*:?\s*(net\s*\d+|due\s+on\s+receipt|due\s+upon\s+receipt|immediate|immediately\s+upon\s+receipt|\d+/\d+\s+net\s*\d+|within\s+\d+\s+days)', c.text, re.IGNORECASE)
-            if m:
-                terms = m.group(1).strip()
-                terms_source = m.group(0)  # use full match for grounding
-                terms_chunk = c
-                break
-            # "Payment due immediately upon receipt" / "due immediately upon receipt"
-            if not terms:
-                m = re.search(r'((?:payment\s+)?due\s+(?:immediately\s+)?(?:upon\s+)?receipt)', c.text, re.IGNORECASE)
-                if m:
-                    terms = "Due on Receipt"
-                    terms_source = m.group(1)  # use actual text for grounding
-                    terms_chunk = c
-                    break
-            # Swedish: "Betalningsvillkor: 30 dagar" or "Betalningsvillkor: Due on Receipt"
-            m = re.search(r'(?:betalningsvillkor|betalning)\s*:?\s*(\d+\s+dagar|net\s*\d+|due\s+on\s+receipt|due\s+upon\s+receipt|immediate)', c.text, re.IGNORECASE)
-            if m:
-                terms = m.group(1).strip()
-                terms_chunk = c
-                break
-            # German: "Zahlungsbedingungen: 30 Tage" or "Zahlungsbedingungen: Due on Receipt"
-            m = re.search(r'(?:zahlungsbedingungen|zahlung)\s*:?\s*(\d+\s+tage|net\s*\d+|due\s+on\s+receipt|due\s+upon\s+receipt|immediate)', c.text, re.IGNORECASE)
-            if m:
-                terms = m.group(1).strip()
-                terms_chunk = c
-                break
-        if not terms:
-            terms = "Net 30"  # fallback default
-
-        extractions.append(Extraction(
-            pack_id=self._pack_id,
-            field_name="payment_terms",
-            value=terms,
-            source_span=terms_source if terms_source else terms,
-            confidence=0.85,
-            chunk_id=terms_chunk.chunk_id if terms_chunk else chunks[0].chunk_id,
-        ))
+        terms = []
+        # Explicit terms labels identify the role of free-form text. Generic
+        # payment labels may instead contain a paid amount or receipt status;
+        # accept them only when the entire value is a recognized terms form.
+        generic_terms = (
+            r"(?:net[ \t]*[0-9]+|due[ \t]+(?:on|upon)[ \t]+receipt|"
+            r"due[ \t]+immediately[ \t]+upon[ \t]+receipt|immediate|"
+            r"immediately[ \t]+upon[ \t]+receipt|[0-9]+/[0-9]+[ \t]+net[ \t]*[0-9]+|"
+            r"within[ \t]+[0-9]+[ \t]+days|[0-9]+[ \t]+(?:dagar|tage))"
+        )
+        for line, chunk in records:
+            match = re.fullmatch(r"(?:payment[ \t]+terms|terms|betalningsvillkor|zahlungsbedingungen)[ \t]*:[ \t]*(.+)", line, re.I)
+            if match:
+                terms.append((match[1], match[1], chunk))
+                continue
+            match = re.fullmatch(r"(?:payment|betalning|zahlung)[ \t]*:[ \t]*(.+)", line, re.I)
+            if match:
+                if re.fullmatch(generic_terms, match[1], re.I):
+                    terms.append((match[1], match[1], chunk))
+                continue
+            match = re.fullmatch(r"((?:payment[ \t]+)?due[ \t]+(?:immediately[ \t]+)?(?:upon[ \t]+)?receipt)", line, re.I)
+            if match:
+                terms.append(("Due on Receipt", match[1], chunk))
+        emit("payment_terms", terms, 0.85)  # No default Net 30 obligation.
 
         # Line items — handle table format and bullet-point format
         line_items = []

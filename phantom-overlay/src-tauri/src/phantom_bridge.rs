@@ -45,6 +45,8 @@ pub struct ModelInfo {
 pub struct ReadinessResponse {
     pub ready: bool,
     pub configured_model: String,
+    pub expected_digest: String,
+    pub identity_check_scope: String,
     pub installed_models: Vec<ModelInfo>,
 }
 

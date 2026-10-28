@@ -1,0 +1,5 @@
+INVOICE
+Northstar Binding Studio
+
+Currency: EUR
+Total Amount Due: €84.00
