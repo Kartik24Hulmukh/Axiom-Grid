@@ -2,8 +2,9 @@
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Axiom-Grid</title><link rel="stylesheet" href="app.css"><script src="app.js" defer></script></head>
 <body><main><header><span class="badge">ENGINEERING PREVIEW</span><h1>Axiom-Grid</h1><p>Local writing. Explicit control.</p></header>
 <label for="context">Your instruction and selected text</label><textarea id="context" maxlength="16000" rows="6" placeholder="Paste only the text you want the model to read, then describe your edit."></textarea>
+<p class="muted" role="note">Authorized devices and permitted tasks only. This is an engineering preview, not an exam-policy enforcement tool.</p>
 <p class="muted">Nothing is captured from your other apps. Review the result and copy it manually. Automatic insertion is disabled.</p>
-<div class="actions"><button id="generate" disabled>Generate preview</button><button id="cancel" disabled>Discard</button></div>
-<div class="readiness"><strong>Local model</strong><p id="model-status" role="status">Checking runtime and configured model…</p><button id="retry-model" type="button">Retry check</button></div><p id="status" role="status" aria-live="polite">Start the local runtime, then retry the model check. The desktop app pairs automatically.</p>
+<div class="actions"><button id="generate" disabled>Generate preview</button><button id="cancel" disabled>Discard</button><button id="clear-session" type="button">Clear session</button></div>
+<div class="readiness"><strong>Local model</strong><p id="model-status" role="status">Checking runtime and configured model…</p><button id="retry-model" type="button">Retry check</button></div><p id="status" role="status" aria-live="polite">Start the local runtime, then retry the model check. Pairing is platform-dependent; Windows currently requires an explicitly configured token.</p>
 <label for="result">Review the suggestion</label><textarea id="result" rows="8" readonly></textarea><p class="muted">Select the result and use Ctrl+C / ⌘C. Check factual accuracy before use.</p>
-<footer>Local model must be installed separately. This preview is not a zero-egress certification.</footer></main></body></html>
+<footer>Local model must be installed separately. This preview is not a zero-egress certification. Clear session removes displayed input/output only; backend and OS retention are not certified.</footer></main></body></html>

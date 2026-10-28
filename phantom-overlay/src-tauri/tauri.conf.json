@@ -16,10 +16,10 @@
         "fullscreen": false,
         "decorations": true,
         "transparent": false,
-        "alwaysOnTop": true,
-        "skipTaskbar": true,
+        "alwaysOnTop": false,
+        "skipTaskbar": false,
         "contentProtected": false,
-        "focus": false,
+        "focus": true,
         "x": 40,
         "y": 100
       }

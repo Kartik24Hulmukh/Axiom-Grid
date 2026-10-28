@@ -36,6 +36,9 @@ async def test_worker_inherits_request_context_without_leaking(monkeypatch):
 @pytest.mark.asyncio
 async def test_optional_native_engines_keep_serialization(monkeypatch, tmp_path):
     from kernel.core.data_model import Trace
+    # Trusted development escape hatch only; API defaults to a killable child.
+    monkeypatch.setenv("AXIOM_EXTRACTION_ISOLATION", "thread")
+    original_ingest = server.IngestorImpl.ingest
     entered = threading.Event()
     class Guard:
         def __enter__(self):
@@ -47,12 +50,17 @@ async def test_optional_native_engines_keep_serialization(monkeypatch, tmp_path)
         return Trace(stages=())
     def native_ingest(self, path):
         assert entered.is_set(), "classification parser executed without guard"
-        return [], None, []
+        return original_ingest(self, path)
     monkeypatch.setattr(server.IngestorImpl, "ingest", native_ingest)
     monkeypatch.setattr(server, "orchestrator_lock", Guard())
     monkeypatch.setattr(server.OrchestratorImpl, "run", native_run)
-    path = tmp_path / "guard.pdf"
-    path.write_bytes(b"%PDF-1.4")
+    # Use a valid parse result rather than relaxing the provenance boundary
+    # for the old [], None, [] stub.
+    from docx import Document
+    path = tmp_path / "guard.docx"
+    source = Document()
+    source.add_paragraph("A valid synthetic document for native-engine ownership.")
+    source.save(path)
     async with server.app.router.lifespan_context(server.app):
         await server.extract_document(server.ExtractDocumentRequest(file=str(path)))
     assert not entered.is_set()

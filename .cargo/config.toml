@@ -1,32 +1,5 @@
-# ── Kairo Phantom build configuration ────────────────────────────────────────
-#
-# Problem: phantom-overlay (Tauri) requires ~3-4 GB RAM to link in debug mode.
-# With 8 GB total RAM, running all workspace members in parallel causes OOM.
-#
-# Fix: Limit link jobs to 1, pin linker to WinLibs GCC which has libgcc_eh.a.
-#
-# NOTE: LLVM-MinGW is first in PATH but its lld doesn't provide libgcc_eh,
-#       causing build failures. We pin the GNU target to WinLibs GCC explicitly.
-
+# Portable workspace defaults. Native linking still requires the platform SDK/toolchain.
+# Machine-specific linker paths/import libraries belong in local environment/config,
+# never in this shared file. Override jobs through CARGO_BUILD_JOBS if necessary.
 [build]
-# Only 1 crate links at a time — prevents OOM on machines with < 8 GB free RAM
 jobs = 2
-
-[target.x86_64-pc-windows-gnu]
-# Use WinLibs GCC (has libgcc_eh.a) instead of LLVM-MinGW's clang/lld
-linker = "C:\\Users\\praja\\AppData\\Local\\Microsoft\\WinGet\\Packages\\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\\mingw64\\bin\\x86_64-w64-mingw32-gcc.exe"
-rustflags = ["-L", "C:\\Users\\praja\\OneDrive\\Desktop\\test-env\\repositories\\kairo-phantom\\phantom-core\\target\\imports"]
-
-[target.x86_64-pc-windows-msvc]
-# Use MSVC's link.exe but pass /DEBUG:NONE to skip PDB generation in dev builds
-# This cuts peak linker RAM by ~40%
-rustflags = ["-C", "link-arg=/DEBUG:NONE"]
-
-[target.x86_64-unknown-linux-gnu]
-# Use mold linker on Linux (much lower memory footprint than GNU ld)
-# Install: sudo apt install mold
-# rustflags = ["-C", "linker=clang", "-C", "link-arg=-fuse-ld=mold"]
-
-[target.aarch64-apple-darwin]
-# macOS Apple Silicon — lld is included with Xcode
-# rustflags = ["-C", "link-arg=-fuse-ld=lld"]

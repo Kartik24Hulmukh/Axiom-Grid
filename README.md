@@ -1,72 +1,125 @@
 # Axiom-Grid
 
-[![Axiom-Grid focused preview gates](https://github.com/Kartik24Hulmukh/Axiom-Grid/actions/workflows/axiom.yml/badge.svg)](https://github.com/Kartik24Hulmukh/Axiom-Grid/actions/workflows/axiom.yml)
+**Engineering preview — explicit input, visible review, manual copy.**
 
-**Signed, verifiable receipts for agents that touch documents.** Axiom-Grid is a grounded document-intelligence engine whose every answer ships with a cryptographic receipt: hash + Ed25519 signature + Merkle chain + page/line citations. Prove what an agent read, what it grounded on, and what it never sent to the network.
+Axiom-Grid contains several experimental systems, not one uniformly qualified
+product. The focused desktop lets a user supply text explicitly and review a
+model suggestion. It does not automatically capture or type into other apps.
+There is no production-readiness, universal-app, accuracy, compliance or
+whole-machine zero-egress certification for this release profile.
 
-## Why receipts
+See [review publication scope](docs/PUBLISHING_REVIEW.md) for the distinction
+between archived local-validation verdicts and current GitHub publication/CI state.
 
-The agent-computer wave (Grok Bot, OpenBot, browser-use agents) gives agents computers — but **audit logs are tamperable and vendor claims are unverifiable**. Axiom-Grid turns every agent action into evidence:
+## Release profiles and boundaries
 
-- **Ed25519-signed, Merkle-chained receipt** per answer — verify with `axiom verify`
-- **Page/line-level citations** — grounded answers you can check by hand
-- **Sealed mode** — cryptographic proof of zero network egress
-- **Open spec** — see `specs/open-agent-receipt-spec-v0.1.md`; third parties can verify without vendor cooperation
+| Profile | What exists | What is not established |
+| --- | --- | --- |
+| Focused desktop + `axiom-runtime` | Explicit-text preview, readiness check, authenticated runtime requests, discard/cancel signal, manual copy | Qualified native installers, real-model performance, cross-platform E2E, confirmed model termination, certified offline operation |
+| Python document API (`make serve`) | Python Uvicorn API and extraction/grounding code | A Rust-enforced kernel boundary; complete parser isolation; production approval |
+| Legal-v3 research | Source/intent/output bindings, local approvals, signed events and OOXML checks | External identity trust, independently complete approved-intent checking, independent real-time observation, legal correctness |
+| Legacy Phantom | Experimental capture/injection/document-writing code | A supported automatic-typing release; excluded from the focused preview's capability promise |
+| OpenBot adapter | Manually called signed-log SDK | Automatic interception of every real OpenBot action or a production integration |
 
-## Status — LAUNCH-READY (verified 2026-09-29)
+**Only use on devices and tasks you are authorized to use.** Device-administration
+permission does not grant permission for AI in an assessment. No covert deployment,
+concealed assessment aid or bypass of institutional security policy is supported.
 
-| Gate | Result |
-|---|---|
-| Full test suite | **1,182 passed / 0 failed / 5 skipped** |
-| Kernel suite | **161 passed / 0 failed** |
-| Router hardening cluster | **65 passed / 0 failed** (spend governor, failover, capacity) |
-| 100× / 100-persona torture | **EXIT 0** — 3,700 reqs, 0×5xx, 0 fd-leak, sub-200ms recovery |
-| Melious gateway live | **All 4 frontier models 200 OK** (GLM-5.3, Flash, Kimi K3, Qwen 3.8 27B) |
-| CI (main) | **green** |
+## Review and validation commands
 
-## Quickstart
-
-```bash
-git clone https://github.com/Kartik24Hulmukh/Axiom-Grid.git && cd Axiom-Grid
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r docker/requirements-runtime.txt   # numpy, pdfplumber, python-docx, and the extraction/OCR stack
-make serve          # local overlay API on http://127.0.0.1:8765
-```
-
-`make run DOC=... Q="..."` is the grounded-Q&A CLI.
-
-For the focused regression suite: `pip install pytest pytest-asyncio hypothesis httpx ruff psutil` then `make pre-push`.
-
-### Why a Python sidecar
-
-The Rust kernel owns the signed-receipt pipeline, admission control, and the networking boundary. Document intake runs in a **Python sidecar** because the strongest OCR/layout engines (Docling, pdfplumber, python-docx) and the numpy-based embedding/cosine path are Python-native; the sidecar runs under strict resource and network isolation and hands extracted text to the kernel for grounding.
-
-## Receipt verification
+These commands test deliberately narrow behavior; passing them does not qualify a
+native application or establish business traction. Run from the repository root.
+Use Python 3.13, Node and Git on a POSIX development host. Install the selected
+profile's pinned test dependencies (`requirements-assurance.lock`) into a disposable
+virtual environment, not an existing production environment. This is not the full
+project runtime or a supply-chain certification. JavaScript uses Node's built-in runner.
 
 ```bash
-axiom verify <session>        # validate hash + signature + chain + citations
-axiom receipts export         # export a session's receipt chain as JSON
+python -m pip install -r requirements-assurance.lock
+python scripts/run_assurance_checks.py --document-service
+# Or run the narrow suites directly:
+python -m unittest discover -s tests/assurance -p 'test_*.py' -v
+node --test phantom-overlay/tests/*.test.cjs
+python scripts/check_authorized_preview.py
 ```
 
-Every pipeline output writes `receipts.jsonl` alongside itself.
+For native runtime validation on a properly equipped development host:
 
-## Concurrency posture (production)
+```bash
+cargo test --manifest-path axiom-runtime/Cargo.toml --locked
+cargo clippy --manifest-path axiom-runtime/Cargo.toml --locked --all-targets -- -D warnings
+```
 
-The overlay runs pipelines **concurrently** under a bounded gate
-(`AXIOM_PIPELINE_CONCURRENCY`, default `min(32, 4 x cores)`). Shared services
-(`ProvenanceLogImpl`, `MemoryStoreImpl`) are thread-safe at class level via
-`kernel/core/threadsafe.py`, and SQLite runs in WAL mode with a 5s busy
-timeout. No global mutex serializes requests.
+Those Rust commands were not run in the implementation sandbox: Rust/Cargo and
+native SDKs are unavailable there. A configured CI job is not a verified CI result.
+See [latest continuation verdict](docs/CONTINUATION_VERDICT.md) for actual commands,
+results and unresolved gates for this branch.
 
-## Scope
+## Focused preview requirements
 
-Axiom-Grid's engine **reads** documents (Word, Excel, PowerPoint, PDF, code, email, design) through an extraction pipeline behind admission control and bounded execution, and **suggests** grounded answers with page/line citations and a signed receipt chain. It does **not** mutate documents or execute remote writes. Scope is enforced by `tests/test_scope_discipline.py`.
+The intended route is Tauri → authenticated loopback `axiom-runtime` → Ollama.
+Install/approve the backend and model separately. The visible UI accepts only the
+text the user chooses to provide and does not insert results into another app.
+`Clear session` clears the input/output shown in this window; it is not secure
+memory erasure or proof that backend/OS logs retain nothing.
 
-## OpenBot integration & verifiable benchmark
+Ollama can support cloud models behind a localhost endpoint. Thus localhost alone
+is not proof of local inference. Backend configuration, exact model/assets,
+licenses, disconnected cold starts, external networking and cancellation resource
+release still require qualification. No cloud fallback is authorized by an offline
+promise. See [authorized preview](docs/AUTHORIZED_PREVIEW.md).
 
-- **OpenBot receipt adapter** (`integrations/openbot/adapter.py`): every OpenBot agent action emits an Ed25519-signed, chain-linked receipt per the Open Agent Receipt Specification. `python -m integrations.openbot.adapter --emit && --verify`.
-- **Verifiable Agent-Action Benchmark** (`bench/verifiable_benchmark.py`): runs real agent tasks (extraction + signing), emits P50/P95/P99 + citation coverage scorecard wrapped in a signed receipt chain. `python bench/verifiable_benchmark.py --tasks 3`.
+Windows currently requires an explicitly configured shared IPC token; automatic
+protected file pairing is Unix-specific. Tokens must be provisioned privately; do
+not paste them into chat, commit them, log them or reuse exposed credentials.
+
+## Document API is a separate experimental surface
+
+`make serve` starts `overlay.server:app` directly through Python/Uvicorn. It does
+not automatically put parsing behind the Rust kernel. `/api/extract-document`
+(and `/api/ask-document` when it delegates to it) now uses one captured-byte parse
+with a validated full graph, reused for classification and the orchestrator. The
+default is a killable POSIX child with bounded JSON results; explicit `thread`
+mode is trusted-development-only and not killable. Unsupported process prerequisites
+fail closed. See [parser boundary](docs/PARSER_BOUNDARY.md).
+
+This is not an OS sandbox: the child retains user filesystem/network privileges.
+Other routes, including legacy demo/figure/source behavior, are not qualified by
+this change. Do not expose the whole service to untrusted/sensitive intake or infer
+the desktop preview's narrower capability boundary applies to it. Returned identity
+consistency is not a durable/resolvable click-to-source guarantee.
+
+The opt-in `scripts/axiom-live-e2e.py` probes loopback HTTP contracts using synthetic
+prompts. Its success is not backend-locality, native-UI, offline, usefulness or
+production proof. Metadata reports must be consistent; inspect its explicit limits.
+
+## Evidence and benchmark semantics
+
+- Signatures authenticate particular bytes under a trusted key; they do not prove
+  semantic correctness, legal adequacy, capture completeness or absence of traffic.
+- The benchmark is an **ingestion/signing microbenchmark**, not an agent-task,
+  citation-quality or production-load evaluation. Unmeasured quality is not 100%.
+- Benchmark report verification must use a separately trusted public key and
+  authenticate report content plus referenced evidence. A key embedded by the
+  producer does not establish authorization.
+- DSSE structural parsing is not authentication. Use a trusted signature verifier
+  over DSSE pre-authentication encoding. Explicit unsigned wrapping (`signatures=[]`) is serialization,
+  not a signed attestation. See [assurance API migration](docs/ASSURANCE_API_MIGRATION.md).
+- The adapter's historical export is a JSON object despite its `.jsonl` filename;
+  that legacy format is not a standardized receipt protocol or complete mediation.
+
+See [claims register](CLAIMS.md). Registry labels/historical pass counts in
+`STATUS.md` and archived documents are not current release qualification.
+
+## What must happen before production claims
+
+A named OS/hardware/model/workflow matrix, native build/install/uninstall evidence,
+real-model E2E and failure tests, scope-specific security review, privacy/retention
+and incident procedures, dependency/model license review, and independent
+reproduction are still required. Commercial value additionally requires real
+users, comparative outcomes, repeat purchases and viable support economics.
 
 ## License
 
-MIT. AI-generated code and docs are permitted and encouraged.
+Root source is MIT; consult `LICENSE`. Dependency, model, asset and service terms
+are separate. No blanket distribution/license clearance is implied.

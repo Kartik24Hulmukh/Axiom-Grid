@@ -110,7 +110,11 @@ def generate_status_md() -> str:
     domain_rows = _build_domain_rows()
 
     lines = [
-        "# Kairo Phantom — Status",
+        "# Axiom-Grid — Declared Domain Inventory",
+        "",
+        "> Not release qualification: labels/numbers below are registry or historical declarations,",
+        "> not revalidated native, security, production or current full-suite results.",
+        "> The controlling release scope is CLAIMS.md; see docs/IMPLEMENTATION_VERDICT.md.",
         "",
         "> Honest status labels per specs/DEFINITION_OF_DONE.md §9 and specs/CLAIM_DISCIPLINE.md.",
         "> A domain is \"Real\" only when its practitioner-grade oracle passes on real fixtures.",
