@@ -132,3 +132,37 @@ sign-in is incomplete. Secure input requests did not produce durable results;
 no password, code or exposed chat token was assumed entered or used. A signed-out
 browser and missing asynchronous MCP merge capability are access limitations,
 not reasons to bypass protection or silently merge the whole stack into main.
+
+## Mode repair closure and exact remote failure diagnosis
+
+The preceding sign-in/merge blockers are historical, not current. PR36 merged
+normally into the review branch at8c7aad8d2ed853cb55682ed8c25750321a9a427a after
+GitHub's explicit Unstack operation (no base/history retarget, no protections
+changed). Fresh verification relative to dd0e92c proves mode-only100644→100755
+for scripts/axiom-live-e2e.py, unchangedblob8c2cadb932acb3c17c6cbdf2ccedaae57fe9a0eb,
+and all other files byte-identical. Direct executable --help succeeds, exit0;
+it is not model, native UI or offline E2E evidence.
+
+The authenticated job log for run40739547947/job122997101075 was finally inspected.
+It reports **395 passed,1warning in20.54s** for the full remote service gate.
+The next strict changed-file lint gate—not that service gate—failed with exactly
+three findings in overlay/server.py: two I001 import orderings and UP041 requiring
+builtin TimeoutError. Previous statements that the whole runtime job failed
+remain true, but the earlier speculative test-level cause is superseded by this
+observed log. This remote success does not erase the recorded local2CPU threaded
+latency failure or prove hardware-independent/production SLOs.
+
+This narrow follow-up sorts only those imports and replaces asyncio.TimeoutError
+with TimeoutError (runtime identity verified under Python3.13). Full strict
+Wave11 lint and global E9/F lint both pass with Ruff0.17.3. Ruff is now exactly
+pinned in the assurance lock and runtime workflow; both lint commands run in the
+selected assurance profile. No thresholds, gate selections, resource-warning
+flags, logging levels, sanitization, branch protections or production deployments
+were changed to manufacture a pass.
+
+On the post-repair source plus these lint changes:43 focused boundary/lifecycle/
+logging/hygiene tests passed in3.37s. Selected assurance again passed all204 tests
+plus both lint gates and source/whitespace checks. These runs overlap; do not
+sum them. Final-head remote CI must finish and be assessed separately before a
+code integration decision. Real desktop/local-model/network-offline/installer,
+external review and business/customer/traction gates remain outside these checks.

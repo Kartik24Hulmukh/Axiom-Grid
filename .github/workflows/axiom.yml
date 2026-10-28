@@ -58,7 +58,7 @@ jobs:
         run: python3 -m py_compile scripts/axiom-live-e2e.py
       - name: Python lint gate (ruff E9/F - syntax errors, undefined names, unused imports)
         run: |
-          python3 -m pip install --quiet ruff
+          python3 -m pip install --quiet ruff==0.17.3
           python3 -m ruff check --select E9,F overlay kernel kairo/context/compressor.py scripts/stress_sec006_gauntlet.py stress_test.py
       - name: Overlay server gate (real provenance digest, strict input schema)
         shell: bash

@@ -32,6 +32,8 @@ def main() -> int:
         ("frontend", ["node", "--test", *frontend]),
         ("preview-source-guard", [python, "-B", "scripts/check_authorized_preview.py"]),
         ("diff-whitespace", ["git", "diff", "--check"]),
+        ("python-error-lint", [python, "-m", "ruff", "check", "--select", "E9,F", "overlay", "kernel", "kairo/context/compressor.py", "scripts/stress_sec006_gauntlet.py", "stress_test.py"]),
+        ("wave11-python-lint", [python, "-m", "ruff", "check", "overlay/server.py", "kernel/sidecar/melious_router.py", "overlay/tests/test_server_wave11.py", "kernel/tests/test_melious_router_wave11.py", "scripts/stress_wave11.py"]),
     ]
     if args.document_service:
         commands.append(("document-service", [

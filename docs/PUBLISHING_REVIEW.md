@@ -1,5 +1,26 @@
 # Review publication scope
 
+## Current publication update
+
+PR36 is now merged into the assurance REVIEW branch at
+8c7aad8d2ed853cb55682ed8c25750321a9a427a. The stack was explicitly unstacked
+using GitHub's UI, which confirmed base branches and commit histories were
+unchanged. The normal MCP merge then succeeded. Independent fresh-checkout
+verification shows only the script's100644-to-100755 mode changed relative to
+dd0e92c; script blob8c2cadb932acb3c17c6cbdf2ccedaae57fe9a0eb is unchanged.
+Direct `./scripts/axiom-live-e2e.py --help` exits0 without inference/network.
+The historical metadata blocker below is therefore CLOSED.
+
+Authenticated CI inspection of run40739547947 showed395 service tests passed
+in20.54s. The later strict changed-file lint gate failed on three server findings
+(two import orderings and the asyncio.TimeoutError alias), not a failed service
+test. This update fixes those three findings and pins Ruff0.17.3. Both Python
+lint gates are now included in the selected assurance runner, preventing this
+coverage gap. Final-head CI remains required; the earlier local latency miss
+is still disclosed in RELEASE_GATE_FOLLOWUP.md, not rewritten as a success.
+This snapshot precedes any main-branch integration; inspect actual GitHub state
+for merge status. Production/model/native/offline qualification is not implied.
+
 Review branch: `fix/authorized-preview-assurance-2026` in
 `Kartik24Hulmukh/Axiom-Grid`. Original baseline:
 `aa386b49f19e160491a8e7225cc01b391ae2e522`.
