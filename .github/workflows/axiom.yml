@@ -32,6 +32,7 @@ jobs:
           if-no-files-found: warn
   focused-runtime:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@1.98.1
@@ -40,6 +41,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
       - run: cargo fmt --manifest-path axiom-runtime/Cargo.toml --check
         env:
           RUSTUP_TOOLCHAIN: 1.98.1
@@ -57,9 +61,26 @@ jobs:
           python3 -m pip install --quiet ruff
           python3 -m ruff check --select E9,F overlay kernel kairo/context/compressor.py scripts/stress_sec006_gauntlet.py stress_test.py
       - name: Overlay server gate (real provenance digest, strict input schema)
+        shell: bash
         run: |
-          python3 -m pip install --quiet pytest pytest-asyncio hypothesis fastapi httpx uvicorn ruff psutil pdfplumber==0.11.10 python-docx==1.2.0 opentelemetry-sdk==1.44.0
-          python3 -m pytest -q -p no:cacheprovider overlay/tests kernel/tests tests/test_concurrency_safety.py -W error::ResourceWarning -W error::pytest.PytestUnraisableExceptionWarning
+          set -euo pipefail
+          python3 -m pip install --quiet -r requirements-assurance.lock
+          mkdir -p .runtime-results
+          export AXIOM_STATE_DIR="$(mktemp -d)"
+          python3 -m pytest -q -p no:cacheprovider \
+            -o asyncio_default_fixture_loop_scope=function \
+            --junitxml=.runtime-results/service.xml \
+            overlay/tests kernel/tests tests/test_concurrency_safety.py \
+            -W error::ResourceWarning -W error::pytest.PytestUnraisableExceptionWarning \
+            2>&1 | tee .runtime-results/service.log
+      - name: Preserve full service gate diagnostics
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: full-service-results
+          path: .runtime-results/
+          include-hidden-files: true
+          if-no-files-found: warn
       - name: Concurrency posture gate (pipeline gate must be parallel, never a global mutex)
         run: |
           python3 - <<'PY'

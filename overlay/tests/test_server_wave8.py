@@ -39,16 +39,47 @@ def test_request_id_sanitized_against_log_injection():
 
 # ---- SEC-009: error responses must not leak internals --------------------
 
-def test_extract_document_read_error_does_not_leak_path_or_exception(tmp_path):
-    # A file inside an allowed root (temp dir) that exists as a *directory*
-    # forces an OSError on read while passing the sandbox resolver.
+def test_extract_document_read_error_does_not_leak_path_or_exception(tmp_path, monkeypatch):
+    # Exercise the real HTTP read-error mapping without assuming chmod makes
+    # a file unreadable to this host's effective user/capabilities.
     d = tmp_path / "wave8_unreadable.txt"
-    d.write_text("SECRET_INTERNAL_CONTENT", encoding="utf-8")
+    d.write_text("SYNTHETIC_INTERNAL_CONTENT", encoding="utf-8")
+    requested_source = str(d.resolve())
+    original_capture = s._capture_extraction_source
+    captured_sources = []
+
+    def denied_capture(filepath):
+        if filepath == requested_source:
+            captured_sources.append(filepath)
+            raise PermissionError(f"SYNTHETIC_READ_FAILURE: {requested_source}")
+        return original_capture(filepath)
+
+    monkeypatch.setattr(s, "_capture_extraction_source", denied_capture)
+    r = client.post("/api/extract-document", json={"file": str(d)})
+    assert captured_sources == [requested_source]
+    assert r.status_code == 422
+    assert r.json()["detail"] == "Unable to read document"
+    assert str(tmp_path) not in r.text and "PermissionError" not in r.text
+    assert "SYNTHETIC_READ_FAILURE" not in r.text
+
+
+def test_extract_document_chmod_permission_error_is_sanitized_when_enforced(tmp_path):
+    # Separate OS-permission integration coverage from deterministic mapping:
+    # privileged hosts may legitimately read a mode-000 regular file.
+    d = tmp_path / "wave8_unreadable.txt"
+    d.write_text("SYNTHETIC_INTERNAL_CONTENT", encoding="utf-8")
+    original_mode = d.stat().st_mode & 0o777
     d.chmod(0o000)
     try:
+        try:
+            d.read_bytes()
+        except PermissionError:
+            pass
+        else:
+            pytest.skip("mode-000 file remains readable under this host's effective permissions")
         r = client.post("/api/extract-document", json={"file": str(d)})
     finally:
-        d.chmod(0o644)
+        d.chmod(original_mode)
     assert r.status_code == 422
     assert r.json()["detail"] == "Unable to read document"
     assert str(tmp_path) not in r.text and "PermissionError" not in r.text

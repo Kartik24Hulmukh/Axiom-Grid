@@ -35,3 +35,10 @@ requires restoration of its executable bit. This is NOT silently normalized as a
 expected source-tree match. The draft PR must retain this blocker until a mode-
 preserving Git write restores100755. All other supplied content matched the local
 validated source. No merge/deployment should be inferred from publication.
+
+## Follow-up
+
+See RELEASE_GATE_FOLLOWUP.md for the corrected permission regression, unchanged
+latency failure, reproducible runtime CI and mode-only PR #36. The mode repair is
+verified but its stacked merge is blocked by the connected MCP endpoint; it has
+not yet been applied to this review branch.
