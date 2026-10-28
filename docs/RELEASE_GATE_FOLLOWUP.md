@@ -207,8 +207,8 @@ INFO logging/metrics block, observed at headers ready rather than successful
 body delivery. Early rejections preserve existing counter/header semantics.
 Streaming messages/receive are not buffered, and exceptions/cancellation are
 not swallowed. Dynamic policy, limit and metric references remain effective.
-Three explanatory logging comment blocks are preserved verbatim in
-SERVER_SOURCE_NOTES.md notes23–25 to fit the connected uploader's request cap;
+Explanatory comment blocks are preserved verbatim in
+SERVER_SOURCE_NOTES.md notes23–26 to fit the connected uploader's request cap;
 that relocation changes no executable AST.
 
 Independent review: **118 contract cases passed** (50response +68guard),

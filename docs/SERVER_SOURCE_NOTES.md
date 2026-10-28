@@ -261,3 +261,84 @@ The line ranges below refer to the pre-relocation file in the previous delivery.
     # Third-party per-request chatter is not observability; keep it at WARNING
     # so the hot path does not pay a JSON serialisation per upstream call.
 ```
+
+## Note 26 — Remaining paired explanatory comments (transport only)
+
+Preserved from the reviewed ASGI server; relocation changes no Python AST.
+
+### Reviewed source lines 62–63
+
+```text
+            # Second pass over a fully scrubbed tree: surrogates replaced,
+            # non-finite floats -> null, unknown objects -> repr, depth-capped.
+```
+
+### Reviewed source lines 186–187
+
+```text
+        # QueueListener has a different contextvars context. An empty snapshot
+        # is meaningful too: never replace it with the listener's context.
+```
+
+### Reviewed source lines 383–384
+
+```text
+    # Sanitize: correlation ids must never carry CR/LF into log streams
+    # (log-injection / response-splitting guard).
+```
+
+### Reviewed source lines 596–597
+
+```text
+            # Evict least-recently-seen buckets down to 90% of the cap so we do
+            # not pay the sort on every request during a flood.
+```
+
+### Reviewed source lines 738–739
+
+```text
+        # 1. Create target document
+        # Real provenance digest of the exact bytes fed to the pipeline.
+```
+
+### Reviewed source lines 876–877
+
+```text
+# Serve only rendered images, never the runtime database, WAL, or audit files.
+# Authentication middleware protects this mount like every document API.
+```
+
+### Reviewed source lines 1050–1051
+
+```text
+                # Parse the already bounded immutable snapshot, not a second
+                # read of a path that may have changed since admission.
+```
+
+### Reviewed source lines 1055–1056
+
+```text
+                # Explicit development-only escape hatch. Still parse once,
+                # off the event loop, under the existing native-engine guard.
+```
+
+### Reviewed source lines 1077–1078
+
+```text
+        # The store and capacity belong to the actual worker, not its waiter.
+        # Cancelling an HTTP request cannot stop a running Python thread.
+```
+
+### Reviewed source lines 1198–1199
+
+```text
+    # In a full implementation, this would render the page as PNG via PyMuPDF
+    # and overlay an SVG bbox. For now, return metadata.
+```
+
+### Reviewed source lines 1365–1366
+
+```text
+# Negative caching is opt-in: the single-flight lock already serialises probes,
+# and failing dependency checks are cheap. Enable for very large fleets.
+```
