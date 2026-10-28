@@ -11,7 +11,9 @@ fn token() -> ApiToken {
 }
 fn inventory(model: &'static str) -> axum::routing::MethodRouter {
     axum::routing::get(move || async move {
-        Json(serde_json::json!({"models": [{"name": model, "size": 1234, "digest": "a".repeat(64)}]}))
+        Json(
+            serde_json::json!({"models": [{"name": model, "size": 1234, "digest": "a".repeat(64)}]}),
+        )
     })
 }
 fn request(body: &str) -> axum::http::request::Builder {
@@ -80,7 +82,10 @@ async fn authenticated_preview_roundtrip() {
 }
 #[tokio::test]
 async fn rejects_untrusted_clients() {
-    let app = router(AppState::local("test".into(), "a".repeat(64)).unwrap(), token());
+    let app = router(
+        AppState::local("test".into(), "a".repeat(64)).unwrap(),
+        token(),
+    );
     let no_token = Request::builder()
         .method("POST")
         .uri("/materialize")
@@ -107,7 +112,10 @@ async fn rejects_untrusted_clients() {
 }
 #[tokio::test]
 async fn bounded_explicit_input_and_removed_routes() {
-    let app = router(AppState::local("test".into(), "a".repeat(64)).unwrap(), token());
+    let app = router(
+        AppState::local("test".into(), "a".repeat(64)).unwrap(),
+        token(),
+    );
     for (body, status) in [
         (r#"{"context":" "}"#.to_string(), 400),
         ("{}".into(), 422),
@@ -184,16 +192,14 @@ async fn concurrent_generation_is_rejected() {
     let b = release.clone();
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
     let port = listener.local_addr().unwrap().port();
-    let mock = Router::new()
-        .route("/api/tags", inventory("test"))
-        .route(
-            "/api/generate",
-            post(move || async move {
-                a.notify_one();
-                b.notified().await;
-                Json(serde_json::json!({"model":"test", "response":"Done","done":true}))
-            }),
-        );
+    let mock = Router::new().route("/api/tags", inventory("test")).route(
+        "/api/generate",
+        post(move || async move {
+            a.notify_one();
+            b.notified().await;
+            Json(serde_json::json!({"model":"test", "response":"Done","done":true}))
+        }),
+    );
     let server = tokio::spawn(async move {
         axum::serve(listener, mock).await.unwrap();
     });
@@ -240,18 +246,16 @@ async fn redirects_and_http_errors_are_not_success() {
     ] {
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
         let port = listener.local_addr().unwrap().port();
-        let mock = Router::new()
-            .route("/api/tags", inventory("test"))
-            .route(
-                "/api/generate",
-                post(move || async move {
-                    (
-                        status,
-                        [("location", "http://127.0.0.1:1/never-follow")],
-                        "sensitive server detail",
-                    )
-                }),
-            );
+        let mock = Router::new().route("/api/tags", inventory("test")).route(
+            "/api/generate",
+            post(move || async move {
+                (
+                    status,
+                    [("location", "http://127.0.0.1:1/never-follow")],
+                    "sensitive server detail",
+                )
+            }),
+        );
         let server = tokio::spawn(async move {
             axum::serve(listener, mock).await.unwrap();
         });
@@ -275,7 +279,10 @@ async fn redirects_and_http_errors_are_not_success() {
 }
 #[tokio::test]
 async fn health_is_not_model_readiness() {
-    let app = router(AppState::local("missing".into(), "a".repeat(64)).unwrap(), token());
+    let app = router(
+        AppState::local("missing".into(), "a".repeat(64)).unwrap(),
+        token(),
+    );
     let r = app
         .oneshot(
             Request::builder()

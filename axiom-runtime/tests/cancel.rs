@@ -127,7 +127,10 @@ async fn cancel_aborts_in_flight_generation_and_frees_the_slot() {
 
 #[tokio::test]
 async fn cancel_is_idempotent_when_nothing_is_running() {
-    let app = router(AppState::local("test".into(), "a".repeat(64)).unwrap(), token());
+    let app = router(
+        AppState::local("test".into(), "a".repeat(64)).unwrap(),
+        token(),
+    );
     for _ in 0..2 {
         let res = app
             .clone()
@@ -143,7 +146,10 @@ async fn cancel_is_idempotent_when_nothing_is_running() {
 
 #[tokio::test]
 async fn cancel_requires_native_authentication() {
-    let app = router(AppState::local("test".into(), "a".repeat(64)).unwrap(), token());
+    let app = router(
+        AppState::local("test".into(), "a".repeat(64)).unwrap(),
+        token(),
+    );
     let anonymous = Request::builder()
         .method("POST")
         .uri("/cancel")

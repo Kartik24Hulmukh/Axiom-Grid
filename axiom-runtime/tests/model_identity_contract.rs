@@ -334,7 +334,11 @@ async fn configured_model_name_must_be_nonempty_bounded_ascii_graphic() {
             "accepted {model:?}"
         );
     }
-    for model in ["m".to_string(), "model/path:tag".to_string(), "x".repeat(256)] {
+    for model in [
+        "m".to_string(),
+        "model/path:tag".to_string(),
+        "x".repeat(256),
+    ] {
         assert!(AppState::local(model, digest()).is_ok());
     }
 }
@@ -413,7 +417,10 @@ async fn invalid_identity_is_not_ready_and_direct_materialize_never_posts_prompt
         let ready: Value = serde_json::from_slice(&body).unwrap();
         assert_eq!(ready["ready"], false, "{case}: {ready}");
         fixture.no_prompt();
-        assert_eq!(*fixture.backend.events.lock().unwrap(), vec!["tags", "tags"]);
+        assert_eq!(
+            *fixture.backend.events.lock().unwrap(),
+            vec!["tags", "tags"]
+        );
     }
 }
 
@@ -421,7 +428,10 @@ async fn invalid_identity_is_not_ready_and_direct_materialize_never_posts_prompt
 async fn successful_readiness_is_not_cached_for_subsequent_generation() {
     let fixture = Fixture::new(approved_inventory(), valid_output(), digest()).await;
     let (_, body) = fixture.request("GET", "/readiness", Value::Null).await;
-    assert_eq!(serde_json::from_slice::<Value>(&body).unwrap()["ready"], true);
+    assert_eq!(
+        serde_json::from_slice::<Value>(&body).unwrap()["ready"],
+        true
+    );
     let pause = fixture.pause_next_tags();
     let app = fixture.app.clone();
     let running = tokio::spawn(async move {
@@ -477,7 +487,10 @@ async fn readiness_tracks_inventory_changes_in_both_directions() {
         });
         let (status, body) = fixture.request("GET", "/readiness", Value::Null).await;
         assert_eq!(status, StatusCode::OK);
-        assert_eq!(serde_json::from_slice::<Value>(&body).unwrap()["ready"], ready);
+        assert_eq!(
+            serde_json::from_slice::<Value>(&body).unwrap()["ready"],
+            ready
+        );
         fixture.no_prompt();
     }
     assert_eq!(fixture.backend.tag_gets.load(Ordering::SeqCst), 3);
@@ -574,7 +587,10 @@ async fn generation_response_requires_exact_configured_model_and_discloses_no_re
         assert_eq!(fixture.backend.tag_gets.load(Ordering::SeqCst), 1);
         assert_eq!(fixture.backend.prompt_posts.load(Ordering::SeqCst), 1);
         assert_eq!(fixture.backend.captured_bodies.lock().unwrap().len(), 1);
-        assert_eq!(*fixture.backend.events.lock().unwrap(), vec!["tags", "generate"]);
+        assert_eq!(
+            *fixture.backend.events.lock().unwrap(),
+            vec!["tags", "generate"]
+        );
         // Wrong response identity must also release the slot for a new request.
         *fixture.backend.output.lock().unwrap() = WireReply::json(valid_output());
         let (status, body) = fixture

@@ -43,8 +43,11 @@ impl AppState {
             !model.is_empty() && model.len() <= 256 && model.bytes().all(|b| b.is_ascii_graphic()),
             "Invalid model name: require 1..=256 ASCII characters without whitespace or controls"
         );
-        let expected_digest = normalize_digest(&expected_digest)
-            .ok_or_else(|| anyhow::anyhow!("Invalid expected model digest: require 64 hex digits, optionally prefixed sha256:"))?;
+        let expected_digest = normalize_digest(&expected_digest).ok_or_else(|| {
+            anyhow::anyhow!(
+                "Invalid expected model digest: require 64 hex digits, optionally prefixed sha256:"
+            )
+        })?;
         Ok(Self {
             client: reqwest::Client::builder()
                 .no_proxy()
