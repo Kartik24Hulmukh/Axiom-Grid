@@ -81,6 +81,8 @@ The current wrapper now validates both indexed corpora, snapshots their bytes, r
 
 A subsequent single actual deterministic observation added four independently hand-authored negative documents without changing the three positives or thresholds. All seven documents were accounted for: grounded answers **39/39**, refusals **18/24 (75%, FAIL)**, false refusals **0/39**, ungrounded renders **0**. Exit was **1**, with regression/release/production flags false. Six lexically grounded but semantically wrong extractions exposed newline-spanning invoice labels, due-vs-issue date confusion, absent-tax defaults, arbitrary heading-as-vendor and provisional competing totals. The historical failure is retained; it is not erased by contract-test passes. Pack corrections and any later measurement must be identified separately.
 
+After conservative InvoicePack fixes, one actual post-fix invocation passed the unchanged gates on the same seven documents: grounded **39/39**, refusal **24/24**, false refusal **0/39**, ungrounded renders **0**, and three auxiliary checks true; exit **0**. Corpus SHA-256: `bcad632ffe1654a130e3d832649e8cf664cca19d810457ab4e80147c1dba8833`. No existing positive/negative truth or threshold was changed between the failing observation and this pass. The fixes remove invented/default values and abstain on conflicting or provisional evidence. The corpus is small and selected, not an independent population accuracy estimate; unsupported layouts/languages may abstain.
+
 No real-model quality or production qualification follows from these deterministic fixture measurements.
 
 ## Remaining blockers — not solved by these changes
