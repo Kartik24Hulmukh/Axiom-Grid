@@ -362,7 +362,7 @@ def test_full_registered_stack_differential(monkeypatch, caplog, case, status, c
 def test_registered_order_and_no_legacy_guard_dispatch():
     entries = server.app.user_middleware
     labels = [m.kwargs["dispatch"].__name__ if "dispatch" in m.kwargs else m.cls.__name__ for m in entries]
-    expected = ["BodyLimitMiddleware", "rate_limit_middleware", "api_key_auth_middleware",
+    expected = ["BodyLimitMiddleware", "RateLimitMiddleware", "ApiKeyAuthMiddleware",
                 "RequestGovernorMiddleware", "SecurityHeadersMiddleware", "RequestIdMiddleware", "OriginGateMiddleware"]
     indices = [labels.index(name) for name in expected]
     assert indices == sorted(indices)

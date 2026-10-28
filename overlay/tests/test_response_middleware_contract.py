@@ -315,7 +315,7 @@ def test_registered_order_preserves_upstream_visibility_and_legacy_functions():
     for entry in entries:
         dispatch = entry.kwargs.get("dispatch")
         labels.append(dispatch.__name__ if dispatch else entry.cls.__name__)
-    names = ["rate_limit_middleware", "api_key_auth_middleware", "RequestGovernorMiddleware",
+    names = ["RateLimitMiddleware", "ApiKeyAuthMiddleware", "RequestGovernorMiddleware",
              registered("security_headers").cls.__name__, registered("request_id").cls.__name__, "OriginGateMiddleware"]
     indices = [labels.index(name) for name in names]
     assert indices == sorted(indices)
