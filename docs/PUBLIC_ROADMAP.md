@@ -1,91 +1,52 @@
-# Kairo Phantom — Public Roadmap
+# Axiom-Grid — evidence-led roadmap
 
-This roadmap is public and community-driven. Items marked **help wanted** are open for contribution.
+**Current state: authorized engineering preview, not a production launch.**
+This replaces the older Kairo roadmap's unsupported “shipped air-gap,” universal
+signed-audit and v1-launch claims. Historical implementations and passing unit
+checks are not proof of native/offline qualification.
 
----
+## Product boundary
 
-## Scope Boundaries (What Kairo Does and Does Not Do)
+The current desktop preview accepts explicit user context and displays a
+suggestion for manual copying. No covert installation, background capture,
+automatic typing, application control or exam-policy bypass is approved. Use only
+on authorized devices and permitted tasks. See [AUTHORIZED_PREVIEW.md](AUTHORIZED_PREVIEW.md).
 
-### Kairo DOES:
-- **Read** documents and extract structured data with grounded citations
-- **Suggest** actions to the user (never auto-applies)
-- **Refuse** to answer when it cannot ground a claim to source text
-- **Audit** every answer and refusal in a tamper-evident signed log
-- Run **local-first** with zero network egress by default
+The repository also includes a separate document-service path and inherited
+research/legacy components. Their capabilities must not be conflated with the
+native preview's shipping surface.
 
-### Kairo Does NOT:
-- Write to or drive source applications (Word, Excel, desktop) — v1 is READ + SUGGEST ONLY
-- Act as a multi-domain expert swarm or router
-- Operate as a collaborative/cloud-by-default layer
-- Auto-apply any suggestion without explicit human confirmation
+## Priority 1 — trustworthy release decisions
 
----
+- Fail closed when evidence is missing, malformed, synthetic, stale or mismatched.
+- Keep deterministic regression checks separate from real-device qualification.
+- Retain existing performance workloads and thresholds; report failures honestly.
+- Remove fabricated certification and unapproved signing success paths.
+- Complete build-specific license, dependency and model-asset review.
 
-## Current State (v1 Launch)
+## Priority 2 — one qualified end-to-end device profile
 
-| Feature | Status |
-|:---|:---|
-| Grounding cascade (EXACT → FUZZY → SEMANTIC → BLOCK) | ✅ Shipped |
-| 4 Packs (generic, invoice, paper, contract) | ✅ Shipped |
-| Provenance chain (Action → Extraction → Chunk → Document) | ✅ Shipped |
-| Signed audit log (tamper-evident) | ✅ Shipped |
-| Reproducibility receipts | ✅ Shipped |
-| Golden corpus snapshot tests | ✅ Shipped |
-| Adversarial corpus + red-team flow | ✅ Shipped |
-| Standalone verifier crate | ✅ Shipped |
-| Air-gap mode (zero egress) | ✅ Shipped |
+Select one OS, hardware configuration, backend and exact model artifact. Test the
+actual compiled UI, pairing, inference, cancellation, shutdown, disconnected cold
+start and failure handling. Establish backend/model provenance and enforce network
+policy at an appropriate boundary. Loopback transport and self-reported identity
+are not attestation. Measure latency, memory, thermals and failure rates on the
+specified profile before setting a customer promise.
 
----
+## Priority 3 — controlled distribution and customer validation
 
-## Roadmap
+After target-device gates pass: sign/notarize the actual installer, verify clean
+install/update/uninstall and rollback, secure pairing/key custody, retention and
+crash handling, and obtain independent security review. Run a small consent-based
+pilot for a clearly permitted task; measure repeat use, task time saved, output
+quality and willingness to pay before expanding scope.
 
-### Q3 2026 — Post-Launch Hardening
+## Deferred until justified
 
-- [ ] **help wanted**: Expand golden corpus to 100+ (document, question) pairs
-- [ ] **help wanted**: Add adversarial document types (scanned PDFs, handwritten forms)
-- [ ] **help wanted**: Multi-language document support (initial: Spanish, French, German)
-- [ ] Tauri overlay polish: citation hover-preview with bbox highlighting
-- [ ] Performance: sub-2s cold-start on M1 / Ryzen 7
+Fleet rollout, silent installation, autonomous application control, marketplaces,
+large swarms and enterprise compliance claims are not launch prerequisites.
+Additional features must address demonstrated user needs without expanding the
+preview's authority accidentally.
 
-### Q4 2026 — Enterprise Features
-
-- [ ] **help wanted**: SOC 2 Type II documentation pack
-- [ ] Signed installer distribution (macOS notarization, Windows code signing)
-- [ ] Enterprise SSO integration (read-only audit log access)
-- [ ] **help wanted**: Custom Pack SDK for domain-specific extraction
-
-### 2027 — The 1000x Layer
-
-- [ ] **help wanted**: Community Pack marketplace
-- [ ] Federated learning for correction flywheel (opt-in, privacy-preserving)
-- [ ] **help wanted**: Cross-document reasoning with multi-hop grounding
-- [ ] Visual retrieval (ColQwen2/ColPali) for image-heavy documents
-
----
-
-## Help Wanted
-
-We welcome contributions in these areas. Each has a `help wanted` label on GitHub.
-
-| Area | Label | Description |
-|:---|:---|:---|
-| Golden corpus expansion | `help wanted: corpus` | Add (document, question) → expected answer/refusal pairs |
-| Adversarial documents | `help wanted: red-team` | Submit adversarial documents that try to break grounding |
-| Multi-language support | `help wanted: i18n` | Help Kairo ground citations in non-English documents |
-| Custom Packs | `help wanted: packs` | Build domain-specific extraction Packs |
-| Verifier integrations | `help wanted: verifier` | Integrate the verifier with more RAG frameworks |
-| Documentation | `help wanted: docs` | Improve guides, examples, and API docs |
-
----
-
-## How to Contribute
-
-See [CONTRIBUTING.md](../CONTRIBUTING.md) for contribution guidelines, scope boundaries, and development setup.
-
-## How to Submit Adversarial Documents
-
-See [red-team/README.md](../red-team/README.md) for the adversarial submission flow and [red-team/submit_template.md](../red-team/submit_template.md) for the submission template.
-
----
-
-*This roadmap is a living document. Priorities may shift based on community feedback and contribution velocity.*
+No roadmap item promises a release date, valuation, “100×” improvement or traction.
+[Release qualification](RELEASE_QUALIFICATION.md) lists the evidence boundary.
