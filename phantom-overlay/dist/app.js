@@ -57,7 +57,11 @@ byId("generate").addEventListener("click", async () => {
     updateGenerate();
   }
 });
-byId("cancel").addEventListener("click", async () => {
+async function discardPreview(clearContext = false) {
+  if (clearContext) {
+    byId("context").value = "";
+    byId("result").value = "";
+  }
   if (cancelling) return;
   const wasPending = pending;
   const current = ++generation;
@@ -84,4 +88,6 @@ byId("cancel").addEventListener("click", async () => {
   } else {
     byId("status").textContent = wasPending ? "Discarded. Local generation may finish in the background." : "Preview discarded.";
   }
-});
+}
+byId("cancel").addEventListener("click", () => discardPreview(false));
+byId("clear-session").addEventListener("click", () => discardPreview(true));

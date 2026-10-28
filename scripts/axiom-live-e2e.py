@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
-"""Opt-in real-model validation. Requires running runtime and installed Ollama model.
+"""Opt-in loopback API smoke probe with synthetic prompts (stdlib only).
 
-No model downloads, fake model responses, or external inference. Uses stdlib only.
+Requires an operator-approved running runtime/backend. A localhost endpoint does
+NOT prove local inference: audit cloud settings, model identity and network
+behavior separately. Does not launch a native UI, download a model, or certify
+backend locality, offline operation, usefulness or production readiness.
 Run: python3 scripts/axiom-live-e2e.py --output evidence.json
-The output contains synthetic prompts/results and model metadata, never the token.
+Evidence redacts the exact pairing token and refuses existing output files.
 """
 
 import argparse
@@ -12,10 +15,14 @@ import json
 import math
 import os
 import statistics
+import stat
 import time
 import urllib.error
 import urllib.request
 from pathlib import Path
+
+MAX_RESPONSE_BYTES = 1024 * 1024
+
 
 PROMPTS = [
     "Fix the grammar, return one sentence: She go to school every day.",
@@ -64,7 +71,9 @@ def request(port, path, token=None, payload=None, headers=None):
     except urllib.error.HTTPError as error:
         response = error
     with response:
-        body = response.read(1024 * 1024)
+        body = response.read(MAX_RESPONSE_BYTES + 1)
+        if len(body) > MAX_RESPONSE_BYTES:
+            raise ValueError("Loopback response exceeds evidence byte budget")
         try:
             body = json.loads(body)
         except (ValueError, UnicodeDecodeError):
@@ -72,9 +81,16 @@ def request(port, path, token=None, payload=None, headers=None):
         return response.status, body
 
 
+def _validated_token(token):
+    if (not isinstance(token, str) or len(token) != 64
+            or any(c not in "0123456789abcdefABCDEF" for c in token)):
+        raise ValueError("Invalid pairing token")
+    return token
+
+
 def paired_token():
-    if os.environ.get("AXIOM_API_TOKEN"):
-        return os.environ["AXIOM_API_TOKEN"]
+    if "AXIOM_API_TOKEN" in os.environ:
+        return _validated_token(os.environ["AXIOM_API_TOKEN"])
     explicit = os.environ.get("AXIOM_PAIRING_FILE")
     if explicit:
         path = Path(explicit)
@@ -90,19 +106,107 @@ def paired_token():
         path = (
             Path(base) if base else Path.home() / ".config"
         ) / "axiom-grid/ipc.token"
-    token = path.read_text().strip()
-    if len(token) != 64 or any(c not in "0123456789abcdefABCDEF" for c in token):
-        raise ValueError("Invalid pairing token")
-    return token
+    # Bound even operator-configured pairing files; do not read an arbitrary
+    # large file into the evidence process. Native pairing custody is separate.
+    if os.name != "posix" or not hasattr(os, "O_NOFOLLOW"):
+        raise ValueError("Pairing-file reading requires POSIX; configure AXIOM_API_TOKEN privately")
+    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    with os.fdopen(fd, "rb") as stream:
+        info = os.fstat(stream.fileno())
+        if (not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid()
+                or stat.S_IMODE(info.st_mode) != 0o600):
+            raise ValueError("Pairing file must be an owned private regular file (mode 0600)")
+        data = stream.read(129)
+    if len(data) > 128:
+        raise ValueError("Pairing file exceeds byte budget")
+    return _validated_token(data.decode("ascii").strip())
+
+
+def _redact(value, token):
+    """Defense against a runtime echoing a credential into any evidence field."""
+    if isinstance(value, str):
+        return value.replace(token, "[REDACTED_PAIRING_TOKEN]")
+    if type(value) in (int, float) and token in str(value):
+        return "[REDACTED_PAIRING_TOKEN]"
+    if isinstance(value, list):
+        return [_redact(v, token) for v in value]
+    if isinstance(value, dict):
+        return {_redact(k, token): _redact(v, token) for k, v in value.items()}
+    return value
+
+
+def write_evidence(path, evidence, token):
+    """Write a new report only; exact-token redaction is not universal DLP."""
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("x", encoding="utf-8") as stream:
+        stream.write(json.dumps(_redact(evidence, token), ensure_ascii=False,
+                                allow_nan=False, indent=2) + "\n")
+
+
+def reported_model_identity(ready):
+    """Check reported inventory consistency, not backend or weights authenticity."""
+    if (not isinstance(ready, dict) or ready.get("ready") is not True
+            or not isinstance(ready.get("configured_model"), str)
+            or not ready["configured_model"] or len(ready["configured_model"]) > 256
+            or not isinstance(ready.get("installed_models"), list)):
+        raise ValueError("Invalid model readiness report")
+    matches = [m for m in ready["installed_models"]
+               if isinstance(m, dict) and m.get("name") == ready["configured_model"]]
+    if len(matches) != 1:
+        raise ValueError("Configured model inventory is missing or ambiguous")
+    model = matches[0]
+    digest = model.get("digest")
+    if (not isinstance(digest, str) or len(digest) != 64
+            or any(c not in "0123456789abcdef" for c in digest)
+            or type(model.get("size")) is not int or model["size"] <= 0):
+        raise ValueError("Model inventory requires a reported digest and positive byte size")
+    return {"name": model["name"], "digest": digest, "size": model["size"]}
+
+
+def check_reported_loaded_model(loaded, identity):
+    """Require matching reported loaded name/digest; still not physical locality."""
+    if not isinstance(loaded, dict) or not isinstance(loaded.get("models"), list):
+        raise ValueError("Invalid loaded-model report")
+    for model in loaded["models"]:
+        if (not isinstance(model, dict) or
+                ("name" in model and "model" in model and model["name"] != model["model"])):
+            raise ValueError("Conflicting or malformed loaded-model entry")
+    matches = [m for m in loaded["models"]
+               if m.get("name", m.get("model")) == identity["name"]]
+    if len(matches) != 1 or matches[0].get("digest") != identity["digest"]:
+        raise ValueError("Configured model name/digest not uniquely reported loaded")
+
+
+def validate_preview_response(result):
+    if (not isinstance(result, dict) or not isinstance(result.get("suggestion"), str)
+            or not result["suggestion"].strip()
+            or type(result.get("char_count")) is not int
+            or result["char_count"] != len(result["suggestion"])
+            or type(result.get("word_count")) is not int or result["word_count"] < 0):
+        raise ValueError("Invalid suggestion or response counts")
+
+
+def validate_cancellation(body, expected):
+    if not isinstance(body, dict) or body.get("cancelled") is not expected:
+        raise ValueError("Invalid cancellation acknowledgement")
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
+    if args.output.exists():
+        parser.error("Evidence output already exists; use a new path")
     token = paired_token()
     evidence = {
-        "kind": "real installed Ollama model; synthetic prompts",
+        "kind": "loopback API smoke probe; synthetic prompts",
+        "backend_locality_verified": False,
+        "offline_operation_verified": False,
+        "native_ui_tested": False,
+        "production_qualified": False,
+        "limitations": ["HTTP behavior is not model provenance or output usefulness",
+                        "Cancellation acknowledgement is not backend resource-release proof"],
         "cases": [],
         "prompts": [],
         "human_usefulness_review": "NOT PERFORMED",
@@ -117,7 +221,8 @@ def main():
     try:
         check("liveness", request(7437, "/health")[0], 200)
         check("unauthenticated readiness", request(7437, "/readiness")[0], 401)
-        check("wrong token", request(7437, "/cancel", "0" * 64, {})[0], 401)
+        wrong_token = ("1" if token == "0" * 64 else "0") * 64
+        check("wrong token", request(7437, "/cancel", wrong_token, {})[0], 401)
         check(
             "cross origin",
             request(7437, "/cancel", token, {}, {"Origin": "https://evil.example"})[0],
@@ -131,17 +236,26 @@ def main():
             check(name, request(7437, "/materialize", token, payload)[0], status)
         status, ready = request(7437, "/readiness", token)
         check("model readiness", status, 200)
-        if not ready["ready"]:
-            raise AssertionError("Configured model is not installed")
+        identity = reported_model_identity(ready)
         evidence["readiness"] = ready
-        evidence["ollama_version"] = request(11434, "/api/version")[1]
+        evidence["reported_model_identity"] = identity
+        status, version = request(11434, "/api/version")
+        check("backend version", status, 200)
+        if not isinstance(version, dict) or not isinstance(version.get("version"), str) or not version["version"]:
+            raise ValueError("Invalid backend version report")
+        evidence["ollama_version"] = version
         status, model = request(
             11434, "/api/show", payload={"model": ready["configured_model"]}
         )
         check("model metadata", status, 200)
+        if (not isinstance(model, dict) or not isinstance(model.get("details"), dict)
+                or not model["details"] or not isinstance(model.get("model_info"), dict)
+                or not model["model_info"]):
+            raise ValueError("Model metadata incomplete for this evidence profile")
         evidence["model"] = {
             k: model.get(k) for k in ("license", "details", "model_info", "parameters")
         }
+        evidence["license_review_completed"] = False
         for index, prompt in enumerate(PROMPTS):
             start = time.monotonic()
             status, result = request(7437, "/materialize", token, {"context": prompt})
@@ -156,12 +270,12 @@ def main():
                 }
             )
             check(f"prompt {index + 1}", status, 200)
-            if not result["suggestion"].strip() or result["char_count"] != len(
-                result["suggestion"]
-            ):
-                raise AssertionError("Invalid suggestion or Unicode count")
+            validate_preview_response(result)
             print(f"prompt {index + 1}: HTTP {status}, {elapsed:.3f}s", flush=True)
-        evidence["loaded_models"] = request(11434, "/api/ps")[1]
+        status, loaded = request(11434, "/api/ps")
+        check("loaded model report", status, 200)
+        check_reported_loaded_model(loaded, identity)
+        evidence["loaded_models"] = loaded
         with concurrent.futures.ThreadPoolExecutor() as pool:
             running = pool.submit(
                 request,
@@ -178,9 +292,13 @@ def main():
             while time.monotonic() < deadline and not running.done():
                 time.sleep(0.05)
                 status, cancellation = request(7437, "/cancel", token, {})
-                if status == 200 and cancellation["cancelled"]:
-                    acknowledged = True
-                    break
+                if status == 200:
+                    if not isinstance(cancellation, dict) or type(cancellation.get("cancelled")) is not bool:
+                        raise ValueError("Invalid cancellation acknowledgement")
+                    if cancellation["cancelled"] is True:
+                        validate_cancellation(cancellation, True)
+                        acknowledged = True
+                        break
             if not acknowledged:
                 raise AssertionError(
                     "No in-flight generation acknowledged cancellation"
@@ -188,33 +306,30 @@ def main():
             check("cancelled generation", running.result()[0], 499)
         status, cancellation = request(7437, "/cancel", token, {})
         check("idempotent cancel", status, 200)
-        if cancellation["cancelled"]:
-            raise AssertionError("Cancellation slot was not cleared")
-        check(
-            "generation after cancel",
-            request(
-                7437, "/materialize", token, {"context": "Say hello in one sentence."}
-            )[0],
-            200,
-        )
+        validate_cancellation(cancellation, False)
+        status, recovery = request(
+            7437, "/materialize", token, {"context": "Say hello in one sentence."})
+        check("generation after cancel", status, 200)
+        validate_preview_response(recovery)
         timings = [p["elapsed_seconds"] for p in evidence["prompts"]]
         evidence["latency"] = {
             "first_request_seconds": timings[0],
-            "warm_p50_seconds": statistics.median(timings[1:]),
-            "warm_p95_seconds": sorted(timings[1:])[
+            "warm_sample_count": len(timings) - 1,
+            "sample_caveat": "Descriptive warm sample only, not population tail/SLA",
+            "warm_sample_median_seconds": statistics.median(timings[1:]),
+            "warm_sample_nearest_rank_p95_seconds": sorted(timings[1:])[
                 math.ceil(0.95 * (len(timings) - 1)) - 1
             ],
         }
         evidence["passed"] = True
     except Exception as error:
         evidence["passed"] = False
-        evidence["error"] = str(error)
-        raise
+        # Do not persist arbitrary exception text, which may contain credentials.
+        evidence["error_type"] = type(error).__name__
+        raise RuntimeError("Loopback probe failed; see redacted evidence (" +
+                           type(error).__name__ + ")") from None
     finally:
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-        args.output.write_text(
-            json.dumps(evidence, ensure_ascii=False, indent=2) + "\n"
-        )
+        write_evidence(args.output, evidence, token)
 
 
 if __name__ == "__main__":

@@ -9,4 +9,5 @@
 channel = "1.88.0"
 components = ["rustfmt", "clippy"]
 profile = "minimal"
-targets = ["x86_64-unknown-linux-gnu"]
+# Host target is installed by rustup. Add cross-compilation targets explicitly
+# on the machines that need them; this does not supply native platform SDKs.
