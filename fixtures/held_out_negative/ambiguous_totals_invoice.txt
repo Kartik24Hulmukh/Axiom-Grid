@@ -1,0 +1,8 @@
+INVOICE
+Willow Lantern Works
+Invoice Number: WL-908
+Invoice Date: 2026-10-20
+Currency: USD
+Draft total: $120.00
+Revised total: $145.00
+Both totals are provisional. Neither is approved as an amount payable.

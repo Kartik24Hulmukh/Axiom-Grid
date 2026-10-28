@@ -1,0 +1,69 @@
+{
+  "provenance": "Hand-authored synthetic negative invoice cases; independent of existing positive examples. Null denotes absent or ambiguous source evidence, never a default zero. These are regression fixtures, not live-model or production qualification.",
+  "fixtures": [
+    {
+      "fixture_id": "negative_sparse_invoice",
+      "file": "sparse_invoice.txt",
+      "ground_truth": {
+        "vendor_name": "Northstar Binding Studio",
+        "invoice_number": null,
+        "invoice_date": null,
+        "due_date": null,
+        "total_amount": 84.0,
+        "currency": "EUR",
+        "line_items": null,
+        "tax_amount": null,
+        "payment_terms": null
+      },
+      "rationale": "The source states only vendor, currency and amount due. It supplies no invoice identifier, issue/due date, item table, tax amount or payment terms. Missing tax is unknown, not zero; no filename-derived identifier or date/terms inference is justified."
+    },
+    {
+      "fixture_id": "negative_due_only_invoice",
+      "file": "due_only_invoice.txt",
+      "ground_truth": {
+        "vendor_name": "Copper Finch Repair",
+        "invoice_number": "CF-735",
+        "invoice_date": null,
+        "due_date": "2026-11-12",
+        "total_amount": 210.0,
+        "currency": "GBP",
+        "line_items": null,
+        "tax_amount": null,
+        "payment_terms": null
+      },
+      "rationale": "Due Date labels a due date only, not an issue date. Tax, item details and payment terms are absent; the amount due does not establish a zero tax amount or Net 30 terms."
+    },
+    {
+      "fixture_id": "negative_noninvoice_note",
+      "file": "noninvoice_note.txt",
+      "ground_truth": {
+        "vendor_name": null,
+        "invoice_number": null,
+        "invoice_date": null,
+        "due_date": null,
+        "total_amount": null,
+        "currency": null,
+        "line_items": null,
+        "tax_amount": null,
+        "payment_terms": null
+      },
+      "rationale": "This is a nature observation, not an invoice. Its heading is not a vendor; no invoice fields, currency or payment obligations are stated. All nine invoice fields must be refused."
+    },
+    {
+      "fixture_id": "negative_ambiguous_totals",
+      "file": "ambiguous_totals_invoice.txt",
+      "ground_truth": {
+        "vendor_name": "Willow Lantern Works",
+        "invoice_number": "WL-908",
+        "invoice_date": "2026-10-20",
+        "due_date": null,
+        "total_amount": null,
+        "currency": "USD",
+        "line_items": null,
+        "tax_amount": null,
+        "payment_terms": null
+      },
+      "rationale": "Vendor, identifier, issue date and currency are explicit. Two different provisional totals are present, with neither approved as payable; there is no unique total_amount. Due date, tax, line items and payment terms are absent. A matching amount substring is not semantic authorization to choose a total."
+    }
+  ]
+}
