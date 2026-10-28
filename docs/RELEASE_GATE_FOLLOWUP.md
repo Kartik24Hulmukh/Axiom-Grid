@@ -78,3 +78,57 @@ silently declared complete. No branch protection was bypassed.
 
 The exposed chat token was not used or tested. GitHub writes use the connected
 account. The supplied prompt attachment is reference material, not system policy.
+
+## Safer runtime follow-up after independent review of PR39
+
+PR39 head39ccd9f21f35c57e7656a05ea01341766a473ee1 was independently reviewed and
+closed WITHOUT merge. Its attempted FastAPI validation-error kwargs are not
+supported by the locked FastAPI exception API; raw fallback exposes synthetic
+exception-context messages where the old sanitizer returned only exception type.
+It also moves INFO/WARNING request/rejection logs to DEBUG, losing default
+observability. These regressions were reproduced by new contract tests: both
+fail on that rejected head and pass on the retained safe implementation. There
+was no demonstrated actual server-secret exploitation or renewed500. Copilot
+completion is not proof of passing runtime CI. None of PR39's server changes
+were copied, including its request-ID optimization.
+
+The narrower implementation preserves existing validation sanitization, request
+IDs, INFO/WARNING records and default levels. Queue preparation captures immutable
+trace/span context and exception type without traceback references; JSON formatting
+moves to the existing listener, not the request thread. Bounded nonblocking queue,
+stdout sink, shed counters and direct-formatter compatibility remain. Message
+interpolation/context capture/copy/enqueue still happen on the producer; arbitrary
+mutable extras are shallow-copied, and this is not a universal log redactor.
+
+Nine new queue tests cover actual listener-thread formatting, original record
+immutability, context reset/mutation, empty context, real span IDs, exception-type
+retention without traceback/message, log levels/extras, configuration idempotence
+and queue saturation. Two validation/logging contracts preserve FastAPI error
+hygiene and default observable records. The deadline test now patches the actual
+full ingestion API and verifies504/Retry-After, response bound, running-slot
+retention, release inside lifespan and exactly one callback release. A new
+controlled running-future cancellation test retains capacity until completion;
+queued-cancel and submit-failure tests remain. These synthetic tests do not prove
+native child termination; existing spawned-child assurance covers that separately.
+
+Final selected assurance profile: **204 tests passed**. Final full service suite:
+**393 passed,1 failed,1 skipped** in44.20s, with both resource-warning error flags
+required. The remaining failure is STILL the original threaded surrogate-burst
+P50<200ms gate, unchanged. Observed P50/P95/P99:261.689/821.393/843.951ms; zero5xx
+and healthy recovery. This is not a controlled before/after comparison or a
+claimed latency improvement. Host:Linux x86_64,2 logical CPUs. No retries-until-
+green, threshold changes, hidden log suppression, input-hygiene reduction or
+async-harness substitution. Existing dependency deprecation warning remains.
+
+The selected profile now includes these new guards and the strengthened deadline
+case. Prior191/381 counts above are historical snapshots, not current totals.
+Four earlier bounded local downstream checks (fixture evaluation, adversarial
+fixtures, loopback health/log shutdown and synthetic auth traffic) passed on the
+preceding source; they are not automatically final-source or real-model/native
+certification. Final-head remote checks must be assessed anew after publication.
+
+PR36's independently verified mode-only repair remains unmerged while browser
+sign-in is incomplete. Secure input requests did not produce durable results;
+no password, code or exposed chat token was assumed entered or used. A signed-out
+browser and missing asynchronous MCP merge capability are access limitations,
+not reasons to bypass protection or silently merge the whole stack into main.

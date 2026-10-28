@@ -80,32 +80,67 @@ def test_pdf_page_flood_rejected(tmp_path, monkeypatch):
 
 
 def test_extraction_deadline_returns_504_and_releases_slot(monkeypatch):
+    import time
+
     from fastapi.testclient import TestClient
 
+    from kernel.sidecar import isolated_ingest
     from overlay import server
 
-    release = threading.Event()
+    entered, release, slot_returned = (
+        threading.Event(), threading.Event(), threading.Event()
+    )
 
-    class HangingIngestor:
-        def ingest(self, path):
-            release.wait(5)
-            raise ValueError("aborted")
+    class CountingSlots:
+        def __init__(self):
+            self.semaphore = threading.BoundedSemaphore(1)
+            self.releases = 0
+
+        def acquire(self, blocking=False):
+            return self.semaphore.acquire(blocking=blocking)
+
+        def release(self):
+            self.releases += 1
+            self.semaphore.release()
+            # Synchronize the count read with the worker's done callback.
+            slot_returned.set()
+
+    slots = CountingSlots()
+
+    def blocked(filepath, timeout, *, content=None):
+        assert filepath.endswith("sample_nda.docx")
+        assert 0 < timeout <= 0.2
+        assert isinstance(content, bytes) and content
+        entered.set()
+        assert release.wait(10), "test did not release extraction worker"
+        raise isolated_ingest.IsolatedIngestDeadline("synthetic deadline")
 
     monkeypatch.setattr(server, "EXTRACTION_DEADLINE_SECONDS", 0.2)
-    monkeypatch.setattr(server, "IngestorImpl", HangingIngestor)
-    before = server._extraction_slots._value
+    monkeypatch.setattr(server, "_extraction_slots", slots)
+    monkeypatch.setattr(isolated_ingest, "ingest_document_isolated", blocked)
+    before_deadlines = server.OPS_METRICS.get("extraction_deadline_total", 0)
     with TestClient(server.app) as client:
-        r = client.post("/api/extract-document", json={"file": "fixtures/demo/sample_nda.docx"})
-    assert r.status_code == 504
-    assert r.headers.get("retry-after") == "5"
-    release.set()
-    deadline = threading.Event()
-    for _ in range(100):  # the worker's done-callback returns the slot exactly once
-        if server._extraction_slots._value == before:
-            break
-        deadline.wait(0.05)
-    assert server._extraction_slots._value == before
-    assert server.OPS_METRICS["extraction_deadline_total"] >= 1
+        try:
+            started = time.monotonic()
+            r = client.post("/api/extract-document", json={"file": "fixtures/demo/sample_nda.docx"})
+            elapsed = time.monotonic() - started
+            assert r.status_code == 504
+            assert r.headers.get("retry-after") == "5"
+            assert elapsed < 2.0, "deadline response waited for blocked work"
+            assert entered.is_set(), "request must reach the full ingestion API"
+            assert not release.is_set() and not slot_returned.is_set()
+            assert slots.releases == 0
+            assert not slots.acquire(blocking=False), "running work must retain its slot"
+            assert server.OPS_METRICS["extraction_deadline_total"] == before_deadlines + 1
+        finally:
+            # Release before lifespan shutdown, which joins the worker pool.
+            release.set()
+        assert slot_returned.wait(2), "completed worker did not return its slot"
+        assert slots.releases == 1
+        assert slots.acquire(blocking=False)
+        assert not slots.acquire(blocking=False)
+        slots.semaphore.release()  # restore without incrementing the callback count
+    assert slots.releases == 1
 
 
 # ---------------------------------------------------------------- AG-09
