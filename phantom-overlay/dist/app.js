@@ -2,6 +2,7 @@
 const byId = id => document.getElementById(id);
 let generation = 0;
 let pending = false;
+let requestDiscarded = false;
 let modelReady = false;
 let readinessCheck = 0;
 let cancelling = false;
@@ -47,6 +48,7 @@ byId("generate").addEventListener("click", async () => {
   if (!modelReady) { byId("status").textContent = "Wait for a successful local model readiness check."; return; }
   const current = ++generation;
   pending = true;
+  requestDiscarded = false;
   updateGenerate();
   byId("cancel").disabled = false;
   byId("result").value = "";
@@ -63,37 +65,45 @@ byId("generate").addEventListener("click", async () => {
     updateGenerate();
   }
 });
-async function discardPreview(clearContext = false) {
+async function discardPreview(clearContext = false, inputChanged = false) {
   if (clearContext) {
     byId("context").value = "";
     byId("result").value = "";
   }
-  if (cancelling) return;
+  if (cancelling || (pending && requestDiscarded)) return;
   const wasPending = pending;
+  if (wasPending) requestDiscarded = true;
   const current = ++generation;
+  const discarded = inputChanged ? "Input changed. Previous preview discarded." : "Discarded.";
   byId("result").value = "";
   byId("cancel").disabled = true;
   if (wasPending && window.__TAURI__?.core?.invoke) {
     cancelling = true;
     updateGenerate();
-    byId("status").textContent = "Discarded. Requesting cancellation…";
+    byId("status").textContent = `${discarded} Requesting cancellation…`;
     try {
       const accepted = await window.__TAURI__.core.invoke("cancel_materialize");
       if (current === generation) {
         // The command acknowledges the bridge signal, not confirmed model termination.
         byId("status").textContent = accepted
-          ? "Discarded. Cancellation requested. No result will be displayed."
-          : "Discarded. No active request acknowledged cancellation; generation may still finish.";
+          ? `${discarded} Cancellation requested. No result will be displayed.`
+          : `${discarded} No active request acknowledged cancellation; generation may still finish.`;
       }
     } catch (error) {
-      if (current === generation) byId("status").textContent = `Discarded. Cancellation could not be confirmed: ${String(error)}. Local generation may continue.`;
+      if (current === generation) byId("status").textContent = `${discarded} Cancellation could not be confirmed: ${String(error)}. Local generation may continue.`;
     } finally {
       cancelling = false;
       updateGenerate();
     }
   } else {
-    byId("status").textContent = wasPending ? "Discarded. Local generation may finish in the background." : "Preview discarded.";
+    byId("status").textContent = inputChanged
+      ? `${discarded} Generate again to review the new input.`
+      : wasPending ? "Discarded. Local generation may finish in the background." : "Preview discarded.";
   }
 }
 byId("cancel").addEventListener("click", () => discardPreview(false));
 byId("clear-session").addEventListener("click", () => discardPreview(true));
+byId("context").addEventListener("input", () => {
+  // Only this explicit field is observed. Editing does not release request ownership.
+  if (pending || byId("result").value !== "") return discardPreview(false, true);
+});
