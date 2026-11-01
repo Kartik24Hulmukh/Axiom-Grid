@@ -102,7 +102,10 @@ fn pairing_without_protected_storage_requires_an_explicit_valid_override() {
     std::env::set_var(ipc_pairing::ENV_PAIRING_FILE, &file);
     assert_eq!(ApiToken::pairing_file_path().unwrap(), file);
 
-    for result in [ipc_pairing::load_paired(), ipc_pairing::load_or_create_paired()] {
+    for result in [
+        ipc_pairing::load_paired(),
+        ipc_pairing::load_or_create_paired(),
+    ] {
         assert!(matches!(
             result,
             Err(PairingError::Invalid(message))
@@ -129,7 +132,10 @@ fn pairing_without_protected_storage_requires_an_explicit_valid_override() {
 
     for invalid in [String::new(), "short".to_string(), "z".repeat(64)] {
         std::env::set_var(ipc_pairing::ENV_OVERRIDE, invalid);
-        for result in [ipc_pairing::load_paired(), ipc_pairing::load_or_create_paired()] {
+        for result in [
+            ipc_pairing::load_paired(),
+            ipc_pairing::load_or_create_paired(),
+        ] {
             assert!(matches!(
                 result,
                 Err(PairingError::Invalid(message))
