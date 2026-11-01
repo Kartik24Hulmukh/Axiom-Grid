@@ -48,3 +48,23 @@ test('current request failure propagates but pending is always released',async()
  const s=new PreviewSession({readiness:async()=>{throw Error('fixture');}});
  await assert.rejects(s.run(snap,async()=> 't','p',()=>true),/fixture/);assert.equal(s.pending,false);assert.equal(s.candidate,null);
 });
+test('comment instruction supports empty source and bounds full wrapped prompt',()=>{
+ const prompt=makePrompt('','','typescript','write a helper');
+ assert.match(prompt,/<USER_INSTRUCTION>\nwrite a helper\n<\/USER_INSTRUCTION>/);
+ assert.throws(()=>makePrompt('','','javascript',' '),/INVALID_INSTRUCTION/);
+ assert.throws(()=>makePrompt('x'.repeat(15800),'','javascript','write code'),/CONTEXT_TOO_LARGE/);
+});
+test('candidate transform publishes only a bounded literal string and releases reservation on failure',async()=>{
+ const s=new PreviewSession({readiness:async()=>{},generate:async()=> 'code'});
+ for(const invalid of [()=>null,()=>Promise.resolve('text'),()=> 'x'.repeat(4097),()=> ' ']){
+  await assert.rejects(s.run(snap,async()=> 't','p',()=>true,invalid),/INVALID_CANDIDATE/);
+  assert.equal(s.candidate,null);assert.equal(s.pending,false);
+ }
+ assert.equal(await s.run(snap,async()=> 't','p',()=>true,t=>'\n'+t),'\ncode');
+});
+test('stale generation never reaches candidate transform',async()=>{
+ const d=deferred();let current=true,transforms=0;
+ const s=new PreviewSession({readiness:async()=>{},generate:()=>d.promise});
+ const p=s.run(snap,async()=> 't','p',()=>current,()=>{transforms++;return 'bad';});
+ await tick();current=false;d.resolve('late');assert.equal(await p,null);assert.equal(transforms,0);assert.equal(s.candidate,null);
+});
