@@ -9,14 +9,115 @@
 #[path = "../../../phantom-core/src/ipc_pairing.rs"]
 mod ipc_pairing;
 
-use anyhow::{Context, Result};
-use reqwest::Client;
+use anyhow::Result;
+use reqwest::{Client, Response};
 use serde::{Deserialize, Serialize};
 use std::sync::{Arc, Mutex, OnceLock};
 use std::time::Duration;
+use std::{fmt, io};
 use tokio::sync::oneshot;
 
 const DEFAULT_RUNTIME_PORT: u16 = 7437;
+
+// These errors intentionally carry no source, URL, token, path, or response body.
+// Display is the sanitized contract consumed by the existing String IPC boundary.
+#[derive(Debug)]
+enum Diagnostic {
+    OverrideInvalid,
+    PairingMissing,
+    PairingUnsafe,
+    PairingPermission,
+    PairingIo,
+    NoUserDirectory,
+    StorageUnsupported,
+    ClientSetup,
+    Timeout,
+    Connection,
+    Transport,
+    Decode,
+    Http(Operation, u16),
+}
+
+#[derive(Clone, Copy, Debug)]
+enum Operation {
+    Preview,
+    Readiness,
+    Cancel,
+}
+
+impl fmt::Display for Diagnostic {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let message = match self {
+            Self::OverrideInvalid => "PAIRING_OVERRIDE_INVALID: AXIOM_API_TOKEN must be 64 ASCII hexadecimal characters; file fallback is disabled for an explicit override",
+            Self::PairingMissing => "PAIRING_MISSING: Start axiom-runtime under the same user to establish pairing",
+            Self::PairingUnsafe => "PAIRING_STORAGE_INVALID: Pairing storage is invalid or unsafe; follow the pairing recovery runbook; do not silently change permissions or regenerate credentials",
+            Self::PairingPermission => "PAIRING_PERMISSION_DENIED: Pairing storage access was denied; follow the pairing recovery runbook",
+            Self::PairingIo => "PAIRING_IO_FAILURE: Pairing storage could not be read; follow the pairing recovery runbook",
+            Self::NoUserDirectory => "PAIRING_USER_DIRECTORY_MISSING: No per-user pairing directory is available; configure a supported user directory",
+            Self::StorageUnsupported => "PAIRING_STORAGE_UNSUPPORTED: Protected file pairing is unsupported on this platform; configure an explicit valid token without inferring approval",
+            Self::ClientSetup => "HTTP_CLIENT_SETUP_FAILED: Local runtime HTTP client could not be initialized",
+            Self::Timeout => "TRANSPORT_TIMEOUT: Local runtime request timed out",
+            Self::Connection => "TRANSPORT_CONNECTION_FAILED: Could not connect to the local runtime",
+            Self::Transport => "TRANSPORT_FAILED: Local runtime communication failed",
+            Self::Decode => "RESPONSE_DECODE_FAILED: Local runtime response contains malformed JSON or an unexpected schema",
+            Self::Http(operation, status) => {
+                let operation_name = match operation {
+                    Operation::Preview => "Preview",
+                    Operation::Readiness => "Readiness",
+                    Operation::Cancel => "Cancel",
+                };
+                let detail = match *status {
+                    401 => "PAIRING_AUTH_FAILED: Runtime pairing authentication failed; follow the pairing recovery runbook",
+                    403 => "POLICY_DENIED: Runtime policy denied the operation",
+                    400 | 413 if matches!(operation, Operation::Preview) => "PREVIEW_INPUT_REJECTED: Preview input was rejected",
+                    429 => "RUNTIME_BUSY: Runtime is busy; retry later",
+                    499 => "CANCEL_REQUESTED: Cancellation was requested; backend compute is not confirmed stopped",
+                    502 => "BACKEND_RESPONSE_INVALID: Backend response or identity validation failed",
+                    503 => match operation {
+                        Operation::Readiness => "READINESS_UNAVAILABLE: Readiness service is unavailable",
+                        Operation::Preview => "PREVIEW_UNAVAILABLE: Preview service is unavailable or the expected-identity check failed; exact cause is not established",
+                        Operation::Cancel => "CANCEL_UNAVAILABLE: Cancellation service is unavailable; backend compute is not confirmed stopped",
+                    },
+                    500..=599 => "RUNTIME_SERVER_ERROR: Runtime server operation failed",
+                    _ => "HTTP_UNEXPECTED_STATUS: Runtime returned an unexpected non-success status",
+                };
+                return write!(f, "{operation_name} HTTP {status}: {detail}");
+            }
+        };
+        f.write_str(message)
+    }
+}
+
+impl std::error::Error for Diagnostic {}
+
+fn transport_error(error: reqwest::Error) -> Diagnostic {
+    if error.is_timeout() {
+        Diagnostic::Timeout
+    } else if error.is_connect() {
+        Diagnostic::Connection
+    } else {
+        Diagnostic::Transport
+    }
+}
+
+fn decode_error(error: reqwest::Error) -> Diagnostic {
+    if error.is_timeout() {
+        Diagnostic::Timeout
+    } else if error.is_decode() {
+        Diagnostic::Decode
+    } else {
+        transport_error(error)
+    }
+}
+
+fn successful(response: Response, operation: Operation) -> Result<Response> {
+    let status = response.status();
+    if !status.is_success() {
+        // Do not read or retain untrusted error bodies, including redirect bodies.
+        return Err(Diagnostic::Http(operation, status.as_u16()).into());
+    }
+    Ok(response)
+}
 
 #[derive(Serialize)]
 struct MaterializeRequest {
@@ -116,18 +217,39 @@ fn client(timeout: Duration) -> Result<Client> {
         .no_proxy()
         .redirect(reqwest::redirect::Policy::none())
         .timeout(timeout)
-        .build()?)
+        .build()
+        .map_err(|_| Diagnostic::ClientSetup)?)
 }
 
 /// Paired IPC token: environment override, else the OS-protected pairing file.
 fn token() -> Result<String> {
-    ipc_pairing::load_paired().with_context(|| {
-        format!(
-            "Not paired with the local runtime yet; start axiom-runtime once (pairing file: {})",
-            ipc_pairing::pairing_file_path()
-                .map(|p| p.display().to_string())
-                .unwrap_or_else(|_| "unavailable".into())
-        )
+    // Inspect before the shared loader: its non-Unicode override handling would
+    // otherwise fall through to file pairing. Presence is never approval.
+    match std::env::var(ipc_pairing::ENV_OVERRIDE) {
+        Ok(value) => {
+            ipc_pairing::validate(&value).map_err(|_| Diagnostic::OverrideInvalid)?;
+            return Ok(value);
+        }
+        Err(std::env::VarError::NotUnicode(_)) => {
+            return Err(Diagnostic::OverrideInvalid.into());
+        }
+        Err(std::env::VarError::NotPresent) => {}
+    }
+    if !cfg!(unix) {
+        return Err(Diagnostic::StorageUnsupported.into());
+    }
+    ipc_pairing::load_paired().map_err(|error| {
+        let diagnostic = match error {
+            ipc_pairing::PairingError::Invalid(_) => Diagnostic::PairingUnsafe,
+            ipc_pairing::PairingError::NoUserDirectory => Diagnostic::NoUserDirectory,
+            ipc_pairing::PairingError::NoSecureRandom => Diagnostic::StorageUnsupported,
+            ipc_pairing::PairingError::Io(error) => match error.kind() {
+                io::ErrorKind::NotFound => Diagnostic::PairingMissing,
+                io::ErrorKind::PermissionDenied => Diagnostic::PairingPermission,
+                _ => Diagnostic::PairingIo,
+            },
+        };
+        diagnostic.into()
     })
 }
 
@@ -156,10 +278,12 @@ impl PhantomBridge {
             .post(url("/cancel"))
             .bearer_auth(token()?)
             .send()
-            .await?
-            .error_for_status()?
+            .await
+            .map_err(transport_error)?;
+        let response = successful(response, Operation::Cancel)?
             .json::<CancelResponse>()
-            .await?;
+            .await
+            .map_err(decode_error)?;
         Ok(response.cancelled)
     }
 
@@ -174,10 +298,12 @@ impl PhantomBridge {
                 .bearer_auth(&token)
                 .json(&MaterializeRequest { context })
                 .send()
-                .await?
-                .error_for_status()?
+                .await
+                .map_err(transport_error)?;
+            let resp = successful(resp, Operation::Preview)?
                 .json::<MaterializeResponse>()
-                .await?;
+                .await
+                .map_err(decode_error)?;
             Ok::<String, anyhow::Error>(resp.suggestion)
         };
         tokio::select! {
@@ -196,14 +322,16 @@ impl PhantomBridge {
     }
 
     pub async fn readiness() -> Result<ReadinessResponse> {
-        Ok(client(Duration::from_secs(3))?
+        let response = client(Duration::from_secs(3))?
             .get(url("/readiness"))
             .bearer_auth(token()?)
             .send()
-            .await?
-            .error_for_status()?
+            .await
+            .map_err(transport_error)?;
+        Ok(successful(response, Operation::Readiness)?
             .json::<ReadinessResponse>()
-            .await?)
+            .await
+            .map_err(decode_error)?)
     }
 
     /// Ping the runtime health endpoint (unauthenticated liveness only).
