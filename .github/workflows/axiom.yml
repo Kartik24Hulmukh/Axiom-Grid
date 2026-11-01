@@ -59,7 +59,7 @@ jobs:
           node --test extensions/vscode-lite/test/*.test.cjs
           python3 -B extensions/vscode-lite/test/package_test.py
           mkdir -p .runtime-results
-          python3 -B extensions/vscode-lite/package_vsix.py --output .runtime-results/axiom-grid-lite-0.1.1.vsix
+          python3 -B extensions/vscode-lite/package_vsix.py --output .runtime-results/axiom-grid-lite-0.1.2.vsix
       - name: Validate real-model runner syntax
         run: python3 -m py_compile scripts/axiom-live-e2e.py
       - name: Python lint gate (ruff E9/F - syntax errors, undefined names, unused imports)

@@ -10,7 +10,7 @@ whole-machine zero-egress certification for this release profile.
 
 ## Optional minimal VS Code prototype
 
-For an explicit inline suggestion in a **trusted local VS Code file**, see
+For an explicit inline suggestion (including `// instruction` in JavaScript/TypeScript) in a **trusted local VS Code file**, see
 [Axiom Grid Lite setup](extensions/vscode-lite/README.md). Its model-free VSIX
 contains only the extension client, not this whole repository, a backend or model
 weights. It requires an already configured local Axiom runtime and approved model.
