@@ -17,6 +17,9 @@ fn name(value: &OsStr) -> Result<CString, PairingError> {
 }
 
 fn open_at(dir: &File, name: &CString, flags: i32, mode: libc::mode_t) -> io::Result<File> {
+    // Darwin's narrow mode_t needs C-varargs promotion; Linux may already use c_uint.
+    #[allow(clippy::unnecessary_cast)]
+    let promoted_mode = mode as libc::c_uint;
     // SAFETY: valid directory descriptor and NUL-terminated path; the returned
     // descriptor is owned exactly once. O_NOFOLLOW rejects final symlinks.
     let fd = unsafe {
@@ -24,7 +27,7 @@ fn open_at(dir: &File, name: &CString, flags: i32, mode: libc::mode_t) -> io::Re
             dir.as_raw_fd(),
             name.as_ptr(),
             flags | libc::O_CLOEXEC | libc::O_NOFOLLOW,
-            mode,
+            promoted_mode,
         )
     };
     if fd < 0 {

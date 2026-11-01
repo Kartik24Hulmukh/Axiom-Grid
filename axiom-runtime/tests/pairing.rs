@@ -9,9 +9,11 @@ fn mode(path: &std::path::Path) -> u32 {
     fs::metadata(path).unwrap().permissions().mode() & 0o777
 }
 
+#[cfg(unix)]
 #[test]
 fn pairing_lifecycle_is_os_protected_and_fails_closed() {
-    let dir = std::env::temp_dir().join(format!("axiom-grid-pairing-{}", std::process::id()));
+    let base = fs::canonicalize(std::env::temp_dir()).unwrap();
+    let dir = base.join(format!("axiom-grid-pairing-{}", std::process::id()));
     let _ = fs::remove_dir_all(&dir);
     let file = dir.join("nested").join("ipc.token");
     std::env::remove_var(ipc_pairing::ENV_OVERRIDE);
@@ -82,4 +84,78 @@ fn pairing_lifecycle_is_os_protected_and_fails_closed() {
     std::env::remove_var(ipc_pairing::ENV_OVERRIDE);
     std::env::remove_var(ipc_pairing::ENV_PAIRING_FILE);
     let _ = fs::remove_dir_all(&dir);
+}
+
+#[cfg(not(unix))]
+#[test]
+fn pairing_without_protected_storage_requires_an_explicit_valid_override() {
+    // One test owns all environment mutations in this test executable.
+    let previous_override = std::env::var_os(ipc_pairing::ENV_OVERRIDE);
+    let previous_file = std::env::var_os(ipc_pairing::ENV_PAIRING_FILE);
+    let dir = std::env::temp_dir().join(format!("axiom-grid-pairing-{}", std::process::id()));
+    let _ = fs::remove_dir_all(&dir);
+    fs::create_dir(&dir).unwrap();
+    let file = dir.join("ipc.token");
+    let sentinel = "existing-storage-must-not-be-used-or-rewritten";
+    fs::write(&file, sentinel).unwrap();
+    std::env::remove_var(ipc_pairing::ENV_OVERRIDE);
+    std::env::set_var(ipc_pairing::ENV_PAIRING_FILE, &file);
+    assert_eq!(ApiToken::pairing_file_path().unwrap(), file);
+
+    for result in [ipc_pairing::load_paired(), ipc_pairing::load_or_create_paired()] {
+        assert!(matches!(
+            result,
+            Err(PairingError::Invalid(message))
+                if message == "Protected file pairing is unsupported on this platform; use an explicit IPC token"
+        ));
+    }
+    assert_eq!(fs::read_to_string(&file).unwrap(), sentinel);
+    assert!(matches!(
+        ipc_pairing::generate_random(),
+        Err(PairingError::NoSecureRandom)
+    ));
+    assert!(matches!(
+        ApiToken::generate_random(),
+        Err(PairingError::NoSecureRandom)
+    ));
+
+    let valid = "c".repeat(64);
+    std::env::set_var(ipc_pairing::ENV_OVERRIDE, &valid);
+    assert_eq!(ipc_pairing::load_paired().unwrap(), valid);
+    assert_eq!(ipc_pairing::load_or_create_paired().unwrap(), valid);
+    assert!(ApiToken::load_paired().is_ok());
+    assert!(ApiToken::load_or_create_paired().is_ok());
+    assert_eq!(fs::read_to_string(&file).unwrap(), sentinel);
+
+    for invalid in [String::new(), "short".to_string(), "z".repeat(64)] {
+        std::env::set_var(ipc_pairing::ENV_OVERRIDE, invalid);
+        for result in [ipc_pairing::load_paired(), ipc_pairing::load_or_create_paired()] {
+            assert!(matches!(
+                result,
+                Err(PairingError::Invalid(message))
+                    if message == "IPC token must be 64 hexadecimal characters (32 random bytes)"
+            ));
+        }
+        assert!(ApiToken::load_paired().is_err());
+        assert!(ApiToken::load_or_create_paired().is_err());
+        assert_eq!(fs::read_to_string(&file).unwrap(), sentinel);
+    }
+
+    // Unsupported storage must not create a credential when none exists.
+    fs::remove_file(&file).unwrap();
+    std::env::remove_var(ipc_pairing::ENV_OVERRIDE);
+    assert!(matches!(
+        ApiToken::load_or_create_paired(),
+        Err(PairingError::Invalid(_))
+    ));
+    assert!(!file.exists());
+    match previous_override {
+        Some(value) => std::env::set_var(ipc_pairing::ENV_OVERRIDE, value),
+        None => std::env::remove_var(ipc_pairing::ENV_OVERRIDE),
+    }
+    match previous_file {
+        Some(value) => std::env::set_var(ipc_pairing::ENV_PAIRING_FILE, value),
+        None => std::env::remove_var(ipc_pairing::ENV_PAIRING_FILE),
+    }
+    fs::remove_dir_all(&dir).unwrap();
 }

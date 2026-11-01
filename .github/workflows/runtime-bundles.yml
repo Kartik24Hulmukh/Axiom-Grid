@@ -91,6 +91,7 @@ jobs:
               print("::notice::Native diagnostic unavailable: log exceeds diagnostic limit")
           else:
               text = raw.decode("utf-8", errors="replace").replace("\r\n", "\n")
+              text = re.sub(r"\x1b\[[0-?]*[ -/]*[@-~]", "", text)
               tests = sorted(set(re.findall(r"^test ([A-Za-z_][A-Za-z0-9_:]{0,199}) \.\.\. FAILED$", text, re.M)))
               codes = sorted(set(re.findall(r"^error\[(E[0-9]{4})\]:", text, re.M)))
               for name in tests[:20]:

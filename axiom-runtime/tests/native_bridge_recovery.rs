@@ -245,7 +245,8 @@ impl PairingFixture {
     fn new() -> Self {
         use std::os::unix::fs::PermissionsExt;
         static NEXT: AtomicUsize = AtomicUsize::new(0);
-        let path = std::env::temp_dir().join(format!(
+        let base = std::fs::canonicalize(std::env::temp_dir()).unwrap();
+        let path = base.join(format!(
             "axiom-recovery-{}-{}",
             std::process::id(),
             NEXT.fetch_add(1, Ordering::SeqCst)
