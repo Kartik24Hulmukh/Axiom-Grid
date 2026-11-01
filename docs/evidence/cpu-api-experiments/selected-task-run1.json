@@ -1,0 +1,25 @@
+{
+  "scope": "selected-actual-project-writing-task-api-only",
+  "attempt": 1,
+  "runtime_revision": "8af356a796ef3a3bc29be6921d74f60e4ea17072",
+  "runtime_binary_sha256": "a4a660e1d2e3c201e75846f255b2d884875e7e84a71b9eecc6f11cfe93df1805",
+  "status": 200,
+  "elapsed_seconds": 4.344881120000082,
+  "prompt": "Write a concise professional project update for Axiom-Grid collaborators using only these facts: PR46 merged; pairing and HTTP recovery diagnostics improved; all required CI checks passed; production qualification is NOT complete; a target-device trial is the next step. Preserve every fact and the production limitation. Do not invent dates, customers, availability, certification or performance claims. Return only the message in at most 100 words.",
+  "result": {
+    "suggestion": "Axiom-Grid project has been updated to include improvements in production diagnostics, including HTTP recovery diagnostics. Pairing and HTTP recovery diagnostics have been enhanced, ensuring better monitoring of the system. This is the first step towards securing and improving production performance. The next step is a target-device trial to validate the improvements and gather feedback.",
+    "word_count": 54,
+    "char_count": 390
+  },
+  "word_count_python": 54,
+  "warm_after_20_prompt_probe": true,
+  "memory_sample": {
+    "count": 87,
+    "min_cgroup_current_bytes": 4040302592,
+    "max_cgroup_current_bytes": 4047118336,
+    "caveat": "entire sandbox cgroup incl page cache and other processes, not per-model peak"
+  },
+  "semantic_review": "pending separate review; no automatic usefulness pass",
+  "native_ui_tested": false,
+  "production_qualified": false
+}

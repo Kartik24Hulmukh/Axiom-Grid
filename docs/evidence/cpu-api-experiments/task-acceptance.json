@@ -1,0 +1,18 @@
+{
+  "scope": "predeclared-selected-writing-workflow",
+  "application": "Axiom-Grid explicit-context writing preview runtime",
+  "task": "Draft an honest collaborator update for the actual PR46 work, preserving release limitations",
+  "selected_model": "qwen2.5:0.5b",
+  "frontier_equivalent": false,
+  "acceptance_before_inference": {
+    "transport": "authenticated real runtime returns valid nonempty preview; no mock backend",
+    "facts": "must preserve PR46, recovery/pairing improvement and successful checks",
+    "release_caution": "must explicitly retain that production qualification is not complete",
+    "next_action": "must retain target-device trial as next step",
+    "no_new_claims": "must not invent customers, valuation, availability, dates or certification",
+    "review": "assistant review of factual consistency is not human/customer validation"
+  },
+  "prompt": "Write a concise professional project update for Axiom-Grid collaborators using only these facts: PR46 merged; pairing and HTTP recovery diagnostics improved; all required CI checks passed; production qualification is NOT complete; a target-device trial is the next step. Preserve every fact and the production limitation. Do not invent dates, customers, availability, certification or performance claims. Return only the message in at most 100 words.",
+  "limitations": ["one selected task, not general quality benchmark", "no native window or manual clipboard interaction established by HTTP calls", "no offline claim without an enforced network boundary"],
+  "production_qualified": false
+}
