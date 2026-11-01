@@ -111,3 +111,23 @@ covert deployment, automatic application typing or assessment-policy bypass.
 The [opt-in device profile](DEVICE_QUALIFICATION.md) supplies bounded metadata only,
 not a native/model/offline test or qualified hardware profile. New third-party
 integrations remain deferred under [INTEGRATION_DECISIONS.md](INTEGRATION_DECISIONS.md).
+
+## Calendar and document-status hardening (local working tree)
+
+The follow-up based on `b36b729f08a4aa8e166a9e1b01c0352995cda23d` adds
+[bounded invoice calendar/status rules](INVOICE_EVIDENCE_POLICY.md). Independent
+closure passed 489 focused invoice tests, 153 original adversarial checks and 60
+additional checks at the reviewed source hashes. Those observations overlap in
+scope and must not be summed as independent accuracy trials. An intermediate
+status-grammar regression was rejected and repaired before closure.
+
+All 13 selected local assurance commands passed with the new calendar/status
+file included. One final deterministic run on the unchanged seven documents
+retained grounded 39/39, refusal 24/24, false refusal 0/39 and zero ungrounded
+renders; all three auxiliary checks passed and exit was 0. Corpus hash remains
+`bcad632ffe1654a130e3d832649e8cf664cca19d810457ab4e80147c1dba8833`.
+
+These are local parser-contract and selected-corpus observations, not merged-code
+CI, real-model, native, offline, production or payment-authorization evidence.
+Remote CI and merge status must be verified separately on the exact published
+revision. No new third-party runtime dependency or installation capability was added.
