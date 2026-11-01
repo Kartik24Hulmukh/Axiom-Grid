@@ -77,7 +77,31 @@ jobs:
       - name: Check runtime formatting
         run: cargo fmt --manifest-path axiom-runtime/Cargo.toml --check
       - name: Test focused runtime on this runner
-        run: cargo test --manifest-path axiom-runtime/Cargo.toml --locked
+        id: runtime_tests
+        run: cargo test --manifest-path axiom-runtime/Cargo.toml --locked 2>&1 | tee .runtime-tests.log
+      - name: Summarize failed native test identities only
+        if: ${{ always() && steps.runtime_tests.outcome == 'failure' }}
+        run: |
+          python -B - <<'PYCODE'
+          import re
+          from pathlib import Path
+          with Path(".runtime-tests.log").open("rb") as stream:
+              raw = stream.read(2 * 1024 * 1024 + 1)
+          if len(raw) > 2 * 1024 * 1024:
+              print("::notice::Native diagnostic unavailable: log exceeds diagnostic limit")
+          else:
+              text = raw.decode("utf-8", errors="replace").replace("\r\n", "\n")
+              tests = sorted(set(re.findall(r"^test ([A-Za-z_][A-Za-z0-9_:]{0,199}) \.\.\. FAILED$", text, re.M)))
+              codes = sorted(set(re.findall(r"^error\[(E[0-9]{4})\]:", text, re.M)))
+              for name in tests[:20]:
+                  print("::notice::Failed native test: " + name)
+              for code in codes[:20]:
+                  print("::notice::Native compiler diagnostic: " + code)
+              if not tests and not codes:
+                  print("::notice::Native failure has no recognized test identity or compiler code; detailed logs required")
+              if len(tests) > 20 or len(codes) > 20:
+                  print("::notice::Additional native diagnostic identities omitted")
+          PYCODE
       - name: Check focused runtime Clippy
         run: cargo clippy --manifest-path axiom-runtime/Cargo.toml --locked --all-targets -- -D warnings
       - name: Test extension and packagers (no actual VS Code host)
