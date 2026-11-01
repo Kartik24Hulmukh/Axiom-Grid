@@ -9,7 +9,7 @@ import tempfile
 import xml.etree.ElementTree as ET
 import zipfile
 
-FILES = ('package.json', 'extension.js', 'state.js', 'client.js', 'README.md', 'LICENSE')
+FILES = ('package.json', 'extension.js', 'state.js', 'comment.js', 'client.js', 'README.md', 'LICENSE')
 NS = 'http://schemas.microsoft.com/developer/vsx-schema/2011'
 
 def build_bytes():

@@ -13,9 +13,11 @@ function fixture(){
  const commands=new Map(),messages=[],executed=[],calls=[],inputs=[],reads=[];
  const textChanges=emitter(),selectionChanges=emitter(),editorChanges=emitter(),secretChanges=emitter(),cancel=emitter();
  let text='function example() {', stored='a'.repeat(64), version=1, get=async()=>stored,store=async(_k,v)=>{stored=v;secretChanges.fire({key:'axiomLite.runtimeToken'});},del=async()=>{stored=undefined;secretChanges.fire({key:'axiomLite.runtimeToken'});};
- const document={uri:{scheme:'file',toString:()=> 'file:///fixture.js'},languageId:'javascript',lineCount:1,isClosed:false,
- get version(){return version;},lineAt(){return {range:{end:new Position(0,text.length)}};},offsetAt(p){return p.character;},positionAt(n){return new Position(0,n);},
- getText(range){assert.ok(range,'No whole-document read');reads.push(range);return text.slice(range.start.character,range.end.character);}};
+ const offsetAt=p=>text.split('\n').slice(0,p.line).reduce((n,s)=>n+s.length+1,0)+p.character;
+ const positionAt=n=>{const parts=text.slice(0,n).split('\n');return new Position(parts.length-1,parts.at(-1).length);};
+ const document={uri:{scheme:'file',toString:()=> 'file:///fixture.js'},languageId:'javascript',isClosed:false,eol:1,
+ get lineCount(){return text.split('\n').length;},get version(){return version;},lineAt(line){return {range:{end:new Position(line,text.split('\n')[line].replace(/\r$/,'').length)}};},offsetAt,positionAt,
+ getText(range){assert.ok(range,'No whole-document read');reads.push(range);return text.slice(offsetAt(range.start),offsetAt(range.end));}};
  const editor={document,selection:{isEmpty:true,active:new Position(0,text.length)},selections:[{}]};
  let provider;
  const status={text:'',show(){},dispose(){}};
@@ -30,13 +32,14 @@ function fixture(){
  showWarningMessage(s){messages.push(s);},showInformationMessage(s){messages.push(s);},async showInputBox(options){assert.equal(options.password,true);return inputs.shift();},
  withProgress(_options,fn){return fn({}, {isCancellationRequested:false,onCancellationRequested:cancel.event});}}};
  const module={exports:{}};
- vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../extension.js'),'utf8'),{module,require(name){if(name==='vscode')return vscode;if(name==='./client')return client;if(name==='./state')return require('../state');throw Error('Unexpected dependency');},Promise});
+ vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../extension.js'),'utf8'),{module,require(name){if(name==='vscode')return vscode;if(name==='./client')return client;if(name==='./state')return require('../state');if(name==='./comment')return require('../comment');throw Error('Unexpected dependency');},Promise});
  module.exports.activate(context);
  return {vscode,editor,document,context,client,calls,reads,messages,executed,inputs,status,secretChanges,
  command:name=>commands.get('axiomLite.'+name)(),
  preview:()=>provider.provideInlineCompletionItems(document,editor.selection.active),
  setGet:fn=>{get=fn;},setStore:fn=>{store=fn;},setDelete:fn=>{del=fn;},
- edit(value){text=value;version++;editor.selection.active=new Position(0,text.length);textChanges.fire({document});},
+ edit(value){text=value;version++;editor.selection.active=positionAt(text.length);textChanges.fire({document});},
+ contents:()=>text,setCursor(line,character){editor.selection.active=new Position(line,character);selectionChanges.fire({textEditor:editor});},
  move(){editor.selection.active=new Position(0,0);selectionChanges.fire({textEditor:editor});},
  cancel(){cancel.fire();},changeEditor(){vscode.window.activeTextEditor=undefined;editorChanges.fire(undefined);}
  };
@@ -85,7 +88,58 @@ test('missing token errors are static and no raw exception or secret is shown',a
  a.setGet(async()=>{throw Error('SYNTHETIC_PRIVATE_PATH_AND_TOKEN');});await a.command('complete');assert.ok(a.messages.every(s=>!s.includes('SYNTHETIC_PRIVATE')));
 });
 test('bounded context reads and token prompt persistence never use normal configuration',async()=>{
- const a=fixture();await a.command('complete');assert.equal(a.reads.length,2);
+ const a=fixture();await a.command('complete');assert.equal(a.reads.length,3);assert.ok(a.reads[0].end.character-a.reads[0].start.character<=1025);
  a.inputs.push('b'.repeat(64));let saved;a.setStore(async(k,v)=>{saved={k,v};});await a.command('setToken');assert.equal(saved.k,'axiomLite.runtimeToken');assert.equal(saved.v,'b'.repeat(64));
  assert.ok(a.messages.every(s=>!s.includes(saved.v)));assert.equal(a.vscode.workspace.getConfiguration,undefined);
+});
+test('explicit slash instruction is sent as instruction and previews below retained line, without edits',async()=>{
+ const a=fixture(),source='// retain this earlier comment\nconst start = 1;\n  // create a sum function';
+ a.edit(source);await a.command('complete');
+ assert.equal(a.calls.length,2);const prompt=a.calls[1][2];
+ assert.ok(prompt.includes('<USER_INSTRUCTION>\ncreate a sum function\n</USER_INSTRUCTION>'));
+ assert.ok(prompt.includes('<PREFIX>\n// retain this earlier comment\nconst start = 1;\n\n</PREFIX>'));
+ assert.ok(!prompt.includes('  // create a sum function'));
+ const item=a.preview()[0];assert.equal(item.insertText,'\n  return 42;');assert.equal(item.range.start,item.range.end);
+ assert.equal(a.contents(),source);assert.equal(a.reads[0].end.character-a.reads[0].start.character,source.split('\n').at(-1).length);
+ a.edit(source+' ');assert.equal(a.preview().length,0);assert.equal(a.calls.length,2);
+});
+test('comment rendering preserves raw internal whitespace and uses captured CRLF only for prefix',async()=>{
+ const a=fixture();a.document.eol=2;a.edit('const x = 1;\r\n\t// add a helper');
+ a.client.generate=async()=>'\tfirst();\n  second();\r\nthird();';
+ await a.command('complete');assert.equal(a.preview()[0].insertText,'\r\n\t\tfirst();\n  second();\r\nthird();');
+});
+for(const marker of ['//','//   ','/// doc','//! urgent','//? query','// no\n//\u0000 invalid','// bad\u202Etext','// bad\uD800','// '+ 'a'.repeat(1022),' '.repeat(1100)+'// prompt'])
+ test('malformed or oversized anchored comment never reads credentials or sends context: '+JSON.stringify(marker.slice(0,35)),async()=>{
+  const a=fixture();a.edit(marker);a.setGet(()=>{throw Error('must not load credentials');});
+  await a.command('complete');assert.equal(a.calls.length,0);assert.equal(a.preview().length,0);
+  assert.equal(a.reads.length,1);assert.ok(a.reads[0].end.character-a.reads[0].start.character<=1025);
+ });
+test('comment instruction requires supported language and end-of-line cursor',async()=>{
+ for(const reason of ['language','cursor']){
+  const a=fixture();a.edit('// implement sum');if(reason==='language')a.document.languageId='python';else a.setCursor(0,5);
+  a.setGet(()=>{throw Error('must not load credentials');});await a.command('complete');assert.equal(a.calls.length,0);
+ }
+});
+for(const unit of [' ','\t'])for(const count of [1023,1024,1025])
+ test(`bounded-marker delimiter split: ${count} ${unit===' '?'spaces':'tabs'} never loads credentials`,async()=>{
+  const a=fixture();a.edit(unit.repeat(count)+'// prompt');let credentialLoads=0;
+  a.setGet(()=>{credentialLoads++;throw Error('must not load credentials');});
+  await a.command('complete');assert.equal(credentialLoads,0);assert.equal(a.calls.length,0);
+  assert.equal(a.reads.length,1);assert.ok(a.reads[0].end.character-a.reads[0].start.character<=1025);
+ });
+test('ordinary long-line continuation and inline slash strings retain original path',async()=>{
+ for(const source of ['a'.repeat(2500),'const url = "https://example.invalid";','const value = "// write code";']){
+  const a=fixture();a.edit(source);await a.command('complete');assert.equal(a.calls.length,2);
+  assert.ok(!a.calls[1][2].includes('<USER_INSTRUCTION>'));assert.equal(a.preview()[0].insertText,'return 42;');
+ }
+});
+test('comment output exceeding final candidate budget is rejected, never truncated or published',async()=>{
+ const a=fixture();a.edit('  // generate code');a.client.generate=async()=> 'x'.repeat(4094);
+ await a.command('complete');assert.equal(a.preview().length,0);assert.ok(a.messages.at(-1).includes('no suggestion was inserted'));
+ assert.ok(!a.executed.includes('editor.action.inlineSuggest.trigger'));
+});
+test('comment inference still suppresses late output after prompt edits',async()=>{
+ const a=fixture(),d=deferred();a.edit('// original instruction');a.client.generate=async()=>d.promise;
+ const p=a.command('complete');await tick();a.edit('// different instruction');d.resolve('stale');await p;
+ assert.equal(a.preview().length,0);assert.ok(!a.executed.includes('editor.action.inlineSuggest.trigger'));
 });

@@ -2,6 +2,7 @@
 const vscode = require('vscode');
 const client = require('./client');
 const {PreviewSession, sameSnapshot, makePrompt} = require('./state');
+const {planComment, renderComment} = require('./comment');
 const SECRET_KEY = 'axiomLite.runtimeToken';
 function activate(context) {
   const session = new PreviewSession(client);
@@ -47,6 +48,21 @@ function activate(context) {
     if (session.pending) { vscode.window.showInformationMessage('Axiom is still settling the previous request. Discarding does not prove backend inference stopped.'); return; }
     const expected = snapshot(editor);
     const offset = editor.document.offsetAt(editor.selection.active);
+    const lineEnd = editor.document.offsetAt(editor.document.lineAt(editor.selection.active.line).range.end);
+    const lineStart = offset - editor.selection.active.character;
+    // Inspect a bounded initial slice, not an unbounded line/document.
+    const lineHead = editor.document.getText(new vscode.Range(editor.document.positionAt(lineStart),
+      editor.document.positionAt(Math.min(lineEnd, lineStart + 1025))));
+    let comment;
+    try {
+      if (lineEnd - lineStart > 1024 && /^[ \t]*\/?$/.test(lineHead)) throw Error('COMMENT_TOO_LARGE');
+      comment = planComment(lineHead, editor.selection.active.character, editor.document.languageId);
+    }
+    catch {
+      vscode.window.showInformationMessage('For comment prompts, use // followed by a nonblank instruction in a JavaScript/TypeScript file. Keep the entire line within 1,024 characters and put the cursor at its end. Legacy slash modes are not supported.');
+      return;
+    }
+    const eol = editor.document.eol === 2 ? '\r\n' : '\n';
     const end = editor.document.offsetAt(editor.document.lineAt(editor.document.lineCount - 1).range.end);
     // Only bounded text around the cursor; never read or index the workspace.
     const edgeSafe = text => text.replace(/^[\uDC00-\uDFFF]|[\uD800-\uDBFF]$/g, '');
@@ -58,7 +74,8 @@ function activate(context) {
       // Reserve admission before SecretStorage can suspend; capture failures without
       // an unhandled rejection while the progress UI is being created.
       const work = session.run(expected, () => context.secrets.get(SECRET_KEY),
-        makePrompt(prefix, suffix, editor.document.languageId), () => current(editor, expected))
+        makePrompt(comment ? prefix.slice(0, -lineHead.length) : prefix, suffix, editor.document.languageId, comment?.instruction),
+        () => current(editor, expected), text => comment ? renderComment(text, comment.indentation, eol) : text)
         .then(value => ({value}), error => ({error}));
       status.text = '$(sync~spin) Axiom: generating';
       await vscode.window.withProgress({location: vscode.ProgressLocation.Notification, title: 'Axiom: local suggestion (cancel discards locally)', cancellable: true}, async (_progress, cancellation) => {
