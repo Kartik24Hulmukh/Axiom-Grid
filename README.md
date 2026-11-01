@@ -18,6 +18,11 @@ Suggestions are previewed and accepted through the editor; this is not systemwid
 typing or terminal execution. Real VS Code installation, coding usefulness and
 target-device performance remain qualification steps, not established by mocks.
 
+The [development runtime bundle gate](docs/DEVELOPMENT_RUNTIME_BUNDLES.md) builds
+the focused runtime alongside the VSIX on hosted platforms. It is not an installer
+or production release; executable artifact publication is disabled pending a
+concrete dependency redistribution review.
+
 See [review publication scope](docs/PUBLISHING_REVIEW.md) for the distinction
 between archived local-validation verdicts and current GitHub publication/CI state.
 

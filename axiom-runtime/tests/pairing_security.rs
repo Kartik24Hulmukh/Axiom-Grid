@@ -7,7 +7,8 @@ fn pairing_rejects_symlinks_without_modifying_the_target() {
         fs,
         os::unix::fs::{symlink, PermissionsExt},
     };
-    let dir = std::env::temp_dir().join(format!("axiom-symlink-{}", std::process::id()));
+    let base = fs::canonicalize(std::env::temp_dir()).unwrap();
+    let dir = base.join(format!("axiom-symlink-{}", std::process::id()));
     fs::create_dir_all(&dir).unwrap();
     fs::set_permissions(&dir, fs::Permissions::from_mode(0o700)).unwrap();
     let target = dir.join("victim");
