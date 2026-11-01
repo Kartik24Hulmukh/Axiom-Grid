@@ -66,6 +66,7 @@ No new filesystem, clipboard, shell, model-download, automatic insertion or
 installation authority is introduced.
 
 [Target-device qualification](DEVICE_QUALIFICATION.md) and
-[release qualification](RELEASE_QUALIFICATION.md) remain required. Pairing/readiness recovery diagnostics identified by the independent audit remain
-separate follow-ups, not repaired by this ownership change. Production,
+[release qualification](RELEASE_QUALIFICATION.md) remain required. Pairing/readiness recovery diagnostics are addressed separately in
+[NATIVE_RECOVERY_POLICY.md](NATIVE_RECOVERY_POLICY.md); their tests and evidence
+must not be confused with this ownership change. Production,
 offline operation, backend authenticity and customer value remain unqualified.
