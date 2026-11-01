@@ -11,6 +11,10 @@ It is not a hidden overlay, auto-typing product or fleet deployment package.
 - Review and manual copy; no automatic insertion, file edits or message sending.
 - No shell/filesystem/clipboard/screen permissions granted by the preview capability file.
 - Generate, readiness and discard/cancel are separate requests.
+- Editing the explicit input discards its displayed preview and suppresses late
+  output from the previous request. If generation is pending, cancellation is
+  requested without releasing local admission early. This does not prove backend
+  computation stopped or that retained copies were erased.
 - Clear session clears the displayed fields, not every possible copy of data.
 - Missing prerequisites and unsupported platforms are failures, not fake successes.
 
