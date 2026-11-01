@@ -1,0 +1,60 @@
+{
+  "name": "axiom-grid-lite",
+  "displayName": "Axiom Grid Lite \u2014 Explicit Local Suggestions",
+  "description": "User-triggered inline code previews through an existing local Axiom runtime. No model downloads, automatic typing, terminal execution or cloud fallback.",
+  "version": "0.1.0",
+  "publisher": "axiom-grid-local",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Other"
+  ],
+  "main": "./extension.js",
+  "extensionKind": [
+    "ui"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false
+    },
+    "virtualWorkspaces": {
+      "supported": false
+    }
+  },
+  "activationEvents": [
+    "onCommand:axiomLite.complete",
+    "onCommand:axiomLite.setToken",
+    "onCommand:axiomLite.clearToken",
+    "onCommand:axiomLite.discard"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "axiomLite.complete",
+        "title": "Axiom: Suggest Code at Cursor"
+      },
+      {
+        "command": "axiomLite.setToken",
+        "title": "Axiom: Set Runtime Token"
+      },
+      {
+        "command": "axiomLite.clearToken",
+        "title": "Axiom: Forget Runtime Token"
+      },
+      {
+        "command": "axiomLite.discard",
+        "title": "Axiom: Discard Suggestion"
+      }
+    ]
+  },
+  "scripts": {
+    "test": "node --test test/*.test.cjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Kartik24Hulmukh/Axiom-Grid"
+  }
+}

@@ -8,6 +8,16 @@ model suggestion. It does not automatically capture or type into other apps.
 There is no production-readiness, universal-app, accuracy, compliance or
 whole-machine zero-egress certification for this release profile.
 
+## Optional minimal VS Code prototype
+
+For an explicit inline suggestion in a **trusted local VS Code file**, see
+[Axiom Grid Lite setup](extensions/vscode-lite/README.md). Its model-free VSIX
+contains only the extension client, not this whole repository, a backend or model
+weights. It requires an already configured local Axiom runtime and approved model.
+Suggestions are previewed and accepted through the editor; this is not systemwide
+typing or terminal execution. Real VS Code installation, coding usefulness and
+target-device performance remain qualification steps, not established by mocks.
+
 See [review publication scope](docs/PUBLISHING_REVIEW.md) for the distinction
 between archived local-validation verdicts and current GitHub publication/CI state.
 
