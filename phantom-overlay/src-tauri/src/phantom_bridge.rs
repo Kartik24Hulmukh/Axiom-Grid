@@ -12,7 +12,7 @@ mod ipc_pairing;
 use anyhow::{Context, Result};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
-use std::sync::{Mutex, OnceLock};
+use std::sync::{Arc, Mutex, OnceLock};
 use std::time::Duration;
 use tokio::sync::oneshot;
 
@@ -50,9 +50,53 @@ pub struct ReadinessResponse {
     pub installed_models: Vec<ModelInfo>,
 }
 
-fn cancel_slot() -> &'static Mutex<Option<oneshot::Sender<()>>> {
-    static SLOT: OnceLock<Mutex<Option<oneshot::Sender<()>>>> = OnceLock::new();
+struct ActiveMaterialize {
+    owner: Arc<()>,
+    cancel_tx: Option<oneshot::Sender<()>>,
+}
+
+fn cancel_slot() -> &'static Mutex<Option<ActiveMaterialize>> {
+    static SLOT: OnceLock<Mutex<Option<ActiveMaterialize>>> = OnceLock::new();
     SLOT.get_or_init(|| Mutex::new(None))
+}
+
+/// Admission stays held even after the cancellation sender has been consumed.
+/// Dropping the owning future releases its lease, including during cancel acknowledgement.
+struct MaterializeLease {
+    owner: Arc<()>,
+}
+
+impl MaterializeLease {
+    fn reserve() -> Result<(Self, oneshot::Receiver<()>)> {
+        let mut slot = cancel_slot()
+            .lock()
+            .map_err(|_| anyhow::anyhow!("Materialize admission lock poisoned"))?;
+        if slot.is_some() {
+            anyhow::bail!("A materialize request is already active");
+        }
+        let owner = Arc::new(());
+        let (cancel_tx, cancel_rx) = oneshot::channel();
+        *slot = Some(ActiveMaterialize {
+            owner: Arc::clone(&owner),
+            cancel_tx: Some(cancel_tx),
+        });
+        Ok((Self { owner }, cancel_rx))
+    }
+}
+
+impl Drop for MaterializeLease {
+    fn drop(&mut self) {
+        // A poisoned lock is deliberately not recovered: admission fails closed.
+        if let Ok(mut slot) = cancel_slot().lock() {
+            if slot
+                .as_ref()
+                .map(|active| Arc::ptr_eq(&active.owner, &self.owner))
+                .unwrap_or(false)
+            {
+                *slot = None;
+            }
+        }
+    }
 }
 
 /// Runtime port: `AXIOM_RUNTIME_PORT` lets tests point at a loopback mock.
@@ -90,12 +134,19 @@ fn token() -> Result<String> {
 pub struct PhantomBridge;
 
 impl PhantomBridge {
-    /// Cancel the in-flight materialize request, if any. Returns true when one was cancelled.
-    /// The request future is dropped (closing our connection) and the runtime is told
-    /// to abort its model request so generation stops end-to-end.
+    /// Signal cancellation of the active materialize request, if any.
+    /// Returns true only when the signal was delivered; repeated calls return false.
+    /// Admission remains held until the owning future finishes or is dropped.
+    /// The request connection is dropped and runtime cancellation is attempted, but
+    /// neither a dropped connection nor an HTTP acknowledgement proves backend
+    /// compute has stopped or data has been erased.
     pub fn cancel_active() -> bool {
         match cancel_slot().lock() {
-            Ok(mut slot) => slot.take().map(|tx| tx.send(()).is_ok()).unwrap_or(false),
+            Ok(mut slot) => slot
+                .as_mut()
+                .and_then(|active| active.cancel_tx.take())
+                .map(|tx| tx.send(()).is_ok())
+                .unwrap_or(false),
             Err(_) => false,
         }
     }
@@ -114,12 +165,9 @@ impl PhantomBridge {
 
     /// Call the runtime to generate a preview suggestion for explicit context.
     pub async fn materialize(context: String) -> Result<String> {
+        let (_lease, cancel_rx) = MaterializeLease::reserve()?;
         let client = client(Duration::from_secs(95))?;
         let token = token()?;
-        let (cancel_tx, cancel_rx) = oneshot::channel::<()>();
-        if let Ok(mut slot) = cancel_slot().lock() {
-            *slot = Some(cancel_tx);
-        }
         let request = async {
             let resp = client
                 .post(url("/materialize"))
@@ -132,18 +180,19 @@ impl PhantomBridge {
                 .await?;
             Ok::<String, anyhow::Error>(resp.suggestion)
         };
-        let result = tokio::select! {
+        tokio::select! {
             r = request => r,
-            _ = cancel_rx => {
-                // Best effort: the runtime also observes the dropped connection.
-                let _ = Self::abort_runtime_generation().await;
-                Err(anyhow::anyhow!("Generation cancelled by the user"))
+            cancellation = cancel_rx => {
+                match cancellation {
+                    Ok(()) => {
+                        // Best effort only; keep admission through acknowledgement.
+                        let _ = Self::abort_runtime_generation().await;
+                        Err(anyhow::anyhow!("Generation cancelled by the user"))
+                    }
+                    Err(_) => Err(anyhow::anyhow!("Materialize cancellation channel closed")),
+                }
             }
-        };
-        if let Ok(mut slot) = cancel_slot().lock() {
-            slot.take();
         }
-        result
     }
 
     pub async fn readiness() -> Result<ReadinessResponse> {

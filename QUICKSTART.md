@@ -42,7 +42,7 @@ npm ci
 RUSTUP_TOOLCHAIN=1.98.1 npm run dev
 ```
 
-The overlay checks the authenticated readiness endpoint on startup, shows the exact configured model, and fails closed until the expected reported identity matches. Older name-only runtime responses are rejected as an incompatible protocol. Use **Retry check** after an explicit `ollama pull`. Paste the instruction and selected text, choose **Generate preview**, review, and manually copy. **Discard** hides the preview and rejects late results; it does not terminate inference already executing inside Ollama. No automatic insertion or ambient application capture is enabled. The native Ctrl+Space shortcut currently only shows the window; it does not invoke generation.
+The overlay checks the authenticated readiness endpoint on startup, shows the exact configured model, and fails closed until the expected reported identity matches. Older name-only runtime responses are rejected as an incompatible protocol. Use **Retry check** after an explicit `ollama pull`. Paste the instruction and selected text, choose **Generate preview**, review, and manually copy. **Discard** hides the preview and rejects late results; it does not terminate inference already executing inside Ollama. No automatic insertion or ambient application capture is enabled. The native Ctrl+Space shortcut shows a hidden window and emits an internal `phantom:hotkey` event (also when already visible). The current foreground script does not subscribe to that event; it does not trigger generation. Use the visible **Generate preview** button. This describes inspected source, not observed platform hotkey behavior.
 
 The Tauri project still lives inside the inherited workspace and requires separate platform build validation before distribution. Bundling remains disabled. Do not ship unsigned inherited artifacts.
 
@@ -55,7 +55,12 @@ cargo test --locked
 cargo clippy --locked --all-targets -- -D warnings
 ```
 
-From the repository root: `node --test phantom-overlay/tests/app.test.cjs`.
+From the repository root: `node --test phantom-overlay/tests/*.test.cjs`.
+
+The runtime Cargo test profile includes an exact-source desktop bridge integration
+target intended to compile without Tauri; compilation awaits exact-head CI. Its
+loopback-mock lifecycle checks are not
+a native window, real-backend cancellation or offline qualification test.
 
 ## Privacy boundary
 
