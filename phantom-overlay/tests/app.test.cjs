@@ -31,9 +31,11 @@ test('discard prevents late results and concurrent requests',async()=>{
  el('cancel').click();resolve('must not appear');await pending;
  assert.equal(el('result').value,'');assert.equal(el('generate').disabled,false);
 });
-test('backend failure is actionable and resets button',async()=>{
+test('backend failure is actionable and requires an explicit readiness recheck',async()=>{
  const el=setup(async()=>{throw Error('Ollama unavailable');});await tick();el('context').value='Test';await el('generate').click();
- assert.match(el('status').textContent,/Generation failed/);assert.equal(el('generate').disabled,false);
+ assert.match(el('status').textContent,/Generation failed/);assert.equal(el('generate').disabled,true);
+ assert.match(el('model-status').textContent,/Readiness recheck required/);
+ await el('retry-model').click();assert.equal(el('generate').disabled,false);
 });
 test('browser-only preview does not fake generation',async()=>{
  const el=setup();await tick();el('context').value='Test';await el('generate').click();assert.match(el('status').textContent,/desktop app/);
