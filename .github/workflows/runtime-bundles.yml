@@ -1,0 +1,121 @@
+name: Development runtime bundles (not release qualification)
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/runtime-bundles.yml'
+      - 'scripts/ci/package_runtime_bundle.py'
+      - 'tests/assurance/test_runtime_bundle.py'
+      - 'extensions/vscode-lite/**'
+      - 'axiom-runtime/**'
+      - 'phantom-core/**'
+      - 'LICENSE'
+      - 'THIRD_PARTY_NOTICES.md'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/runtime-bundles.yml'
+      - 'scripts/ci/package_runtime_bundle.py'
+      - 'tests/assurance/test_runtime_bundle.py'
+      - 'extensions/vscode-lite/**'
+      - 'axiom-runtime/**'
+      - 'phantom-core/**'
+      - 'LICENSE'
+      - 'THIRD_PARTY_NOTICES.md'
+permissions:
+  contents: read
+jobs:
+  development-bundle:
+    name: Development bundle / ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    env:
+      SOURCE_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
+      PYTHONDONTWRITEBYTECODE: '1'
+      RUSTUP_TOOLCHAIN: 1.98.1
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: dtolnay/rust-toolchain@1.98.1
+        with:
+          components: rustfmt, clippy
+      - name: Identify actual native build target
+        id: native
+        run: |
+          python -B - <<'PY'
+          import os, re, subprocess
+          report = subprocess.check_output(["rustc", "-vV"], text=True)
+          target = next(line.removeprefix("host: ") for line in report.splitlines() if line.startswith("host: "))
+          targets = {
+              "x86_64-unknown-linux-gnu": "axiom-grid",
+              "x86_64-pc-windows-msvc": "axiom-grid.exe",
+              "x86_64-apple-darwin": "axiom-grid",
+              "aarch64-apple-darwin": "axiom-grid",
+          }
+          if target not in targets or not re.fullmatch(r"[0-9a-f]{40}", os.environ["SOURCE_REVISION"]):
+              raise SystemExit("Unsupported build target or source identity")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as stream:
+              stream.write(f"target={target}\nbinary={targets[target]}\n")
+          print("Native compiler target:", target)
+          PY
+      - name: Check runtime formatting
+        run: cargo fmt --manifest-path axiom-runtime/Cargo.toml --check
+      - name: Test focused runtime on this runner
+        run: cargo test --manifest-path axiom-runtime/Cargo.toml --locked
+      - name: Check focused runtime Clippy
+        run: cargo clippy --manifest-path axiom-runtime/Cargo.toml --locked --all-targets -- -D warnings
+      - name: Test extension and packagers (no actual VS Code host)
+        run: |
+          node --test extensions/vscode-lite/test/*.test.cjs
+          python -B extensions/vscode-lite/test/package_test.py
+          python -B -m unittest discover -s tests/assurance -p test_runtime_bundle.py -v
+      - name: Compile focused release runtime
+        run: cargo build --manifest-path axiom-runtime/Cargo.toml --release --locked
+      - name: Package explicit development inputs
+        env:
+          BUILD_TARGET: ${{ steps.native.outputs.target }}
+          BINARY_NAME: ${{ steps.native.outputs.binary }}
+        run: |
+          python -B -c 'from pathlib import Path; Path(".distribution").mkdir()'
+          python -B extensions/vscode-lite/package_vsix.py --output .distribution/axiom-grid-lite-0.1.2.vsix
+          python -B scripts/ci/package_runtime_bundle.py \
+            --runtime "axiom-runtime/target/release/$BINARY_NAME" \
+            --vsix .distribution/axiom-grid-lite-0.1.2.vsix \
+            --target "$BUILD_TARGET" --revision "$SOURCE_REVISION" \
+            --output ".distribution/axiom-grid-development-$BUILD_TARGET-$SOURCE_REVISION.zip" \
+            > .distribution/package-result.json
+          cat .distribution/package-result.json
+      - name: Report checksum only (binary publication disabled)
+        env:
+          BUILD_TARGET: ${{ steps.native.outputs.target }}
+        run: |
+          python -B - <<'PYCODE'
+          import json, os, re
+          from pathlib import Path
+          result = json.loads(Path(".distribution/package-result.json").read_text())
+          if not re.fullmatch(r"[0-9a-f]{64}", result["sha256"]) or type(result["bytes"]) is not int or result["bytes"] <= 0:
+              raise SystemExit("Invalid package result")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
+              summary.write("### Development packaging check — not release qualification\n\n")
+              summary.write(f"Target: `{os.environ['BUILD_TARGET']}`\n\n")
+              summary.write(f"Source: `{os.environ['SOURCE_REVISION']}`\n\n")
+              summary.write(f"Archive bytes: {result['bytes']}; SHA-256 checksum: `{result['sha256']}`\n\n")
+              summary.write("No binary artifact uploaded. Dependency redistribution review remains incomplete. "
+                            "Native tests are not real-model inference, VS Code-host or clean-device qualification.\n")
+          PYCODE
