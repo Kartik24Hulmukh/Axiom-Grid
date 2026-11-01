@@ -49,9 +49,12 @@ cargo test --manifest-path axiom-runtime/Cargo.toml --locked --test native_bridg
 ```
 
 These tests have no real model and do not observe a compiled desktop window,
-platform shortcut or disconnected device. Local Rust execution was unavailable
-when the change was prepared; exact-head remote formatting, compilation, test and
-Clippy results must be checked separately before merge. The existing focused
+platform shortcut or disconnected device. Local Cargo compilation/test execution was unavailable when the change was
+prepared. The official pinned rustfmt component and matching runtime libraries
+were fetched into an isolated development-tool directory, their archives checked
+against official SHA-256 files, and formatting passed locally. No system toolchain
+installation or product dependency was added. Exact-head remote compilation,
+tests and Clippy remain required before merge. The existing focused
 runtime workflow runs this integration file as part of `cargo test --locked`.
 
 ## Integration decision

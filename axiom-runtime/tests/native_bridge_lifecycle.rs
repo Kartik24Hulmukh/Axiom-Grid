@@ -102,8 +102,10 @@ async fn cancel(State(state): State<Mock>) -> Response {
 }
 async fn readiness(State(state): State<Mock>) -> Json<Value> {
     state.seen.lock().unwrap().readiness += 1;
-    Json(json!({"ready":true,"configured_model":"fixture","expected_digest":"a".repeat(64),
-        "identity_check_scope":"reported-only","installed_models":[]}))
+    Json(
+        json!({"ready":true,"configured_model":"fixture","expected_digest":"a".repeat(64),
+        "identity_check_scope":"reported-only","installed_models":[]}),
+    )
 }
 struct Server(tokio::task::JoinHandle<()>);
 impl Drop for Server {
@@ -298,7 +300,10 @@ async fn false_failed_and_malformed_cancel_acknowledgements_release_local_admiss
             .unwrap()
             .is_err());
         assert!(!PhantomBridge::cancel_active());
-        assert_eq!(generate("after-failed-cancel").await.unwrap(), "Reviewed 🌍");
+        assert_eq!(
+            generate("after-failed-cancel").await.unwrap(),
+            "Reviewed 🌍"
+        );
         state.preview_release.notify_one();
         assert_eq!(state.seen.lock().unwrap().previews.len(), 2);
         assert_eq!(state.seen.lock().unwrap().cancellations, 1);
