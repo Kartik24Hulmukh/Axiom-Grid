@@ -1,0 +1,116 @@
+"""One scoped real-model run; invoked only inside a fresh network namespace."""
+import concurrent.futures,ctypes,errno,fcntl,hashlib,importlib.util,json,os,pathlib,signal,socket,struct,subprocess,sys,threading,time
+OUT=pathlib.Path('/data/axiom-research/real-model-qualification');ROOT=pathlib.Path('/data/axiom-research/real-model-workspace')
+REPORT=OUT/'isolated-run2.json';assert not REPORT.exists()
+report={'scope':'network-isolated-real-model-api-experiment','runtime_revision':'8af356a796ef3a3bc29be6921d74f60e4ea17072','production_qualified':False,'native_ui_tested':False,'human_customer_validation':False,'filesystem_cache_cold':False,'model_load_condition':'fresh backend and runner; cached artifacts may be warm','semantic_acceptance':'pending independent review','checks':[]}
+services=[];logs=[];memory=[];stop=threading.Event()
+def check(name,condition):
+ report['checks'].append({'name':name,'passed':bool(condition)})
+ if not condition:raise ValueError(name)
+def memory_events():
+ return {line.split()[0]:int(line.split()[1]) for line in pathlib.Path('/sys/fs/cgroup/memory.events').read_text().splitlines()}
+def sampler():
+ while not stop.is_set():
+  try:memory.append(int(pathlib.Path('/sys/fs/cgroup/memory.current').read_text()))
+  except OSError:pass
+  stop.wait(.05)
+def ns(pid='self'):return pathlib.Path(f'/proc/{pid}/ns/net').readlink().as_posix()
+def identities(pid):
+ result=[];todo=[pid];seen=set();omissions=[]
+ while todo:
+  if len(seen)>=128:raise ValueError('process traversal cap')
+  p=todo.pop()
+  if p in seen:continue
+  seen.add(p)
+  try:
+   exe=pathlib.Path(f'/proc/{p}/exe').readlink();args=pathlib.Path(f'/proc/{p}/cmdline').read_bytes().split(b'\0')
+   role='runner' if b'runner' in args or exe.name=='llama-server' else 'service'
+   result.append({'pid':p,'executable_name':exe.name,'command_role':role,'net_namespace':ns(p),'executable_sha256':hashlib.file_digest(exe.open('rb'),'sha256').hexdigest()})
+   for task in pathlib.Path(f'/proc/{p}/task').iterdir():
+    todo.extend(int(x) for x in (task/'children').read_text().split())
+  except (OSError,ValueError) as e:omissions.append({'pid':p,'error_type':type(e).__name__})
+ if omissions:raise ValueError('incomplete process snapshot')
+ return result
+
+try:
+ report['parent_namespace']=sys.argv[1];report['namespace']=ns();os.environ.pop('AXIOM_API_TOKEN',None);report['probe_override_absent']=True;check('new_namespace',ns()!=sys.argv[1])
+ inherited=[]
+ for p in pathlib.Path('/proc/self/fd').iterdir():
+  try:
+   if str(p.readlink()).startswith('socket:'):inherited.append(p.name)
+  except OSError:pass
+ check('no_inherited_socket_fds',not inherited)
+ s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM);r=fcntl.ioctl(s,0x8913,struct.pack('16sH14s',b'lo',0,b''));flags=struct.unpack('16sH14s',r)[1];fcntl.ioctl(s,0x8914,struct.pack('16sH14s',b'lo',flags|1,b''));s.close()
+ report['kernel_interfaces']=[name for _,name in socket.if_nameindex()];check('loopback_only',report['kernel_interfaces']==['lo'])
+ report['ipv4_routes']=pathlib.Path('/proc/self/net/route').read_text().splitlines()[1:];check('no_external_ipv4_routes',not report['ipv4_routes'])
+ # Drop network/admin authority before launching either service; children inherit it.
+ libc=ctypes.CDLL(None,use_errno=True)
+ check('no_new_privileges',libc.prctl(38,1,0,0,0)==0)
+ last=int(pathlib.Path('/proc/sys/kernel/cap_last_cap').read_text())
+ for cap in range(last+1):
+  if libc.prctl(24,cap,0,0,0)!=0:raise OSError(ctypes.get_errno(),'capability bounding-set drop failed')
+ class Header(ctypes.Structure):_fields_=[('version',ctypes.c_uint32),('pid',ctypes.c_int)]
+ class Data(ctypes.Structure):_fields_=[('effective',ctypes.c_uint32),('permitted',ctypes.c_uint32),('inheritable',ctypes.c_uint32)]
+ h=Header(0x20080522,0);d=(Data*2)();check('drop_capabilities',libc.capset(ctypes.byref(h),ctypes.byref(d))==0)
+ status={line.split(':')[0]:line.split(':')[1].strip() for line in pathlib.Path('/proc/self/status').read_text().splitlines() if ':' in line}
+ report['capabilities']={k:status[k] for k in ['CapEff','CapPrm','CapBnd','NoNewPrivs']};check('no_effective_or_bounding_capabilities',all(int(status[k],16)==0 for k in ['CapEff','CapPrm','CapBnd']) and status['NoNewPrivs']=='1')
+ s=socket.socket();s.settimeout(1)
+ try:s.connect(('198.51.100.1',9));egress='unexpected_success'
+ except OSError as e:egress=errno.errorcode.get(e.errno,str(e.errno))
+ finally:s.close()
+ report['numeric_testnet_egress']=egress;check('numeric_egress_denied',egress in ['ENETUNREACH','EHOSTUNREACH'])
+ report['ipv6_routes']=pathlib.Path('/proc/self/net/ipv6_route').read_text().splitlines()
+ v6=socket.socket(socket.AF_INET6);v6.settimeout(1)
+ try:v6.connect(('2001:db8::1',9));v6result='unexpected_success'
+ except OSError as e:v6result=errno.errorcode.get(e.errno,str(e.errno))
+ finally:v6.close()
+ report['numeric_testnet_ipv6_egress']=v6result;check('numeric_ipv6_egress_denied',v6result in ['ENETUNREACH','EHOSTUNREACH'])
+
+ identity=json.loads((OUT/'approved-model-1.5b.json').read_text());report['approved_identity']=identity
+ spec=importlib.util.spec_from_file_location('probe',ROOT/'scripts/axiom-live-e2e.py');probe=importlib.util.module_from_spec(spec);spec.loader.exec_module(probe)
+ home=OUT/'isolated2-home';home.mkdir(mode=0o700,exist_ok=True);pairing=home/'ipc.token';check('fresh_pairing_destination',not pairing.exists());os.environ['AXIOM_PAIRING_FILE']=str(pairing)
+ env={'PATH':'/usr/bin:/bin','HOME':str(home),'LD_LIBRARY_PATH':str(OUT/'ollama/lib/ollama')}
+ env.update(OLLAMA_HOST='127.0.0.1:11434',OLLAMA_MODELS=str(OUT/'models'),OLLAMA_NO_CLOUD='1',OLLAMA_NUM_PARALLEL='1',OLLAMA_MAX_LOADED_MODELS='1',OLLAMA_CONTEXT_LENGTH='2048',OLLAMA_KEEP_ALIVE='5m')
+ report['memory_events_before']=memory_events();thread=threading.Thread(target=sampler);thread.start()
+ for name,cmd,e in [('backend',[str(OUT/'ollama/bin/ollama'),'serve'],env),('runtime',[str(OUT/'target/release/axiom-grid')],{**env,'AXIOM_MODEL':identity['model'],'AXIOM_MODEL_DIGEST':identity['manifest_sha256'],'AXIOM_PAIRING_FILE':str(pairing)})]:
+  log=(OUT/f'isolated2-{name}.log').open('wb');logs.append(log);p=subprocess.Popen(cmd,env=e,stdin=subprocess.DEVNULL,stdout=log,stderr=log,start_new_session=True,close_fds=True);services.append((name,p))
+ deadline=time.monotonic()+20
+ while time.monotonic()<deadline:
+  try:
+   token=probe.paired_token();status,ready=probe.request(7437,'/readiness',token)
+   if status==200 and ready.get('ready') is True:break
+  except (OSError,ValueError):pass
+  if any(p.poll() is not None for _,p in services):raise RuntimeError('service exited')
+  time.sleep(.1)
+ else:raise TimeoutError('startup')
+ report['readiness']=ready;check('reported_identity_matches_approved',probe.reported_model_identity(ready)['digest']==identity['manifest_sha256'])
+ status,loaded=probe.request(11434,'/api/ps');check('initial_loaded_inventory_empty',status==200 and loaded.get('models')==[])
+ # No selected-task repeat: preserve the only 1.5B answer from run1.
+ report['selected_task_not_repeated']='isolated-run1.json retains the unchanged prompt/output and semantic review separately'
+ env_probe={**env,'AXIOM_PAIRING_FILE':str(pairing),'PYTHONDONTWRITEBYTECODE':'1'}
+ with (OUT/'isolated2-live-run1.log').open('wb') as log:
+  p=subprocess.run([sys.executable,'-B',str(ROOT/'scripts/axiom-live-e2e.py'),'--output',str(OUT/'isolated2-live-run1.json')],env=env_probe,stdout=log,stderr=log,timeout=900,close_fds=True)
+ check('unchanged_smoke_probe_passed',p.returncode==0)
+ status,loaded=probe.request(11434,'/api/ps');probe.check_reported_loaded_model(loaded,probe.reported_model_identity(ready));report['loaded_models']=loaded
+ report['service_processes']=sum([identities(p.pid) for _,p in services],[]);check('all_observed_descendants_share_namespace',all(p['net_namespace']==report['namespace'] for p in report['service_processes']));check('actual_runner_observed',any(p['command_role']=='runner' for p in report['service_processes']))
+ # Temporarily remove only the selected manifest; restore before any subsequent generation.
+ manifest=OUT/'models/manifests/registry.ollama.ai/library/qwen2.5/1.5b';backup=OUT/'held-1.5b-manifest';check('fault_backup_absent',not backup.exists());manifest.rename(backup)
+ try:
+  before=(OUT/'isolated2-backend.log').read_text(errors='replace').count('"/api/generate"');s1,r1=probe.request(7437,'/readiness',token);s2,r2=probe.request(7437,'/materialize',token,{'context':'THIS_CONTEXT_MUST_NOT_REACH_GENERATION'});after=(OUT/'isolated2-backend.log').read_text(errors='replace').count('"/api/generate"')
+  report['missing_model']={'log_scope':'no additional completed generation log entry observed; not a direct ingress/canary proof','readiness_status':s1,'ready':r1.get('ready'),'generation_status':s2,'backend_generate_count_before':before,'backend_generate_count_after':after};check('missing_model_rejected_with_no_new_completed_generation_log',s1==200 and r1.get('ready') is False and s2==503 and before==after)
+ finally:backup.rename(manifest)
+ s,r=probe.request(7437,'/readiness',token);check('restored_inventory_ready',s==200 and r.get('ready') is True)
+ report['passed_scoped_mechanical_checks']=True;report['offline_scope']='These runtime/backend/runner/probe processes completed actual inference with only loopback, no inherited sockets, denied external numeric connect and zero effective/permitted/bounding capabilities. Not native desktop or product-wide offline certification.'
+except BaseException as e:
+ report['passed_scoped_mechanical_checks']=False;report['error_type']=type(e).__name__;raise
+finally:
+ stop.set()
+ if 'thread' in locals():thread.join()
+ report['memory_sample']={'count':len(memory),'max_shared_cgroup_current_bytes':max(memory) if memory else None,'caveat':'shared cgroup incl page cache; not exclusive/model peak'};report['memory_events_after']=memory_events()
+ for _,p in reversed(services):
+  if p.poll() is None:
+   os.killpg(p.pid,signal.SIGTERM)
+   try:p.wait(timeout=7)
+   except subprocess.TimeoutExpired:os.killpg(p.pid,signal.SIGKILL);p.wait(timeout=5)
+ for f in logs:f.close()
+ report['direct_service_exit_codes']={name:p.returncode for name,p in services};REPORT.write_text(json.dumps(report,ensure_ascii=False,indent=2));print(json.dumps({'mechanical_checks_passed':report.get('passed_scoped_mechanical_checks'),'checks':len(report['checks']),'error_type':report.get('error_type'),'selected_task':report.get('selected_task')},ensure_ascii=False,indent=2),flush=True)
