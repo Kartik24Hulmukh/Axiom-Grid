@@ -11,6 +11,14 @@ It is not a hidden overlay, auto-typing product or fleet deployment package.
 - Review and manual copy; no automatic insertion, file edits or message sending.
 - No shell/filesystem/clipboard/screen permissions granted by the preview capability file.
 - Generate, readiness and discard/cancel are separate requests.
+- Readiness is a snapshot, not a continuing availability guarantee. Any admitted
+  generation failure invalidates that snapshot and earlier readiness probes,
+  including when its output was discarded. Retry the model check explicitly
+  before generating again; no automatic retry is sent. This conservative policy
+  can require a recheck after cancellation or a non-model failure too. It does
+  not assert that the model is definitely unavailable. A successful check cannot
+  bypass a still-pending generation or cancellation acknowledgement. Backend
+  identity preflight remains independent of this UI state.
 - Editing the explicit input discards its displayed preview and suppresses late
   output from the previous request. If generation is pending, cancellation is
   requested without releasing local admission early. This does not prove backend

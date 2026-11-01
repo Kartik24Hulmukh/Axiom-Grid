@@ -59,6 +59,11 @@ byId("generate").addEventListener("click", async () => {
     byId("result").value = text;
     byId("status").textContent = "Ready for your review. Nothing has been inserted.";
   } catch (error) {
+    // A rejection makes this snapshot stale, even when its output was discarded.
+    // Earlier probes cannot restore it; recovery requires a new explicit check.
+    ++readinessCheck;
+    modelReady = false;
+    byId("model-status").textContent = "Readiness recheck required after the request failed. Retry the model check.";
     if (current === generation) byId("status").textContent = `Generation failed: ${String(error)}`;
   } finally {
     pending = false;
