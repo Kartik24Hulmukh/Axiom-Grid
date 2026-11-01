@@ -8,6 +8,7 @@ import json
 import logging
 import pathlib
 import re
+from datetime import date
 from typing import Any
 
 from kernel.core.data_model import (
@@ -44,8 +45,21 @@ class InvoicePack:
         number_label = (r"(?:invoice[ \t]+(?:number|no\.?|nr)|invoice[ \t]*#|"
                         r"inv[ \t]+(?:number|no\.?)|fakturanr|faktura[ \t]+nr|"
                         r"rechnungsnr|receipt[ \t]+no\.?|receipt[ \t]*#)")
+        # All chunks are assumed to describe ONE invoice. These bounded English
+        # status forms are not a multi-document segmenter or a localized classifier.
+        qualifier = r"(?:draft|revised|provisional|estimated?|proposed|preliminary|unapproved)"
+        invoice_heading = r"(?:tax[ \t]+)?invoice"
+        qualified_header = re.compile(
+            qualifier + r"[ \t]+" + invoice_heading + r"|" + invoice_heading
+            + r"(?:[ \t]+" + qualifier + r"|[ \t]*\([ \t]*" + qualifier
+            + r"[ \t]*\)|[ \t]*[-:][ \t]*" + qualifier + r")", re.IGNORECASE)
+        status_line = re.compile(
+            qualifier + r"|(?:(?:invoice|document)[ \t]+)?status[ \t]*:[ \t]*"
+            + qualifier, re.IGNORECASE)
+        nonfinal_document = any(qualified_header.fullmatch(line) or status_line.fullmatch(line)
+                                for line, _ in records)
         header = re.compile(r"(?:tax[ \t]+)?invoice(?:[ \t]*:[ \t]*.+)?|faktura(?:[ \t]*/[ \t]*invoice)?|rechnung", re.I)
-        has_invoice_context = any(header.fullmatch(line) or re.match(number_label + r"(?:[ \t]*:|[ \t]+)", line, re.I)
+        has_invoice_context = any(header.fullmatch(line) or qualified_header.fullmatch(line) or re.match(number_label + r"(?:[ \t]*:|[ \t]+)", line, re.I)
                                   for line, _ in records)
         if not has_invoice_context:
             return []
@@ -62,7 +76,8 @@ class InvoicePack:
 
         def vendor_candidate(value):
             return (bool(value) and len(value) <= 200 and any(ch.isalpha() for ch in value)
-                    and ":" not in value and not re.match(
+                    and ":" not in value and not qualified_header.fullmatch(value)
+                    and not status_line.fullmatch(value) and not re.match(
                         r"(?:invoice|tax[ \t]+invoice|date|due|bill[ \t]+to|customer|currency|total|description|no)\b",
                         value, re.I))
 
@@ -71,7 +86,7 @@ class InvoicePack:
             explicit = re.fullmatch(r"(?:(?:tax[ \t]+)?invoice|from|vendor|supplier)[ \t]*:[ \t]*(.+)", line, re.I)
             if explicit and vendor_candidate(explicit[1]):
                 vendors.append((explicit[1], explicit[1], chunk))
-            elif header.fullmatch(line) and index + 1 < len(records):
+            elif (header.fullmatch(line) or qualified_header.fullmatch(line)) and index + 1 < len(records):
                 value, source = records[index + 1]
                 if vendor_candidate(value) and not re.fullmatch(r"[=\-*~_─┌┐└┘┬┴┼]+", value):
                     vendors.append((value, value, source))
@@ -91,7 +106,8 @@ class InvoicePack:
         identifiers = []
         for line, chunk in records:
             match = re.fullmatch(number_label + r"(?:[ \t]*:[ \t]*|[ \t]+)([A-Za-z0-9][A-Za-z0-9/-]*)", line, re.I)
-            if not match and any(header.fullmatch(text) for text, _ in records):
+            if not match and any(header.fullmatch(text) or qualified_header.fullmatch(text)
+                                 for text, _ in records):
                 match = re.fullmatch(r"(?:no\.?|number)[ \t]*:?[ \t]+([A-Za-z0-9][A-Za-z0-9/-]*)", line, re.I)
             if match:
                 identifiers.append((match[1], match[1], chunk))
@@ -105,12 +121,20 @@ class InvoicePack:
             ("due_date", r"(?:due[ \t]+date|due|payment[ \t]+due|förfallodatum|förfallo|fällig|zahlbar[ \t]+bis)"),
         ):
             dates = []
+            invalid_date = False
             for line, chunk in records:
                 match = re.fullmatch(label + r"[ \t]*:?[ \t]*" + date_value, line, re.I)
                 if match:
                     raw = match[1]
-                    dates.append((self._parse_date(raw) or raw, raw, chunk))
-            emit(field, dates)
+                    parsed = self._parse_date(raw)
+                    if parsed is None:
+                        invalid_date = True
+                    else:
+                        dates.append((parsed, raw, chunk))
+            # Invalid/ambiguous evidence poisons only its own explicitly labeled
+            # field, including when a different chunk contains a valid candidate.
+            if not invalid_date:
+                emit(field, dates)
 
         # Currency requires explicit evidence. A bare '$' does not distinguish
         # USD/CAD/AUD/SGD, and missing currency is never defaulted to USD.
@@ -135,8 +159,22 @@ class InvoicePack:
                        r"amount[ \t]+payable|total[ \t]+payable|balance[ \t]+due|totalt[ \t]+att[ \t]+betala|"
                        r"belopp[ \t]+att[ \t]+betala|gesamtbetrag|total[ \t]+amount|total|t[0o]tal[ \t]+am[0o]unt[ \t]+due)")
         totals = []
-        unsafe_total = False
-        qualifier = r"(?:draft|revised|provisional|estimated?|proposed|preliminary|unapproved)"
+        unsafe_total = nonfinal_document
+        # A small assertion/label grammar, not a co-occurring word scan.
+        # Only explicit unsafe predicates may coordinate; "not provisional"
+        # and "not unapproved" are not positive nonfinal evidence. Continuation
+        # support is deliberately limited to coordination and "; do not pay".
+        unsafe_predicate = (
+            qualifier + r"|not[ \t]+(?:approved|final)|"
+            r"neither[ \t]+(?:final[ \t]+nor[ \t]+approved|approved[ \t]+nor[ \t]+final)"
+        )
+        total_warning = re.compile(
+            r"(?:(?:this|the|both)[ \t]+)?(?:totals?|amounts?(?:[ \t]+payable)?)"
+            r"(?:[ \t]+(?:is|are)[ \t]+|(?:[ \t]+status)?[ \t]*:[ \t]*)"
+            r"(?:" + unsafe_predicate + r")(?:[ \t]+and[ \t]+(?:"
+            + unsafe_predicate + r"))*(?:;[ \t]*do[ \t]+not[ \t]+pay)?[.!]?",
+            re.IGNORECASE,
+        )
         for line, chunk in records:
             match = re.fullmatch(r"(?:" + qualifier + r"[ \t]+)?" + total_label
                                  + r"[ \t]*:?[ \t]*" + amount + r"(.*)", line, re.I)
@@ -144,8 +182,7 @@ class InvoicePack:
                 if re.match(qualifier + r"\b", line, re.I) or match[2].strip():
                     unsafe_total = True
                 totals.append((match[1].replace(",", ""), match[1], chunk))
-            if (re.search(r"\b(?:totals?|amount|payable)\b", line, re.I)
-                    and re.search(r"\b(?:provisional|unapproved|not[ \t]+approved|not[ \t]+final|neither|draft|estimated?|preliminary)\b", line, re.I)):
+            if total_warning.fullmatch(line):
                 unsafe_total = True
         if not unsafe_total:
             emit("total_amount", totals, 0.95)
@@ -285,37 +322,39 @@ class InvoicePack:
 
     @staticmethod
     def _parse_date(date_str: str) -> str | None:
-        """Parse standard date formats to YYYY-MM-DD."""
+        """Validate supported full-string Gregorian dates; never return raw input."""
         months = {
             "january": 1, "february": 2, "march": 3, "april": 4, "may": 5, "june": 6,
             "july": 7, "august": 8, "september": 9, "october": 10, "november": 11, "december": 12,
             "jan": 1, "feb": 2, "mar": 3, "apr": 4, "jun": 6, "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12
         }
         
-        # YYYY-MM-DD
-        m = re.match(r"(\d{4})[-/](\d{2})[-/](\d{2})", date_str)
+        # Full-string ASCII formats only. Year-first permits YYYY-MM-DD or
+        # YYYY/MM/DD (not mixed separators). Numeric DD/MM/YYYY is accepted
+        # ONLY with DD > 12: both <= 12, including equal values, abstain rather
+        # than assuming a locale. US month-first numeric dates are unsupported.
+        year = month = day = None
+        m = re.fullmatch(r"([0-9]{4})([-/])([0-9]{2})\2([0-9]{2})", date_str)
         if m:
-            return f"{m.group(1)}-{m.group(2)}-{m.group(3)}"
-            
-        # DD Month YYYY
-        m = re.match(r"(\d{1,2})\s+(\w+)\s+(\d{4})", date_str)
-        if m:
-            day = int(m.group(1))
-            month = months.get(m.group(2).lower())
-            year = int(m.group(3))
-            if month:
-                return f"{year:04d}-{month:02d}-{day:02d}"
-
-        # Month DD, YYYY
-        m = re.match(r"(\w+)\s+(\d{1,2}),?\s+(\d{4})", date_str)
-        if m:
-            month = months.get(m.group(1).lower())
-            day = int(m.group(2))
-            year = int(m.group(3))
-            if month:
-                return f"{year:04d}-{month:02d}-{day:02d}"
-
-        return None
+            year, month, day = int(m[1]), int(m[3]), int(m[4])
+        else:
+            m = re.fullmatch(r"([0-9]{1,2})[ \t]+([A-Za-z]+)[ \t]+([0-9]{4})", date_str)
+            if m:
+                day, month, year = int(m[1]), months.get(m[2].lower()), int(m[3])
+            else:
+                m = re.fullmatch(r"([A-Za-z]+)[ \t]+([0-9]{1,2}),?[ \t]+([0-9]{4})", date_str)
+                if m:
+                    month, day, year = months.get(m[1].lower()), int(m[2]), int(m[3])
+                else:
+                    m = re.fullmatch(r"([0-9]{2})/([0-9]{2})/([0-9]{4})", date_str)
+                    if m and int(m[1]) > 12:
+                        day, month, year = int(m[1]), int(m[2]), int(m[3])
+        if year is None or month is None or day is None:
+            return None
+        try:
+            return date(year, month, day).isoformat()
+        except ValueError:
+            return None
 
     @staticmethod
     def _field_matches(field_name: str, extracted: str, expected: Any) -> bool:
