@@ -75,7 +75,17 @@ def test_ingress_model_rejects_surrogates_with_422(client):
     assert "surrogate" in r.text
 
 
-def test_surrogate_burst_100_workers_zero_5xx_and_recovery_slo(client):
+def test_surrogate_burst_100_workers_zero_5xx_and_recovery_slo(client, request):
+    # Fixed diagnostic checkpoint only: no payloads, timings or exception text.
+    # Preserve unrelated properties; never replace the last stage during teardown.
+    def phase(value):
+        key = "axiom_surrogate_burst_phase"
+        request.node.user_properties[:] = [
+            (name, existing) for name, existing in request.node.user_properties if name != key
+        ]
+        request.node.user_properties.append((key, value))
+
+    phase("workload")
     bodies = list(VECTORS.values())
     lat, codes = [], []
 
@@ -88,10 +98,15 @@ def test_surrogate_burst_100_workers_zero_5xx_and_recovery_slo(client):
         for code, ms in pool.map(hit, range(600)):
             codes.append(code)
             lat.append(ms)
+    phase("no_5xx")
     assert not any(c >= 500 for c in codes), set(codes)
+    phase("health")
     assert client.get("/healthz").status_code == 200  # still alive afterwards
+    phase("quantiles")
     q = quantiles(lat, n=100)
+    phase("p50")
     assert q[49] < 200, ("P50 error-recovery SLO", q[49], q[94], q[98])
+    phase("complete")
 
 
 def test_chaotic_human_journey_stays_up(client):
