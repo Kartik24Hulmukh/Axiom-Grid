@@ -131,3 +131,20 @@ These are local parser-contract and selected-corpus observations, not merged-cod
 CI, real-model, native, offline, production or payment-authorization evidence.
 Remote CI and merge status must be verified separately on the exact published
 revision. No new third-party runtime dependency or installation capability was added.
+
+## Additional observed CPU API experiments — not production clearance
+
+[CPU_API_QUALIFICATION.md](CPU_API_QUALIFICATION.md) and its
+[scoped evidence](evidence/CPU_API_EXPERIMENTS.json) record actual execution of
+runtime8af356a with pinned Ollama0.40.13 and small Qwen2.5 CPU models. The0.5B API
+sweep passed while its fact-preserving selected task **failed**. One unchanged
+1.5B selected answer passed assistant factual review, but its first isolated
+harness run still failed a runner-observation assertion. A separately corrected
+mechanical run passed18checks and the unchanged20-prompt probe in a loopback-only,
+capability-restricted namespace with denied external IPv4/IPv6 connects. These
+experiments are not combined retroactively into a single all-passing run.
+
+Native window/manual copy, real-device/user validation, hostile-code containment,
+backend-stop/erasure, minimum memory certification and production qualification
+remain open. Models and build tools were intentionally provisioned outside the
+repository; no installer or automatic model acquisition was enabled.

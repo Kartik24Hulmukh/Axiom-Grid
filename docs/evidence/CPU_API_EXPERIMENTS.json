@@ -1,0 +1,174 @@
+{
+  "schema_version": 1,
+  "scope": "observed-cpu-api-qualification-experiments",
+  "runtime_revision": "8af356a796ef3a3bc29be6921d74f60e4ea17072",
+  "runtime_binary_sha256": "a4a660e1d2e3c201e75846f255b2d884875e7e84a71b9eecc6f11cfe93df1805",
+  "production_qualified": false,
+  "native_ui_tested": false,
+  "customer_value_validated": false,
+  "minimum_hardware_certification": false,
+  "observed_test_environment": {
+    "os": "Linux x86_64 container",
+    "cpu_count": 2,
+    "cpu_model_reported": "Intel Xeon @ 2.90GHz",
+    "observed_cgroup_memory_max_bytes": 4294967296,
+    "gpu": "CPU runner observed; no GPU device detected in the checked paths",
+    "caveat": "agent sandbox, not a user device; shared cgroup and cache; not a minimum specification"
+  },
+  "backend": {
+    "name": "Ollama",
+    "version": "0.40.13",
+    "release_archive_sha256": "c9490e0f520be21271d969e6703f012268b1d39f8b70dd58854e5bfef7a75bb6",
+    "source": "https://github.com/ollama/ollama/releases/tag/v0.40.13",
+    "provisioning": "isolated external tooling and pinned registry blobs; no product installer/dependency or automatic download added",
+    "digest_trust": "publisher HTTPS metadata/registry checksums, not signer/weights attestation"
+  },
+  "selected_task": {
+    "prompt": "Write a concise professional project update for Axiom-Grid collaborators using only these facts: PR46 merged; pairing and HTTP recovery diagnostics improved; all required CI checks passed; production qualification is NOT complete; a target-device trial is the next step. Preserve every fact and the production limitation. Do not invent dates, customers, availability, certification or performance claims. Return only the message in at most 100 words.",
+    "acceptance": {
+      "transport": "authenticated real runtime returns valid nonempty preview; no mock backend",
+      "facts": "must preserve PR46, recovery/pairing improvement and successful checks",
+      "release_caution": "must explicitly retain that production qualification is not complete",
+      "next_action": "must retain target-device trial as next step",
+      "no_new_claims": "must not invent customers, valuation, availability, dates or certification",
+      "review": "assistant review of factual consistency is not human/customer validation"
+    },
+    "assistant_review_only": true,
+    "attempts": [
+      {
+        "model": "qwen2.5:0.5b",
+        "manifest_sha256": "a8b0c51577010a279d933d14c2a8ab4b268079d44c5c8830c0a93900f1827c67",
+        "task_attempt": 1,
+        "condition": "warm, after baseline20promptprobe",
+        "http_status": 200,
+        "elapsed_seconds": 4.344881120000082,
+        "output": "Axiom-Grid project has been updated to include improvements in production diagnostics, including HTTP recovery diagnostics. Pairing and HTTP recovery diagnostics have been enhanced, ensuring better monitoring of the system. This is the first step towards securing and improving production performance. The next step is a target-device trial to validate the improvements and gather feedback.",
+        "semantic_accepted": false,
+        "critical_failures": [
+          "omitsPR46merge",
+          "omitsCIpass",
+          "omitsproduction-not-qualified",
+          "addsunsupportedmonitoring/performanceclaims"
+        ]
+      },
+      {
+        "model": "qwen2.5:1.5b",
+        "manifest_sha256": "65ec06548149b04c096a120e4a6da9d4017ea809c91734ea5631e89f96ddc57b",
+        "task_attempt": 1,
+        "condition": "fresh backend/model load, filesystem cache not demonstrated cold, isolatedrun1",
+        "http_status": 200,
+        "elapsed_seconds": 8.128382422999948,
+        "output": "PR46 merged; pairing and HTTP recovery diagnostics improved; all required CI checks passed; production qualification not complete; next step: target-device trial.",
+        "semantic_accepted": true,
+        "acceptance_scope": "all stated facts/limitations retained, <=100words, no new claims; not broad model-quality proof"
+      }
+    ]
+  },
+  "experiments": [
+    {
+      "name": "baseline0.5B",
+      "api_probe_passed": true,
+      "prompt_count": 20,
+      "semantic_usefulness_of20prompts": "notgraded"
+    },
+    {
+      "name": "isolated1.5B-run1",
+      "mechanical_passed": false,
+      "reason": "leader-thread-only process enumeration missed runner; harness assertion failed after selected answer",
+      "selected_task_accepted": true,
+      "cannot_retroactively_repair_with_run2": true
+    },
+    {
+      "name": "isolated1.5B-run2",
+      "mechanical_passed": true,
+      "check_count": 18,
+      "api_probe_passed": true,
+      "prompt_count": 20,
+      "selected_task_repeated": false,
+      "context_length_reported": 2048,
+      "ipv4_control": "ENETUNREACH",
+      "ipv6_control": "ENETUNREACH",
+      "capabilities": {
+        "CapEff": "0000000000000000",
+        "CapPrm": "0000000000000000",
+        "CapBnd": "0000000000000000",
+        "NoNewPrivs": "1"
+      },
+      "observed_processes": [
+        "ollama",
+        "llama-server",
+        "axiom-grid"
+      ],
+      "missing_model": {
+        "log_scope": "no additional completed generation log entry observed; not a direct ingress/canary proof",
+        "readiness_status": 200,
+        "ready": false,
+        "generation_status": 503,
+        "backend_generate_count_before": 22,
+        "backend_generate_count_after": 22
+      },
+      "service_exit_codes": {
+        "backend": 0,
+        "runtime": 0
+      },
+      "oom_kill_count_change": 0
+    }
+  ],
+  "scope_limits": [
+    "normal audited processes in fresh loopback-only network namespace; not hostile-code/filesystem/Unix-IPC containment",
+    "network-isolated20promptAPIexecution is run2; sole1.5Bselectedanswer is run1; evidence not combined retroactively",
+    "both loaded model reports show context2048; warm/cold conditions differ, not a model-size-only or latency comparison",
+    "cancellation acknowledged at API, not verified backend compute termination or erasure",
+    "no actual Tauri window, global-shortcut/manual-copy, installer/upgrade/uninstall or native OS qualification",
+    "shared cgroup samples near cap are not model-specific memory peaks or minimum hardware evidence",
+    "model licenses and complete dependency rights require separate release review"
+  ],
+  "evidence_sha256": {
+    "live-run1.json": "fbbf9e5e580d4bbea590a8f782ff23c505edc77f23eb831074d4542b4183c65b",
+    "selected-task-run1.json": "f7ac6e124befb311f7fb3c878bcdebe33818dffe1af254fbf929c85849ddea6f",
+    "isolated-run1.json": "a858d31851772814b80cd8c0ae9ffc49733767dbf2ea427df12c73260b2cf511",
+    "isolated-run2.json": "963cb5691ffc65a472ae1a77fab19b38e6e63449bae9f79156e2c9d18eaa1569",
+    "isolated2-live-run1.json": "6250ee17c5e472036d17861c0fbb274b06aad7dfba2732fb44893a80cb4500a0",
+    "task-acceptance.json": "9b0eb45ca6fb179e247d4b17ab16d8d779a1555b189822a3feb64decd997f69c",
+    "isolated_profile.py": "19217ab22a58581ebf85c1c4669d1458a4658f8b0eae59771b95f45f48243f6c",
+    "isolated_profile2.py": "fa34531e317ad6dbc65909856dd0b03a8d89d17bfde5b88869650933141fbb80"
+  },
+  "raw_evidence": {
+    "scope": "public exact historical reports/harness bytes; hashes do not authenticate the observations",
+    "files": {
+      "live-run1.json": {
+        "path": "cpu-api-experiments/live-run1.json",
+        "sha256": "fbbf9e5e580d4bbea590a8f782ff23c505edc77f23eb831074d4542b4183c65b"
+      },
+      "selected-task-run1.json": {
+        "path": "cpu-api-experiments/selected-task-run1.json",
+        "sha256": "f7ac6e124befb311f7fb3c878bcdebe33818dffe1af254fbf929c85849ddea6f"
+      },
+      "isolated-run1.json": {
+        "path": "cpu-api-experiments/isolated-run1.json",
+        "sha256": "a858d31851772814b80cd8c0ae9ffc49733767dbf2ea427df12c73260b2cf511"
+      },
+      "isolated-run2.json": {
+        "path": "cpu-api-experiments/isolated-run2.json",
+        "sha256": "963cb5691ffc65a472ae1a77fab19b38e6e63449bae9f79156e2c9d18eaa1569"
+      },
+      "isolated2-live-run1.json": {
+        "path": "cpu-api-experiments/isolated2-live-run1.json",
+        "sha256": "6250ee17c5e472036d17861c0fbb274b06aad7dfba2732fb44893a80cb4500a0"
+      },
+      "task-acceptance.json": {
+        "path": "cpu-api-experiments/task-acceptance.json",
+        "sha256": "9b0eb45ca6fb179e247d4b17ab16d8d779a1555b189822a3feb64decd997f69c"
+      },
+      "isolated_profile.py": {
+        "path": "cpu-api-experiments/isolated_profile.py.txt",
+        "sha256": "19217ab22a58581ebf85c1c4669d1458a4658f8b0eae59771b95f45f48243f6c"
+      },
+      "isolated_profile2.py": {
+        "path": "cpu-api-experiments/isolated_profile2.py.txt",
+        "sha256": "fa34531e317ad6dbc65909856dd0b03a8d89d17bfde5b88869650933141fbb80"
+      }
+    },
+    "harness_warning": "historical nonportable lab code, not an installer or automatically invoked test; uses dedicated-sandbox paths and requires authorized network-namespace control"
+  }
+}
