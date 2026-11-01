@@ -13,10 +13,10 @@ If you have none of those prerequisites, installing the VSIX alone does not supp
 
 ## Install the small extension
 
-In VS Code: Extensions → `…` → **Install from VSIX…** → select `axiom-grid-lite-0.1.0.vsix`. Review the local/unverified-publisher warning; do not disable OS security policies. Alternatively, with the desktop VS Code CLI already installed:
+In VS Code: Extensions → `…` → **Install from VSIX…** → select `axiom-grid-lite-0.1.1.vsix`. Review the local/unverified-publisher warning; do not disable OS security policies. Alternatively, with the desktop VS Code CLI already installed:
 
 ```sh
-code --install-extension /path/to/axiom-grid-lite-0.1.0.vsix
+code --install-extension "/path/to/axiom-grid-lite-0.1.1.vsix"
 ```
 
 Use only on a device/workspace you are authorized to use. Do not install in a prohibited assessment or managed environment without approval.
@@ -27,7 +27,7 @@ Use only on a device/workspace you are authorized to use. Do not install in a pr
 2. Under supported Unix pairing, the runtime prints its local pairing-file location. Open that file privately on your device and use its existing token. Windows currently needs explicitly provisioned shared-token setup; follow `QUICKSTART.md` and `docs/NATIVE_RECOVERY_POLICY.md`. Do not paste tokens into chat, source, settings, issue reports or command arguments.
 3. Command Palette → **Axiom: Set Runtime Token**. Enter that runtime token in the masked input. The extension uses VS Code `SecretStorage`, never a normal setting. Its security depends on the host's implementation; this is not an independently verified cross-platform credential-storage guarantee.
 4. Open a local source file. For example, create a disposable JavaScript file containing `function sum(a, b) {` and place the cursor at the end, with no selection.
-5. Command Palette → **Axiom: Suggest Code at Cursor**. This explicitly authorizes sending the bounded nearby file text to your local runtime. Do not use it on private material you have not approved for that backend.
+5. Press **Ctrl+Alt+K** while the local file editor has focus (macOS: Control+Option+K), or use Command Palette → **Axiom: Suggest Code at Cursor**. This explicitly authorizes sending the bounded nearby file text to your local runtime. Do not use it on private material you have not approved for that backend.
 6. Review the inline suggestion. Use VS Code's **Accept Inline Suggestion** action (normally Tab) only if you want it inserted. The extension does not save or execute the code. Keyboard mappings/settings can differ; inline suggestions must be enabled in your editor.
 7. Use **Axiom: Discard Suggestion** to invalidate Axiom's cached preview/request. A progress notification's Cancel also discards locally. Escape may hide the editor UI but is not a verified backend cancellation mechanism.
 
@@ -56,3 +56,17 @@ Errors are static codes; raw runtime bodies, OS errors, file paths and token val
 The release handoff records actual test/package results. Node mocks, state tests, VSIX ZIP/XML checks and HTTP mocks are not actual VS Code-host installation, native OS or real-model coding evidence. No minimum-RAM, latency, universal OS compatibility, frontier-quality or production claim is made.
 
 No runtime binary, model weights, training tools, Python document services, Storytold applications, telemetry SDK or npm runtime dependencies are included.
+
+## One-command setup: exact current status
+
+With desktop VS Code and the already configured runtime/model prerequisites, client installation is one command:
+
+```sh
+code --install-extension "/path/to/axiom-grid-lite-0.1.1.vsix"
+```
+
+Then pair once using the masked command above and use Ctrl+Alt+K in a local editor. Tab acceptance remains explicit. The shortcut is editor-scoped, not a global OS hotkey; custom keyboard mappings, AltGr layouts, OS shortcuts and extensions may conflict. Use VS Code Keyboard Shortcuts to resolve a conflict without disabling OS security restrictions.
+
+**This does not automatically provision the runtime, Ollama or weights.** At this implementation checkpoint, the repository’s public releases have no binary assets. Do not invent a curl-to-shell installer or substitute inventory-derived model identity for independent model approval. A complete installer needs tested per-OS/CPU runtime binaries, release authorization, backend/model provisioning with a disclosed download size, secure pairing and real target-device validation. Those gates remain open. Windows/macOS/Linux are different targets; one command cannot guarantee native support on every device.
+
+No model is silently selected or downloaded by this extension. Runtime/model storage and memory requirements are separate from the small VSIX.

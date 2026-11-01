@@ -2,7 +2,7 @@
   "name": "axiom-grid-lite",
   "displayName": "Axiom Grid Lite \u2014 Explicit Local Suggestions",
   "description": "User-triggered inline code previews through an existing local Axiom runtime. No model downloads, automatic typing, terminal execution or cloud fallback.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "axiom-grid-local",
   "license": "MIT",
   "engines": {
@@ -47,6 +47,14 @@
       {
         "command": "axiomLite.discard",
         "title": "Axiom: Discard Suggestion"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "axiomLite.complete",
+        "key": "ctrl+alt+k",
+        "mac": "ctrl+alt+k",
+        "when": "editorTextFocus && resourceScheme == file && isWorkspaceTrusted && !editorHasSelection && !editorHasMultipleSelections && !editorReadonly"
       }
     ]
   },
