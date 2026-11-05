@@ -1,7 +1,7 @@
 'use strict';
 const vscode = require('vscode');
 const client = require('./client');
-const {PreviewSession, sameSnapshot, makePrompt} = require('./state');
+const {PreviewSession, sameSnapshot, makePrompt, stripFence} = require('./state');
 const {planComment, renderComment} = require('./comment');
 const SECRET_KEY = 'axiomLite.runtimeToken';
 function activate(context) {
@@ -74,8 +74,8 @@ function activate(context) {
       // Reserve admission before SecretStorage can suspend; capture failures without
       // an unhandled rejection while the progress UI is being created.
       const work = session.run(expected, () => context.secrets.get(SECRET_KEY),
-        makePrompt(comment ? prefix.slice(0, -lineHead.length) : prefix, suffix, editor.document.languageId, comment?.instruction),
-        () => current(editor, expected), text => comment ? renderComment(text, comment.indentation, eol) : text)
+        makePrompt(comment ? prefix.slice(0, -lineHead.length) : prefix, suffix, editor.document.languageId, comment?.instruction, comment ? lineHead : undefined),
+        () => current(editor, expected), text => comment ? renderComment(stripFence(text), comment.indentation, eol) : stripFence(text))
         .then(value => ({value}), error => ({error}));
       status.text = '$(sync~spin) Axiom: generating';
       await vscode.window.withProgress({location: vscode.ProgressLocation.Notification, title: 'Axiom: local suggestion (cancel discards locally)', cancellable: true}, async (_progress, cancellation) => {

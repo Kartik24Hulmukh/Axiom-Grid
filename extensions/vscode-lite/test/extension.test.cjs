@@ -96,9 +96,9 @@ test('explicit slash instruction is sent as instruction and previews below retai
  const a=fixture(),source='// retain this earlier comment\nconst start = 1;\n  // create a sum function';
  a.edit(source);await a.command('complete');
  assert.equal(a.calls.length,2);const prompt=a.calls[1][2];
- assert.ok(prompt.includes('<USER_INSTRUCTION>\ncreate a sum function\n</USER_INSTRUCTION>'));
- assert.ok(prompt.includes('<PREFIX>\n// retain this earlier comment\nconst start = 1;\n\n</PREFIX>'));
- assert.ok(!prompt.includes('  // create a sum function'));
+ assert.ok(prompt.startsWith('Continue this javascript file by writing the code requested by its final // comment.'));
+ assert.ok(prompt.endsWith('\n\n// retain this earlier comment\nconst start = 1;\n  // create a sum function'));
+ assert.ok(!prompt.includes('<USER_INSTRUCTION>'));
  const item=a.preview()[0];assert.equal(item.insertText,'\n  return 42;');assert.equal(item.range.start,item.range.end);
  assert.equal(a.contents(),source);assert.equal(a.reads[0].end.character-a.reads[0].start.character,source.split('\n').at(-1).length);
  a.edit(source+' ');assert.equal(a.preview().length,0);assert.equal(a.calls.length,2);
@@ -142,4 +142,11 @@ test('comment inference still suppresses late output after prompt edits',async()
  const a=fixture(),d=deferred();a.edit('// original instruction');a.client.generate=async()=>d.promise;
  const p=a.command('complete');await tick();a.edit('// different instruction');d.resolve('stale');await p;
  assert.equal(a.preview().length,0);assert.ok(!a.executed.includes('editor.action.inlineSuggest.trigger'));
+});
+
+test('fenced model output previews and inserts without the enclosing fence',async()=>{
+ const a=fixture();a.edit('  // create a sum function');
+ a.client.generate=async(token,prompt)=>{a.calls.push(['generate',token,prompt]);return '```javascript\nreturn 42;\n```';};
+ await a.command('complete');
+ assert.equal(a.preview()[0].insertText,'\n  return 42;');
 });
