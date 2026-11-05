@@ -401,6 +401,96 @@ async fn approved_digest_forms_normalize_and_valid_prompt_is_unchanged() {
 }
 
 #[tokio::test]
+async fn explicit_code_mode_preserves_writing_default_and_rejects_unknown_modes() {
+    let fixture = Fixture::new(
+        json!({"models": [entry(MODEL, &digest(), 1024)]}),
+        valid_output(),
+        digest(),
+    )
+    .await;
+    let (status, _) = fixture
+        .request(
+            "POST",
+            "/materialize",
+            json!({"context": PROMPT, "mode": "code"}),
+        )
+        .await;
+    assert_eq!(status, StatusCode::OK);
+    let captured = fixture.backend.captured_bodies.lock().unwrap();
+    assert_eq!(captured.len(), 1);
+    let forwarded: Value = serde_json::from_slice(&captured[0]).unwrap();
+    assert_eq!(
+        forwarded,
+        json!({"model": MODEL, "prompt": PROMPT,
+        "system": axiom_grid::ai::CODE_SYSTEM_PROMPT,
+        "stream": false, "think": false, "options": {"num_predict": 1024, "temperature": 0, "seed": 7}})
+    );
+    drop(captured);
+    for mode in [json!("unknown"), json!(null), json!(true)] {
+        let (status, _) = fixture
+            .request(
+                "POST",
+                "/materialize",
+                json!({"context": PROMPT, "mode": mode}),
+            )
+            .await;
+        assert!(status.is_client_error());
+    }
+    assert_eq!(fixture.backend.prompt_posts.load(Ordering::SeqCst), 1);
+}
+
+#[tokio::test]
+async fn code_preview_rejects_reported_truncation_or_unknown_finish_reason() {
+    for reason in [
+        json!("length"),
+        json!("unexpected"),
+        json!(true),
+        json!(123),
+    ] {
+        let fixture = Fixture::new(
+            approved_inventory(),
+            json!({"model": MODEL,
+            "response": REJECTED_OUTPUT, "done": true, "done_reason": reason}),
+            digest(),
+        )
+        .await;
+        let (status, body) = fixture
+            .request(
+                "POST",
+                "/materialize",
+                json!({"context": PROMPT, "mode": "code"}),
+            )
+            .await;
+        assert_eq!(status, StatusCode::BAD_GATEWAY);
+        assert_not_disclosed(&body);
+        *fixture.backend.output.lock().unwrap() = WireReply::json(json!({"model": MODEL,
+            "response": OUTPUT, "done": true, "done_reason": "stop"}));
+        let (status, body) = fixture
+            .request(
+                "POST",
+                "/materialize",
+                json!({"context": PROMPT, "mode": "code"}),
+            )
+            .await;
+        assert_eq!(status, StatusCode::OK);
+        assert_eq!(
+            serde_json::from_slice::<Value>(&body).unwrap()["suggestion"],
+            OUTPUT
+        );
+    }
+    // Missing completion reason remains compatible; it is not proof of completeness.
+    let fixture = Fixture::new(approved_inventory(), valid_output(), digest()).await;
+    let (status, _) = fixture
+        .request(
+            "POST",
+            "/materialize",
+            json!({"context": PROMPT, "mode": "code"}),
+        )
+        .await;
+    assert_eq!(status, StatusCode::OK);
+}
+
+#[tokio::test]
 async fn invalid_identity_is_not_ready_and_direct_materialize_never_posts_prompt() {
     for (case, inventory) in invalid_inventories() {
         let fixture = Fixture::new(inventory.clone(), valid_output(), digest()).await;

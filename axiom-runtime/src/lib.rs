@@ -10,8 +10,13 @@ pub mod ghost_session;
 #[path = "../../phantom-core/src/ollama_bootstrap.rs"]
 pub mod ollama_bootstrap;
 pub mod ai {
+    // Preserve the original behavior for existing writing clients.
     pub const KAIRO_SYSTEM_PROMPT: &str =
         "Provide the requested writing assistance. Return only the suggested text.";
+    pub const CODE_SYSTEM_PROMPT: &str =
+        "Complete the user's request. Reply with only the requested text or code itself: no explanations, no Markdown, and no code fences.";
+    pub const GENERATION_NUM_PREDICT: u32 = 1024;
+    pub const GENERATION_SEED: u32 = 7;
 }
 use axum::{
     extract::{DefaultBodyLimit, State},
@@ -74,6 +79,16 @@ impl AppState {
 #[serde(deny_unknown_fields)]
 pub struct PreviewRequest {
     pub context: String,
+    #[serde(default)]
+    mode: PreviewMode,
+}
+
+#[derive(Clone, Copy, Default, Deserialize)]
+#[serde(rename_all = "snake_case")]
+enum PreviewMode {
+    #[default]
+    Writing,
+    Code,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PreviewResponse {
@@ -86,6 +101,10 @@ struct OllamaResponse {
     model: String,
     response: String,
     done: bool,
+    // Missing is accepted for older backends; a reported non-stop reason is
+    // rejected for code previews. This is not proof that output is complete.
+    #[serde(default)]
+    done_reason: Option<serde_json::Value>,
 }
 type ApiError = (StatusCode, &'static str);
 #[derive(Deserialize)]
@@ -219,7 +238,11 @@ async fn bounded_body(
     Ok(bytes)
 }
 
-async fn generate(state: &AppState, prompt: String) -> Result<PreviewResponse, ApiError> {
+async fn generate(
+    state: &AppState,
+    prompt: String,
+    mode: PreviewMode,
+) -> Result<PreviewResponse, ApiError> {
     // Fresh preflight on every explicit request, inside the slot/cancellation scope.
     // Never send context when the inventory report fails the configured policy.
     let tags = fetch_inventory(state).await?;
@@ -230,10 +253,26 @@ async fn generate(state: &AppState, prompt: String) -> Result<PreviewResponse, A
         ));
     }
     // Exact mutable name only: digest-addressed execution is not assumed supported.
-    let response = state.client.post(&state.inference_url).json(&serde_json::json!({
-        "model": state.model, "prompt": prompt, "system": ai::KAIRO_SYSTEM_PROMPT,
-        "stream": false, "options": {"num_predict": 2048}
-    })).send().await.map_err(|_| (StatusCode::BAD_GATEWAY, "Local model unavailable or timed out; start Ollama and install the configured model"))?
+    let (system, options) = match mode {
+        PreviewMode::Writing => (
+            ai::KAIRO_SYSTEM_PROMPT,
+            serde_json::json!({"num_predict": 2048}),
+        ),
+        PreviewMode::Code => (
+            ai::CODE_SYSTEM_PROMPT,
+            serde_json::json!({"num_predict": ai::GENERATION_NUM_PREDICT, "temperature": 0, "seed": ai::GENERATION_SEED}),
+        ),
+    };
+    let mut request_body = serde_json::json!({
+        "model": state.model, "prompt": prompt, "system": system,
+        "stream": false, "options": options
+    });
+    if matches!(mode, PreviewMode::Code) {
+        // Ask thinking-capable Ollama models for their final response directly.
+        // Backend support varies; this is a request, not an attestation.
+        request_body["think"] = serde_json::json!(false);
+    }
+    let response = state.client.post(&state.inference_url).json(&request_body).send().await.map_err(|_| (StatusCode::BAD_GATEWAY, "Local model unavailable or timed out; start Ollama and install the configured model"))?
         .error_for_status().map_err(|_| (StatusCode::BAD_GATEWAY, "Local model rejected generation; verify the installed model"))?;
     if !response.status().is_success() {
         return Err((
@@ -250,6 +289,16 @@ async fn generate(state: &AppState, prompt: String) -> Result<PreviewResponse, A
             StatusCode::BAD_GATEWAY,
             "Local model response identity does not match",
         ));
+    }
+    if matches!(mode, PreviewMode::Code) {
+        if let Some(reason) = &output.done_reason {
+            if reason.as_str() != Some("stop") {
+                return Err((
+                    StatusCode::BAD_GATEWAY,
+                    "Local model did not report a completed code preview",
+                ));
+            }
+        }
     }
     if !output.done || output.response.trim().is_empty() {
         return Err((
@@ -283,7 +332,7 @@ async fn preview(
     // Cancellation drops the in-flight inventory/generation HTTP future. This
     // acknowledges a runtime request abort, not proven backend compute termination.
     let result = tokio::select! {
-        r = generate(&state, input.context) => r,
+        r = generate(&state, input.context, input.mode) => r,
         _ = cancel_rx => Err((
             cancelled_status(),
             "Generation cancelled; the local model request was aborted",
