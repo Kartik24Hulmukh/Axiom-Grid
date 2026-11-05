@@ -416,16 +416,17 @@ async fn explicit_code_mode_preserves_writing_default_and_rejects_unknown_modes(
         )
         .await;
     assert_eq!(status, StatusCode::OK);
-    let captured = fixture.backend.captured_bodies.lock().unwrap();
-    assert_eq!(captured.len(), 1);
-    let forwarded: Value = serde_json::from_slice(&captured[0]).unwrap();
-    assert_eq!(
-        forwarded,
-        json!({"model": MODEL, "prompt": PROMPT,
-        "system": axiom_grid::ai::CODE_SYSTEM_PROMPT,
-        "stream": false, "think": false, "options": {"num_predict": 1024, "temperature": 0, "seed": 7}})
-    );
-    drop(captured);
+    {
+        let captured = fixture.backend.captured_bodies.lock().unwrap();
+        assert_eq!(captured.len(), 1);
+        let forwarded: Value = serde_json::from_slice(&captured[0]).unwrap();
+        assert_eq!(
+            forwarded,
+            json!({"model": MODEL, "prompt": PROMPT,
+            "system": axiom_grid::ai::CODE_SYSTEM_PROMPT,
+            "stream": false, "think": false, "options": {"num_predict": 1024, "temperature": 0, "seed": 7}})
+        );
+    }
     for mode in [json!("unknown"), json!(null), json!(true)] {
         let (status, _) = fixture
             .request(
