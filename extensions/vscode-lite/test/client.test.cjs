@@ -159,7 +159,7 @@ test('client security contract (mock HTTP only)', async t => {
       assert.equal(await generate(TOKEN, context), suggestion);
       const headers = assertFixed(mock.calls[0], 'POST', '/materialize');
       assert.match(headers['content-type'], /^application\/json(?:\s*;.*)?$/i);
-      assert.deepEqual(JSON.parse(Buffer.concat(mock.calls[0].chunks).toString('utf8')), { context });
+      assert.deepEqual(JSON.parse(Buffer.concat(mock.calls[0].chunks).toString('utf8')), { context, mode: 'code' });
       assert.equal(mock.calls.length, 1);
     }
   });
