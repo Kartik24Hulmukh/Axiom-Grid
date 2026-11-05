@@ -156,7 +156,7 @@ class RuntimeBundleTests(unittest.TestCase):
                 self.runtime.write_bytes(binary)
                 payload = self.build(target=target)
                 runtime_name = "axiom-grid.exe" if target == TARGETS[1] else "axiom-grid"
-                vsix_name = "axiom-grid-lite-0.1.2.vsix"
+                vsix_name = "axiom-grid-lite-0.1.3.vsix"
                 names = {runtime_name, vsix_name, "LICENSE", "THIRD_PARTY_NOTICES.md", "README.txt", "bundle.json"}
                 with zipfile.ZipFile(io.BytesIO(payload)) as archive:
                     self.assertEqual(set(archive.namelist()), names)
@@ -173,7 +173,7 @@ class RuntimeBundleTests(unittest.TestCase):
                     self.assertEqual(metadata["revision"], REVISION)
                     self.assertEqual(metadata["revision_provenance"], "operator-supplied-not-attested")
                     self.assertEqual(metadata["extension"], {"id": "axiom-grid-lite", "publisher": "axiom-grid-local",
-                        "version": "0.1.2", "validation": "packaging-and-metadata-only"})
+                        "version": "0.1.3", "validation": "packaging-and-metadata-only"})
                     self.assertEqual(metadata["qualification"], {"host": "not_tested", "model": "not_tested",
                         "offline": "not_tested", "license_review": "not_complete"})
                     self.assertEqual(set(metadata["files"]), names - {"bundle.json"})
@@ -322,7 +322,7 @@ class RuntimeBundleTests(unittest.TestCase):
     def test_xml_identity_mismatch_and_entity_declarations_rejected(self):
         with zipfile.ZipFile(io.BytesIO(self.vsix_bytes)) as archive:
             original = archive.read("extension.vsixmanifest")
-        for replacement in (original.replace(b'Version="0.1.2"', b'Version="9.9.9"'),
+        for replacement in (original.replace(b'Version="0.1.3"', b'Version="9.9.9"'),
                             b"<wrong/>", b"<!DOCTYPE x [<!ENTITY leak '" + SECRET.encode() + b"'>]><x/>"):
             self.vsix.write_bytes(replace_zip(self.vsix_bytes, {"extension.vsixmanifest": replacement}))
             self.reject(self.build)

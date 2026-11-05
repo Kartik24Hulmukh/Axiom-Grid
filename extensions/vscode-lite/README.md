@@ -13,10 +13,10 @@ If you have none of those prerequisites, installing the VSIX alone does not supp
 
 ## Install the small extension
 
-In VS Code: Extensions → `…` → **Install from VSIX…** → select `axiom-grid-lite-0.1.2.vsix`. Review the local/unverified-publisher warning; do not disable OS security policies. Alternatively, with the desktop VS Code CLI already installed:
+In VS Code: Extensions → `…` → **Install from VSIX…** → select `axiom-grid-lite-0.1.3.vsix`. Review the local/unverified-publisher warning; do not disable OS security policies. Alternatively, with the desktop VS Code CLI already installed:
 
 ```sh
-code --install-extension "/path/to/axiom-grid-lite-0.1.2.vsix"
+code --install-extension "/path/to/axiom-grid-lite-0.1.3.vsix"
 ```
 
 Use only on a device/workspace you are authorized to use. Do not install in a prohibited assessment or managed environment without approval.
@@ -31,7 +31,7 @@ Use only on a device/workspace you are authorized to use. Do not install in a pr
 6. Review the inline suggestion. Use VS Code's **Accept Inline Suggestion** action (normally Tab) only if you want it inserted. The extension does not save or execute the code. Keyboard mappings/settings can differ; inline suggestions must be enabled in your editor.
 7. Use **Axiom: Discard Suggestion** to invalidate Axiom's cached preview/request. A progress notification's Cancel also discards locally. Escape may hide the editor UI but is not a verified backend cancellation mechanism.
 
-Model quality and latency are not established by the disposable example. This prototype uses an instruction prompt with prefix/suffix text, **not native fill-in-the-middle model tokens**. The runtime's current writing-oriented system prompt is unchanged. Do not assume a base FIM model is a drop-in replacement. Use an already approved instruction-following model for initial tests; no new model is selected or silently downloaded.
+Model quality and latency are not established by the disposable example. This prototype uses an instruction prompt with prefix/suffix text, **not native fill-in-the-middle model tokens**. This extension requires a runtime supporting explicit code mode, which uses a neutral instruction prompt, temperature 0, seed 7, a 1,024-token generation limit and requests `think: false` from the backend. Code responses reporting a non-stop completion reason are rejected; a missing reason is accepted for older backends and does not prove completeness. Requests omitting mode retain the original writing prompt and 2,048-token limit; older runtimes reject the new code-mode field rather than silently falling back. Do not assume a base FIM model is a drop-in replacement. Use an already approved instruction-following model for initial tests; no new model is selected or silently downloaded.
 
 ## `// instruction` workflow (JavaScript/TypeScript)
 
@@ -49,7 +49,7 @@ Limits: current marker line at most 1,024 UTF-16 code units, including indentati
 
 Recognition is **textual, not lexical**: a line beginning with `// ` inside a multiline template string is still treated as an explicit instruction when you invoke the command. Do not invoke it there unless that is your intention. It does not prove the line is a JavaScript comment.
 
-Only the current marker line is removed from the source-prefix portion of the request; earlier comments remain bounded source context. The client prefixes the document's LF/CRLF and the comment indentation to the **first generated line only**; internal output, line breaks and indentation remain unchanged. The entire composed candidate must fit 4,096 Unicode scalars or it is rejected, never truncated. This is not whole-block formatting or syntax validation. Edit, cursor move, focus change, cancellation and pairing changes retain the same stale-result suppression.
+The current marker line is retained at the end of the bounded prefix sent to the model; earlier comments remain bounded source context. If the model output is enclosed by a single whole-response Markdown code fence, the extension removes that fence before preview. The client prefixes the document's LF/CRLF and the comment indentation to the **first generated line only**; internal output, line breaks and indentation remain unchanged. The entire composed candidate must fit 4,096 Unicode scalars or it is rejected, never truncated. This is not whole-block formatting or syntax validation. Edit, cursor move, focus change, cancellation and pairing changes retain the same stale-result suppression.
 
 The Kairo-Phantom slash-instruction UX informed this narrow feature. Its global hooks, automatic injection, mutable model pulls and legacy installers were not imported. Existing local runtime/model prerequisites still apply.
 
@@ -57,7 +57,7 @@ The Kairo-Phantom slash-instruction UX informed this narrow feature. Its global 
 
 - No inference on activation, typing, passive provider calls or file changes. Only the explicit Axiom command starts a request.
 - Transmits source context from at most 6,000 UTF-16 units before and 2,000 after the cursor, with boundary-surrogate trimming. An additional local-only initial-line probe reads at most 1,025 units for mode detection; this is a separate read bound and is not automatically added to transmitted context. No workspace indexing, filename transmission or other-app capture. This can still include secrets from an active source file: inspect the context you authorize.
-- The complete wrapped prompt must fit 16,000 Unicode scalars. The client accepts at most 4,096 output scalars; any composed comment candidate must also fit 4,096 scalars and rejects disallowed controls/bidi formatting. These are input/display bounds, **not backend compute caps**; the existing runtime can request 2,048 generated tokens and take up to its deadline.
+- The complete wrapped prompt must fit 16,000 Unicode scalars. The client accepts at most 4,096 output scalars; any composed comment candidate must also fit 4,096 scalars and rejects disallowed controls/bidi formatting. These are input/display bounds, **not backend compute caps**; the focused runtime can request 1,024 generated tokens and take up to its deadline.
 - Fresh authenticated readiness per explicit request, including consistency of the reported selected inventory; then the runtime independently performs fresh identity preflight. This is reported consistency, not model/backend attestation.
 - No configurable network host, proxy, redirect or cloud fallback. Uses numeric IPv4 loopback HTTP with the pairing token. This does not prove that the backend, VS Code or other extensions cannot use the network.
 - Edit, cursor/selection change, active-editor change or credential change invalidates the candidate. Results are bound to URI, version and cursor. A cached candidate may redisplay at the same unchanged snapshot without another request; an accepted edit changes version and invalidates it.
@@ -82,7 +82,7 @@ No runtime binary, model weights, training tools, Python document services, Stor
 With desktop VS Code and the already configured runtime/model prerequisites, client installation is one command:
 
 ```sh
-code --install-extension "/path/to/axiom-grid-lite-0.1.2.vsix"
+code --install-extension "/path/to/axiom-grid-lite-0.1.3.vsix"
 ```
 
 Then pair once using the masked command above and use Ctrl+Alt+K in a local editor. Tab acceptance remains explicit. The shortcut is editor-scoped, not a global OS hotkey; custom keyboard mappings, AltGr layouts, OS shortcuts and extensions may conflict. Use VS Code Keyboard Shortcuts to resolve a conflict without disabling OS security restrictions.
