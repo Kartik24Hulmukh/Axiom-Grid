@@ -225,7 +225,7 @@ async function generate(token, context, { signal } = {}) {
   if (scalarLength(context, 16000) < 1 || context.trim().length === 0) {
     throw new ClientError('INVALID_CONTEXT');
   }
-  const value = await request(token, '/materialize', JSON.stringify({ context }), signal);
+  const value = await request(token, '/materialize', JSON.stringify({ context, mode: 'code' }), signal);
   if (!record(value) || scalarLength(value.suggestion, 4096) < 1
       || value.suggestion.trim().length === 0
       || /[\x00-\x08\x0b\x0c\x0e-\x1f\x7f\u202a-\u202e\u2066-\u2069]/
