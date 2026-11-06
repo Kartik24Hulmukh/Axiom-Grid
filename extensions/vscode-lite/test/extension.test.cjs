@@ -87,6 +87,12 @@ test('missing token errors are static and no raw exception or secret is shown',a
  const a=fixture();a.setGet(async()=>undefined);await a.command('complete');assert.match(a.messages.at(-1),/Set Runtime Token/);
  a.setGet(async()=>{throw Error('SYNTHETIC_PRIVATE_PATH_AND_TOKEN');});await a.command('complete');assert.ok(a.messages.every(s=>!s.includes('SYNTHETIC_PRIVATE')));
 });
+test('known runtime failures give static guidance without leaking error details',async()=>{
+ for(const [code,expected] of [['HTTP_UNAUTHORIZED',/401/],['HTTP_BUSY',/429/],['HTTP_BACKEND_ERROR',/502/],['HTTP_UNAVAILABLE',/503/],['NOT_READY',/not ready/],['TIMEOUT',/deadline/]]){
+  const a=fixture();a.client.readiness=async()=>{const e=new realClient.ClientError(code);e.privateDetail='SYNTHETIC_PRIVATE_PATH_AND_TOKEN';throw e;};
+  await a.command('complete');assert.equal(a.preview().length,0);assert.match(a.messages.at(-1),expected);assert.match(a.messages.at(-1),/no suggestion was inserted/);assert.ok(!a.messages.at(-1).includes('SYNTHETIC_PRIVATE'));
+ }
+});
 test('bounded context reads and token prompt persistence never use normal configuration',async()=>{
  const a=fixture();await a.command('complete');assert.equal(a.reads.length,3);assert.ok(a.reads[0].end.character-a.reads[0].start.character<=1025);
  a.inputs.push('b'.repeat(64));let saved;a.setStore(async(k,v)=>{saved={k,v};});await a.command('setToken');assert.equal(saved.k,'axiomLite.runtimeToken');assert.equal(saved.v,'b'.repeat(64));

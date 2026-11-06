@@ -16,6 +16,10 @@ const MESSAGES = Object.freeze({
   TIMEOUT: 'The local request timed out.',
   CONNECTION_ERROR: 'The local runtime request failed.',
   HTTP_ERROR: 'The local runtime rejected the request.',
+  HTTP_UNAUTHORIZED: 'The local runtime returned HTTP 401.',
+  HTTP_BUSY: 'The local runtime returned HTTP 429.',
+  HTTP_BACKEND_ERROR: 'The local runtime returned HTTP 502.',
+  HTTP_UNAVAILABLE: 'The local runtime returned HTTP 503.',
   RESPONSE_TOO_LARGE: 'The local runtime response exceeded the allowed limit.',
   INVALID_RESPONSE: 'The local runtime returned an invalid response.',
   NOT_READY: 'The local runtime is not ready.'
@@ -112,7 +116,11 @@ function request(token, path, body, signal) {
         if (settled) { res.destroy(); return; }
         // Reject redirects and every other non-2xx before adding a data handler.
         if (!(res.statusCode >= 200 && res.statusCode < 300)) {
-          fail('HTTP_ERROR');
+          // Only a small status allowlist is surfaced. Never read untrusted
+          // error bodies, follow redirects, or infer a precise backend cause.
+          const code = ({ 401: 'HTTP_UNAUTHORIZED', 429: 'HTTP_BUSY',
+            502: 'HTTP_BACKEND_ERROR', 503: 'HTTP_UNAVAILABLE' })[res.statusCode] || 'HTTP_ERROR';
+          fail(code);
           return;
         }
         const length = res.headers['content-length'];
@@ -204,13 +212,16 @@ async function readiness(token, { signal } = {}) {
       matchingCount += 1;
     }
   }
-  // Consistency of reported inventory only, not attestation. The runtime's
-  // fresh generation preflight remains authoritative for every request.
+  // A false readiness report can legitimately contain no selected model or a
+  // mismatched digest. It must stop generation but is not malformed on that
+  // basis. Validate every entry above before interpreting the ready flag.
+  if (value.ready !== true) throw new ClientError('NOT_READY');
+  // A true report must be internally consistent, not an attestation. The
+  // runtime's fresh generation preflight remains authoritative per request.
   if (matchingCount !== 1 || matchingModel.size <= 0
       || matchingModel.digest !== value.expected_digest) {
     throw new ClientError('INVALID_RESPONSE');
   }
-  if (value.ready !== true) throw new ClientError('NOT_READY');
   return {
     ready: true,
     configured_model: value.configured_model,

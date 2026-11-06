@@ -95,7 +95,16 @@ function activate(context) {
       status.text = '$(warning) Axiom: recheck required';
       const known = error instanceof client.ClientError ? error.code : 'CLIENT_FAILURE';
       if (known === 'INVALID_TOKEN') { vscode.window.showWarningMessage('Use Axiom: Set Runtime Token with the local runtime pairing token, not a GitHub or model-service key.'); return; }
-      vscode.window.showWarningMessage(`Axiom ${known}: no suggestion was inserted. Verify the local runtime, pairing and approved model; then request again.`);
+      const guidance = {
+        HTTP_UNAUTHORIZED: 'The runtime returned 401. Verify the stored runtime pairing token.',
+        HTTP_BUSY: 'The runtime returned 429. It may still be processing a request; wait before retrying.',
+        HTTP_BACKEND_ERROR: 'The runtime returned 502. The local model request may have failed or timed out; inspect local runtime logs.',
+        HTTP_UNAVAILABLE: 'The runtime returned 503. Check the local model service and approved model identity.',
+        NOT_READY: 'The runtime reports the configured model is not ready. Check the local model service and approved model identity.',
+        TIMEOUT: 'The client deadline expired. Check the runtime and local model; inference may still be running.'
+      };
+      const detail = Object.prototype.hasOwnProperty.call(guidance, known) ? guidance[known] : 'Verify the local runtime, pairing and approved model; then request again.';
+      vscode.window.showWarningMessage(`Axiom ${known}: no suggestion was inserted. ${detail}`);
     }
   });
   const setToken = vscode.commands.registerCommand('axiomLite.setToken', async () => {

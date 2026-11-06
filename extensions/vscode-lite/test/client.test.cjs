@@ -165,11 +165,13 @@ test('client security contract (mock HTTP only)', async t => {
   });
 
   await t.test('HTTP non-success never subscribes to or drains bodies; no redirects', async () => {
-    for (const status of [300, 301, 302, 303, 307, 308, 400, 401, 403, 429, 500]) {
+    for (const status of [300, 301, 302, 303, 307, 308, 400, 401, 403, 429, 500, 502, 503]) {
       for (const operation of [() => readiness(TOKEN), () => generate(TOKEN, 'PRIVATE_SOURCE_9182')]) {
         const res = response(status, [json({ ...READY, suggestion: 'plausible', error: TOKEN })], { location: 'http://attacker.invalid/' });
         const mock = use({ res, deliver: false });
-        await rejected(operation, 'HTTP_ERROR');
+        const expected = ({ 401: 'HTTP_UNAUTHORIZED', 429: 'HTTP_BUSY',
+          502: 'HTTP_BACKEND_ERROR', 503: 'HTTP_UNAVAILABLE' })[status] || 'HTTP_ERROR';
+        await rejected(operation, expected);
         assert.equal(mock.calls.length, 1);
         assert.equal(res.listenerCount('data'), 0);
         assert.equal(res.resumed, false);
@@ -182,6 +184,18 @@ test('client security contract (mock HTTP only)', async t => {
       use({ res: response(200, [json({ ...READY, ready })]) });
       await rejected(() => readiness(TOKEN), ready === false ? 'NOT_READY' : 'INVALID_RESPONSE');
     }
+  });
+
+  await t.test('not-ready inventory can omit or mismatch the selected model', async () => {
+    for (const installed_models of [[], [{ ...MODEL, digest: 'b'.repeat(64) }],
+      [{ ...MODEL, size: 0 }], [MODEL, MODEL]]) {
+      use({ res: response(200, [json({ ...READY, ready: false, installed_models })]) });
+      await rejected(() => readiness(TOKEN), 'NOT_READY');
+      use({ res: response(200, [json({ ...READY, ready: true, installed_models })]) });
+      await rejected(() => readiness(TOKEN), 'INVALID_RESPONSE');
+    }
+    use({ res: response(200, [json({ ...READY, ready: false, installed_models: [null] })]) });
+    await rejected(() => readiness(TOKEN), 'INVALID_RESPONSE');
   });
 
   await t.test('malformed JSON / strict UTF-8 reject for both endpoints', async () => {
