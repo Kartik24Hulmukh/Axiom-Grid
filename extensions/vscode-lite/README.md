@@ -67,7 +67,7 @@ The Kairo-Phantom slash-instruction UX informed this narrow feature. Its global 
 
 ## Recovery and uninstall
 
-Errors are static codes; raw runtime bodies, OS errors, file paths and token values are not shown by this extension. Confirm the runtime/model is running and approved, verify pairing, then explicitly request again. No automatic retry/download occurs. Do not guess that 503 means a particular backend or identity cause.
+Errors are static codes; raw runtime bodies, OS errors, file paths and token values are not shown by this extension. Selected HTTP status codes are shown with general troubleshooting guidance: 401 suggests checking pairing, 429 may indicate a busy runtime, 502 can include a model failure or timeout, and 503 can indicate service or identity problems. A false readiness report stops generation and prompts a model/identity check. These reports do not establish the exact cause or authenticate the local service; inspect authorized local logs without sharing secrets. No automatic retry/download occurs.
 
 **Axiom: Forget Runtime Token** removes this extension's stored credential; it does not revoke the runtime token or remove other retained copies. Disable/uninstall the extension through VS Code. Backend logs, model state, editor undo buffers and other software retention are separate.
 

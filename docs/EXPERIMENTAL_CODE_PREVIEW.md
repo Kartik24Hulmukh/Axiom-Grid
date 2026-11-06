@@ -12,7 +12,9 @@ On Linux x86-64, 2 vCPUs, approximately 4.2 GiB RAM, no GPU, VS Code 1.145.0 and
 - Qwen3 1.7B for the same task produced no preview within the runtime's 90-second request deadline.
 - Qwen3 1.7B on a separately predeclared color-validator task showed a preview in 15.7 seconds; no edit occurred before acceptance and Tab inserted it. The accepted JavaScript failed at module load (`ReferenceError`), so none of the ten functional cases ran. A preview is not a correct solution.
 
-These are single exploratory attempts, including a warm-model shorter-task run, not held-out benchmarks or generalized latency measurements. The UI test installed the 0.1.2-labeled build before a metadata-only bump to 0.1.3; the 0.1.3 VSIX has not itself been installed in the GUI. The test used basic password storage and a temporary token in an isolated disposable profile; it is not a production credential-storage assessment.
+A later single exploratory run installed the updated 0.1.3 VSIX in a fresh Linux VS Code 1.145.2 profile and used Qwen2.5-Coder 1.5B Q4_K_M on the same resource class. For a separately predeclared port-validation task, a cold-model preview appeared in 19.6 seconds; no edit occurred before acceptance, and Tab inserted the code. The generated function passed 11 of 15 fixed cases, incorrectly accepting whitespace, a plus sign and a decimal point. The initial automation read an empty file during the save and marked its insertion check false; the screenshot and stable file checked after the app closed show insertion. The original harness result is preserved alongside that follow-up, not overwritten.
+
+These are single exploratory attempts, including one warm-model shorter-task run, not held-out benchmarks or generalized latency measurements. The earlier UI test installed the 0.1.2-labeled build; the later run installed the modified 0.1.3 VSIX. Both used basic password storage and temporary tokens in isolated disposable profiles; neither is a production credential-storage assessment. Reported model identity checks are not byte attestation.
 
 ## Open release gates
 
