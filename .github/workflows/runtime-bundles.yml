@@ -118,10 +118,10 @@ jobs:
           BINARY_NAME: ${{ steps.native.outputs.binary }}
         run: |
           python -B -c 'from pathlib import Path; Path(".distribution").mkdir()'
-          python -B extensions/vscode-lite/package_vsix.py --output .distribution/axiom-grid-lite-0.1.3.vsix
+          python -B extensions/vscode-lite/package_vsix.py --output .distribution/axiom-grid-lite-0.1.4.vsix
           python -B scripts/ci/package_runtime_bundle.py \
             --runtime "axiom-runtime/target/release/$BINARY_NAME" \
-            --vsix .distribution/axiom-grid-lite-0.1.3.vsix \
+            --vsix .distribution/axiom-grid-lite-0.1.4.vsix \
             --target "$BUILD_TARGET" --revision "$SOURCE_REVISION" \
             --output ".distribution/axiom-grid-development-$BUILD_TARGET-$SOURCE_REVISION.zip" \
             > .distribution/package-result.json

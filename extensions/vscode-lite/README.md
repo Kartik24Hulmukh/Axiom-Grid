@@ -13,10 +13,10 @@ If you have none of those prerequisites, installing the VSIX alone does not supp
 
 ## Install the small extension
 
-In VS Code: Extensions → `…` → **Install from VSIX…** → select `axiom-grid-lite-0.1.3.vsix`. Review the local/unverified-publisher warning; do not disable OS security policies. Alternatively, with the desktop VS Code CLI already installed:
+In VS Code: Extensions → `…` → **Install from VSIX…** → select `axiom-grid-lite-0.1.4.vsix`. Review the local/unverified-publisher warning; do not disable OS security policies. Alternatively, with the desktop VS Code CLI already installed:
 
 ```sh
-code --install-extension "/path/to/axiom-grid-lite-0.1.3.vsix"
+code --install-extension "/path/to/axiom-grid-lite-0.1.4.vsix"
 ```
 
 Use only on a device/workspace you are authorized to use. Do not install in a prohibited assessment or managed environment without approval.
@@ -82,7 +82,7 @@ No runtime binary, model weights, training tools, Python document services, Stor
 With desktop VS Code and the already configured runtime/model prerequisites, client installation is one command:
 
 ```sh
-code --install-extension "/path/to/axiom-grid-lite-0.1.3.vsix"
+code --install-extension "/path/to/axiom-grid-lite-0.1.4.vsix"
 ```
 
 Then pair once using the masked command above and use Ctrl+Alt+K in a local editor. Tab acceptance remains explicit. The shortcut is editor-scoped, not a global OS hotkey; custom keyboard mappings, AltGr layouts, OS shortcuts and extensions may conflict. Use VS Code Keyboard Shortcuts to resolve a conflict without disabling OS security restrictions.

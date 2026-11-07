@@ -63,7 +63,7 @@ See [model identity](MODEL_IDENTITY_POLICY.md) and
 The extension-only installation command remains:
 
 ```sh
-code --install-extension "./axiom-grid-lite-0.1.3.vsix"
+code --install-extension "./axiom-grid-lite-0.1.4.vsix"
 ```
 
 That is **not** a one-command runtime/backend/model installer. Once existing
