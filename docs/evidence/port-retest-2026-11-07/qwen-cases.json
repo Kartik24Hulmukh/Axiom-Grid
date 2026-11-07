@@ -1,0 +1,111 @@
+{
+  "passed": 11,
+  "total": 15,
+  "cases": [
+    {
+      "input": "1",
+      "expected": 1,
+      "actual": 1,
+      "error": null,
+      "ok": true
+    },
+    {
+      "input": "80",
+      "expected": 80,
+      "actual": 80,
+      "error": null,
+      "ok": true
+    },
+    {
+      "input": "65535",
+      "expected": 65535,
+      "actual": 65535,
+      "error": null,
+      "ok": true
+    },
+    {
+      "input": "00080",
+      "expected": 80,
+      "actual": 80,
+      "error": null,
+      "ok": true
+    },
+    {
+      "input": "0",
+      "expected": null,
+      "actual": null,
+      "error": null,
+      "ok": true
+    },
+    {
+      "input": "65536",
+      "expected": null,
+      "actual": null,
+      "error": null,
+      "ok": true
+    },
+    {
+      "input": "",
+      "expected": null,
+      "actual": null,
+      "error": null,
+      "ok": true
+    },
+    {
+      "input": " 80",
+      "expected": null,
+      "actual": 80,
+      "error": null,
+      "ok": false
+    },
+    {
+      "input": "80 ",
+      "expected": null,
+      "actual": 80,
+      "error": null,
+      "ok": false
+    },
+    {
+      "input": "+80",
+      "expected": null,
+      "actual": 80,
+      "error": null,
+      "ok": false
+    },
+    {
+      "input": "80.0",
+      "expected": null,
+      "actual": 80,
+      "error": null,
+      "ok": false
+    },
+    {
+      "input": "abc",
+      "expected": null,
+      "actual": null,
+      "error": null,
+      "ok": true
+    },
+    {
+      "input": 80,
+      "expected": null,
+      "actual": null,
+      "error": null,
+      "ok": true
+    },
+    {
+      "input": null,
+      "expected": null,
+      "actual": null,
+      "error": null,
+      "ok": true
+    },
+    {
+      "input": "８０",
+      "expected": null,
+      "actual": null,
+      "error": null,
+      "ok": true
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+'use strict';
+
+// Export a function parsePort(text) using module.exports. If text is a nonempty string of ASCII digits representing an integer from 1 through 65535 inclusive, return that number. Otherwise return null. Leading zeros are allowed; do not accept whitespace, signs, decimal points, or non-string inputs.
+module.exports = function parsePort(text) {
+  if (typeof text !== 'string' || text.length === 0) {
+    return null;
+  }
+  const parsed = parseInt(text, 10);
+  if (isNaN(parsed) || parsed < 1 || parsed > 65535) {
+    return null;
+  }
+  return parsed;
+};

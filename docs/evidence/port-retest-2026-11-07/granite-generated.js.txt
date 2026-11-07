@@ -1,0 +1,22 @@
+'use strict';
+
+// Export a function parsePort(text) using module.exports. If text is a nonempty string of ASCII digits representing an integer from 1 through 65535 inclusive, return that number. Otherwise return null. Leading zeros are allowed; do not accept whitespace, signs, decimal points, or non-string inputs.
+// Export a function parsePort(text) using module.exports. If text is a nonempty string of ASCII digits representing an integer from 1 through 65535 inclusive, return that number. Otherwise return null. Leading zeros are allowed; do not accept whitespace, signs, decimal points, or non-string inputs.
+
+module.exports.parsePort = function(text) {
+  if (typeof text !== 'string' || text.trim().length === 0) {
+    return null;
+  }
+
+  const regex = /^[0-9]+$/;
+  if (!regex.test(text)) {
+    return null;
+  }
+
+  const port = parseInt(text);
+  if (isNaN(port) || port < 1 || port > 65535) {
+    return null;
+  }
+
+  return port;
+};

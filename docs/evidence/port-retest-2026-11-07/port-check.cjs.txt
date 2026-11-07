@@ -1,0 +1,15 @@
+'use strict';
+const p = require('./port-task.json');
+const target = process.argv[2];
+const fn = require(target);
+if (typeof fn !== 'function') throw new TypeError('Expected module.exports to be a function');
+let passed = 0;
+const cases = p.cases.map(([input, expected]) => {
+  let actual, error = null;
+  try { actual = fn(input); } catch (e) { error = e.name; }
+  const ok = !error && Object.is(actual, expected);
+  if (ok) passed++;
+  return {input, expected, actual: actual === undefined ? '(undefined)' : actual, error, ok};
+});
+console.log(JSON.stringify({passed, total: cases.length, cases}, null, 2));
+process.exitCode = passed === cases.length ? 0 : 1;
