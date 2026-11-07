@@ -50,6 +50,7 @@ test('activation and passive provider never perform inference; no automatic edit
 test('explicit completion yields literal zero-width preview; acceptance/edit invalidates without new HTTP',async()=>{
  const a=fixture();a.client.generate=async(_t,p)=>{a.calls.push(['generate',p]);return '<script>literal</script>';};
  await a.command('complete');assert.equal(a.calls.length,2);const p=a.preview()[0];assert.equal(p.insertText,'<script>literal</script>');assert.equal(p.range.start,p.range.end);
+ assert.match(a.status.text,/preview \(untested\)/);assert.match(a.status.tooltip,/review and verify/i);
  assert.deepEqual(a.executed,['editor.action.inlineSuggest.trigger']);assert.ok(!a.calls[1][1].includes('file:///fixture'));
  assert.equal(a.preview().length,1);assert.equal(a.calls.length,2);a.edit('accepted text');assert.equal(a.preview().length,0);assert.equal(a.calls.length,2);
 });

@@ -10,7 +10,7 @@ function activate(context) {
   let pairingBusy = false;
   const status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 50);
   status.command = 'axiomLite.complete'; status.text = '$(sparkle) Axiom';
-  status.tooltip = 'Axiom: explicitly request a local code suggestion. No automatic inference.'; status.show();
+  status.tooltip = 'Axiom: explicitly request a local code suggestion. Suggestions are untested; review and verify before use. No automatic inference.'; status.show();
   function invalidate() {
     const owned = session.pending || session.candidate !== null;
     session.invalidate();
@@ -86,7 +86,7 @@ function activate(context) {
           if (outcome.error) throw outcome.error;
           const text = outcome.value;
           if (text !== null && current(editor, expected)) {
-            status.text = '$(sparkle) Axiom: preview';
+            status.text = '$(sparkle) Axiom: preview (untested)';
             await vscode.commands.executeCommand('editor.action.inlineSuggest.trigger');
           }
         } finally { subscription.dispose(); }
