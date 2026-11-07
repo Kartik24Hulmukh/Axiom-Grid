@@ -1,0 +1,15 @@
+'use strict';
+
+// Export a function formatByteSize(bytes) using module.exports. If bytes is not a nonnegative safe integer, return null. For values below 1024 return the integer followed by a space and B. For values of 1024 or more, divide by 1024 and return exactly one digit after the decimal point followed by a space and KiB. Do not use other units.
+module.exports = function formatByteSize(bytes) {
+  if (typeof bytes !== 'number' || bytes < 0 || !Number.isSafeInteger(bytes)) {
+    return null;
+  }
+
+  if (bytes < 1024) {
+    return `${bytes} B`;
+  }
+
+  const size = bytes / 1024;
+  return `${size.toFixed(1)} KiB`;
+};

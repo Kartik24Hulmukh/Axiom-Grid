@@ -1,0 +1,92 @@
+{
+  "task": "bytes",
+  "loaded": true,
+  "passed": 12,
+  "total": 12,
+  "cases": [
+    {
+      "input": 0,
+      "expected": "0 B",
+      "actual": "0 B",
+      "error": null,
+      "ok": true
+    },
+    {
+      "input": 1,
+      "expected": "1 B",
+      "actual": "1 B",
+      "error": null,
+      "ok": true
+    },
+    {
+      "input": 1023,
+      "expected": "1023 B",
+      "actual": "1023 B",
+      "error": null,
+      "ok": true
+    },
+    {
+      "input": 1024,
+      "expected": "1.0 KiB",
+      "actual": "1.0 KiB",
+      "error": null,
+      "ok": true
+    },
+    {
+      "input": 1536,
+      "expected": "1.5 KiB",
+      "actual": "1.5 KiB",
+      "error": null,
+      "ok": true
+    },
+    {
+      "input": 2048,
+      "expected": "2.0 KiB",
+      "actual": "2.0 KiB",
+      "error": null,
+      "ok": true
+    },
+    {
+      "input": 1048576,
+      "expected": "1024.0 KiB",
+      "actual": "1024.0 KiB",
+      "error": null,
+      "ok": true
+    },
+    {
+      "input": -1,
+      "expected": null,
+      "actual": null,
+      "error": null,
+      "ok": true
+    },
+    {
+      "input": 1.5,
+      "expected": null,
+      "actual": null,
+      "error": null,
+      "ok": true
+    },
+    {
+      "input": null,
+      "expected": null,
+      "actual": null,
+      "error": null,
+      "ok": true
+    },
+    {
+      "input": "1024",
+      "expected": null,
+      "actual": null,
+      "error": null,
+      "ok": true
+    },
+    {
+      "input": 9007199254740992,
+      "expected": null,
+      "actual": null,
+      "error": null,
+      "ok": true
+    }
+  ]
+}

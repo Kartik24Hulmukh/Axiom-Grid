@@ -1,0 +1,113 @@
+{
+  "task": "method",
+  "loaded": true,
+  "passed": 15,
+  "total": 15,
+  "cases": [
+    {
+      "input": "GET",
+      "expected": "GET",
+      "actual": "GET",
+      "error": null,
+      "ok": true
+    },
+    {
+      "input": "get",
+      "expected": "GET",
+      "actual": "GET",
+      "error": null,
+      "ok": true
+    },
+    {
+      "input": "pOsT",
+      "expected": "POST",
+      "actual": "POST",
+      "error": null,
+      "ok": true
+    },
+    {
+      "input": "PUT",
+      "expected": "PUT",
+      "actual": "PUT",
+      "error": null,
+      "ok": true
+    },
+    {
+      "input": "patch",
+      "expected": "PATCH",
+      "actual": "PATCH",
+      "error": null,
+      "ok": true
+    },
+    {
+      "input": "delete",
+      "expected": "DELETE",
+      "actual": "DELETE",
+      "error": null,
+      "ok": true
+    },
+    {
+      "input": "head",
+      "expected": "HEAD",
+      "actual": "HEAD",
+      "error": null,
+      "ok": true
+    },
+    {
+      "input": "options",
+      "expected": "OPTIONS",
+      "actual": "OPTIONS",
+      "error": null,
+      "ok": true
+    },
+    {
+      "input": " get",
+      "expected": null,
+      "actual": null,
+      "error": null,
+      "ok": true
+    },
+    {
+      "input": "GET ",
+      "expected": null,
+      "actual": null,
+      "error": null,
+      "ok": true
+    },
+    {
+      "input": "GET\n",
+      "expected": null,
+      "actual": null,
+      "error": null,
+      "ok": true
+    },
+    {
+      "input": "TRACE",
+      "expected": null,
+      "actual": null,
+      "error": null,
+      "ok": true
+    },
+    {
+      "input": "",
+      "expected": null,
+      "actual": null,
+      "error": null,
+      "ok": true
+    },
+    {
+      "input": null,
+      "expected": null,
+      "actual": null,
+      "error": null,
+      "ok": true
+    },
+    {
+      "input": 123,
+      "expected": null,
+      "actual": null,
+      "error": null,
+      "ok": true
+    }
+  ]
+}
