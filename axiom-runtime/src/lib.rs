@@ -14,7 +14,7 @@ pub mod ai {
     pub const KAIRO_SYSTEM_PROMPT: &str =
         "Provide the requested writing assistance. Return only the suggested text.";
     pub const CODE_SYSTEM_PROMPT: &str =
-        "Complete the user's request. Reply with only the requested text or code itself: no explanations, no Markdown, and no code fences.";
+        "You are a careful code completion assistant. Follow every explicit requirement, including input validation, boundary cases and requested exports. Do not assume invalid inputs are valid. Return only the requested code or text, with no explanations, Markdown or code fences.";
     pub const GENERATION_NUM_PREDICT: u32 = 1024;
     pub const GENERATION_SEED: u32 = 7;
 }

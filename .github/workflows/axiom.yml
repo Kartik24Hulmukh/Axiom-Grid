@@ -57,6 +57,7 @@ jobs:
       - name: Validate optional model-free VS Code prototype
         run: |
           node --test extensions/vscode-lite/test/*.test.cjs
+          node --test scripts/preview-evaluation/*.test.cjs
           python3 -B extensions/vscode-lite/test/package_test.py
           mkdir -p .runtime-results
           python3 -B extensions/vscode-lite/package_vsix.py --output .runtime-results/axiom-grid-lite-0.1.3.vsix
