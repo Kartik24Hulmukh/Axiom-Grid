@@ -1,0 +1,187 @@
+{
+  "tasks": {
+    "ipv4": {
+      "instruction": "Export a function isCanonicalIPv4(text) using module.exports. Return true only if text is a string with exactly four dot-separated ASCII decimal octets, each from 0 through 255. An octet may not have a leading zero unless it is exactly 0. Return false for all other inputs.",
+      "cases": [
+        [
+          "0.0.0.0",
+          true
+        ],
+        [
+          "127.0.0.1",
+          true
+        ],
+        [
+          "255.255.255.255",
+          true
+        ],
+        [
+          "1.2.3.4",
+          true
+        ],
+        [
+          "256.1.1.1",
+          false
+        ],
+        [
+          "1.2.3",
+          false
+        ],
+        [
+          "1.2.3.4.5",
+          false
+        ],
+        [
+          "01.2.3.4",
+          false
+        ],
+        [
+          "1..3.4",
+          false
+        ],
+        [
+          "1.2.3.-1",
+          false
+        ],
+        [
+          " 1.2.3.4",
+          false
+        ],
+        [
+          "1.2.3.4\n",
+          false
+        ],
+        [
+          "1.2.3.a",
+          false
+        ],
+        [
+          42,
+          false
+        ],
+        [
+          null,
+          false
+        ]
+      ]
+    },
+    "method": {
+      "instruction": "Export a function normalizeHttpMethod(value) using module.exports. If value is a string exactly equal to GET, POST, PUT, PATCH, DELETE, HEAD, or OPTIONS, case-insensitive, return the uppercase method. Otherwise return null. Do not trim whitespace and do not accept non-strings.",
+      "cases": [
+        [
+          "GET",
+          "GET"
+        ],
+        [
+          "get",
+          "GET"
+        ],
+        [
+          "pOsT",
+          "POST"
+        ],
+        [
+          "PUT",
+          "PUT"
+        ],
+        [
+          "patch",
+          "PATCH"
+        ],
+        [
+          "delete",
+          "DELETE"
+        ],
+        [
+          "head",
+          "HEAD"
+        ],
+        [
+          "options",
+          "OPTIONS"
+        ],
+        [
+          " get",
+          null
+        ],
+        [
+          "GET ",
+          null
+        ],
+        [
+          "GET\n",
+          null
+        ],
+        [
+          "TRACE",
+          null
+        ],
+        [
+          "",
+          null
+        ],
+        [
+          null,
+          null
+        ],
+        [
+          123,
+          null
+        ]
+      ]
+    },
+    "bytes": {
+      "instruction": "Export a function formatByteSize(bytes) using module.exports. If bytes is not a nonnegative safe integer, return null. For values below 1024 return the integer followed by a space and B. For values of 1024 or more, divide by 1024 and return exactly one digit after the decimal point followed by a space and KiB. Do not use other units.",
+      "cases": [
+        [
+          0,
+          "0 B"
+        ],
+        [
+          1,
+          "1 B"
+        ],
+        [
+          1023,
+          "1023 B"
+        ],
+        [
+          1024,
+          "1.0 KiB"
+        ],
+        [
+          1536,
+          "1.5 KiB"
+        ],
+        [
+          2048,
+          "2.0 KiB"
+        ],
+        [
+          1048576,
+          "1024.0 KiB"
+        ],
+        [
+          -1,
+          null
+        ],
+        [
+          1.5,
+          null
+        ],
+        [
+          null,
+          null
+        ],
+        [
+          "1024",
+          null
+        ],
+        [
+          9007199254740992,
+          null
+        ]
+      ]
+    }
+  }
+}

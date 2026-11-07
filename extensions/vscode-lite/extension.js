@@ -1,7 +1,7 @@
 'use strict';
 const vscode = require('vscode');
 const client = require('./client');
-const {PreviewSession, sameSnapshot, makePrompt} = require('./state');
+const {PreviewSession, sameSnapshot, makePrompt, stripFence} = require('./state');
 const {planComment, renderComment} = require('./comment');
 const SECRET_KEY = 'axiomLite.runtimeToken';
 function activate(context) {
@@ -10,7 +10,7 @@ function activate(context) {
   let pairingBusy = false;
   const status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 50);
   status.command = 'axiomLite.complete'; status.text = '$(sparkle) Axiom';
-  status.tooltip = 'Axiom: explicitly request a local code suggestion. No automatic inference.'; status.show();
+  status.tooltip = 'Axiom: explicitly request a local code suggestion. Suggestions are untested; review and verify before use. No automatic inference.'; status.show();
   function invalidate() {
     const owned = session.pending || session.candidate !== null;
     session.invalidate();
@@ -74,8 +74,8 @@ function activate(context) {
       // Reserve admission before SecretStorage can suspend; capture failures without
       // an unhandled rejection while the progress UI is being created.
       const work = session.run(expected, () => context.secrets.get(SECRET_KEY),
-        makePrompt(comment ? prefix.slice(0, -lineHead.length) : prefix, suffix, editor.document.languageId, comment?.instruction),
-        () => current(editor, expected), text => comment ? renderComment(text, comment.indentation, eol) : text)
+        makePrompt(comment ? prefix.slice(0, -lineHead.length) : prefix, suffix, editor.document.languageId, comment?.instruction, comment ? lineHead : undefined),
+        () => current(editor, expected), text => comment ? renderComment(stripFence(text), comment.indentation, eol) : stripFence(text))
         .then(value => ({value}), error => ({error}));
       status.text = '$(sync~spin) Axiom: generating';
       await vscode.window.withProgress({location: vscode.ProgressLocation.Notification, title: 'Axiom: local suggestion (cancel discards locally)', cancellable: true}, async (_progress, cancellation) => {
@@ -86,7 +86,7 @@ function activate(context) {
           if (outcome.error) throw outcome.error;
           const text = outcome.value;
           if (text !== null && current(editor, expected)) {
-            status.text = '$(sparkle) Axiom: preview';
+            status.text = '$(sparkle) Axiom: preview (untested)';
             await vscode.commands.executeCommand('editor.action.inlineSuggest.trigger');
           }
         } finally { subscription.dispose(); }
@@ -95,7 +95,16 @@ function activate(context) {
       status.text = '$(warning) Axiom: recheck required';
       const known = error instanceof client.ClientError ? error.code : 'CLIENT_FAILURE';
       if (known === 'INVALID_TOKEN') { vscode.window.showWarningMessage('Use Axiom: Set Runtime Token with the local runtime pairing token, not a GitHub or model-service key.'); return; }
-      vscode.window.showWarningMessage(`Axiom ${known}: no suggestion was inserted. Verify the local runtime, pairing and approved model; then request again.`);
+      const guidance = {
+        HTTP_UNAUTHORIZED: 'The runtime returned 401. Verify the stored runtime pairing token.',
+        HTTP_BUSY: 'The runtime returned 429. It may still be processing a request; wait before retrying.',
+        HTTP_BACKEND_ERROR: 'The runtime returned 502. The local model request may have failed or timed out; inspect local runtime logs.',
+        HTTP_UNAVAILABLE: 'The runtime returned 503. Check the local model service and approved model identity.',
+        NOT_READY: 'The runtime reports the configured model is not ready. Check the local model service and approved model identity.',
+        TIMEOUT: 'The client deadline expired. Check the runtime and local model; inference may still be running.'
+      };
+      const detail = Object.prototype.hasOwnProperty.call(guidance, known) ? guidance[known] : 'Verify the local runtime, pairing and approved model; then request again.';
+      vscode.window.showWarningMessage(`Axiom ${known}: no suggestion was inserted. ${detail}`);
     }
   });
   const setToken = vscode.commands.registerCommand('axiomLite.setToken', async () => {

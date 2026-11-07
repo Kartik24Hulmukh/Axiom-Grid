@@ -1,0 +1,8 @@
+{
+  "protocol": "axiom-exploratory-port-validation-2026-11",
+  "task": "Export a function parsePort(text) using module.exports. If text is a nonempty string of ASCII digits representing an integer from 1 through 65535 inclusive, return that number. Otherwise return null. Leading zeros are allowed; do not accept whitespace, signs, decimal points, or non-string inputs.",
+  "model": "qwen2.5-coder:1.5b",
+  "cases": [["1",1],["80",80],["65535",65535],["00080",80],["0",null],["65536",null],["",null],[" 80",null],["80 ",null],["+80",null],["80.0",null],["abc",null],[80,null],[null,null],["８０",null]],
+  "procedure": "Install the freshly built 0.1.3 VSIX in a disposable Linux VS Code profile. Request once with the model through Axiom. Record timing and UI observations. Inspect generated code before executing the fixed tests. No task, test or prompt changes after request. Exploratory single task, not a benchmark; includes cases deliberately selected before generation.",
+  "success": "A preview appears; no insertion before explicit acceptance; accepted JS loads and all 15 fixed cases pass."
+}

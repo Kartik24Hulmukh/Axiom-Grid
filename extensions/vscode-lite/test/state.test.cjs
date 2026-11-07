@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const {PreviewSession, sameSnapshot, makePrompt} = require('../state');
+const {PreviewSession, sameSnapshot, makePrompt, stripFence} = require('../state');
 const tick = () => new Promise(r => setImmediate(r));
 const snap = {uri:'file:///public-fixture.js',version:1,line:0,character:2};
 function deferred() {let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b;});return {promise,resolve,reject};}
@@ -50,9 +50,13 @@ test('current request failure propagates but pending is always released',async()
 });
 test('comment instruction supports empty source and bounds full wrapped prompt',()=>{
  const prompt=makePrompt('','','typescript','write a helper');
- assert.match(prompt,/<USER_INSTRUCTION>\nwrite a helper\n<\/USER_INSTRUCTION>/);
+ assert.equal(prompt,'Continue this typescript file by writing the code requested by its final // comment. Output only the code that follows the comment.\n\n// write a helper');
+ assert.throws(()=>makePrompt('','','javascript','x','// x\ny'),/INVALID_INSTRUCTION/);
+ assert.throws(()=>makePrompt('','','javascript','x','no marker'),/INVALID_INSTRUCTION/);
+ assert.match(makePrompt('a\n','b();','javascript','x','  // x'),/a\n  \/\/ x\n\nThe file continues after the insertion point with the following code; do not repeat it:\nb\(\);$/);
  assert.throws(()=>makePrompt('','','javascript',' '),/INVALID_INSTRUCTION/);
- assert.throws(()=>makePrompt('x'.repeat(15800),'','javascript','write code'),/CONTEXT_TOO_LARGE/);
+ assert.doesNotThrow(()=>makePrompt('x'.repeat(15800),'','javascript','write code'));
+ assert.throws(()=>makePrompt('x'.repeat(16000),'','javascript','write code'),/CONTEXT_TOO_LARGE/);
 });
 test('candidate transform publishes only a bounded literal string and releases reservation on failure',async()=>{
  const s=new PreviewSession({readiness:async()=>{},generate:async()=> 'code'});
@@ -67,4 +71,15 @@ test('stale generation never reaches candidate transform',async()=>{
  const s=new PreviewSession({readiness:async()=>{},generate:()=>d.promise});
  const p=s.run(snap,async()=> 't','p',()=>current,()=>{transforms++;return 'bad';});
  await tick();current=false;d.resolve('late');assert.equal(await p,null);assert.equal(transforms,0);assert.equal(s.candidate,null);
+});
+
+test('stripFence removes only one fence enclosing the whole response',()=>{
+ assert.equal(stripFence('```javascript\nconst a = 1;\n```'),'const a = 1;');
+ assert.equal(stripFence('\n```js\nline1\n  line2\n```\n'),'line1\n  line2');
+ assert.equal(stripFence('```\r\nx\r\n```'),'x');
+ assert.equal(stripFence('const a = 1;'),'const a = 1;');
+ assert.equal(stripFence('note\n```js\ny\n```'),'note\n```js\ny\n```');
+ assert.equal(stripFence('```js\nconst s = `x`;\n```'),'const s = `x`;');
+ assert.equal(stripFence('```js\nunterminated'),'```js\nunterminated');
+ assert.equal(stripFence(null),null);
 });

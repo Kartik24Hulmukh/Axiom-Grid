@@ -1,0 +1,16 @@
+[
+  {
+    "variant": "baseline",
+    "task": "ipv4",
+    "model": "qwen2.5-coder:1.5b",
+    "result": "preview",
+    "elapsed_ms": 21764
+  },
+  {
+    "variant": "baseline",
+    "task": "method",
+    "model": "qwen2.5-coder:1.5b",
+    "result": "preview",
+    "elapsed_ms": 9442
+  }
+]

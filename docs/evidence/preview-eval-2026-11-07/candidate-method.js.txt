@@ -1,0 +1,14 @@
+'use strict';
+
+// Export a function normalizeHttpMethod(value) using module.exports. If value is a string exactly equal to GET, POST, PUT, PATCH, DELETE, HEAD, or OPTIONS, case-insensitive, return the uppercase method. Otherwise return null. Do not trim whitespace and do not accept non-strings.
+module.exports = function normalizeHttpMethod(value) {
+  if (typeof value !== 'string') {
+    return null;
+  }
+  const normalizedMethod = value.toUpperCase();
+  const validMethods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'];
+  if (validMethods.includes(normalizedMethod)) {
+    return normalizedMethod;
+  }
+  return null;
+};

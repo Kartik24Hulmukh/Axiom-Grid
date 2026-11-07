@@ -50,6 +50,7 @@ test('activation and passive provider never perform inference; no automatic edit
 test('explicit completion yields literal zero-width preview; acceptance/edit invalidates without new HTTP',async()=>{
  const a=fixture();a.client.generate=async(_t,p)=>{a.calls.push(['generate',p]);return '<script>literal</script>';};
  await a.command('complete');assert.equal(a.calls.length,2);const p=a.preview()[0];assert.equal(p.insertText,'<script>literal</script>');assert.equal(p.range.start,p.range.end);
+ assert.match(a.status.text,/preview \(untested\)/);assert.match(a.status.tooltip,/review and verify/i);
  assert.deepEqual(a.executed,['editor.action.inlineSuggest.trigger']);assert.ok(!a.calls[1][1].includes('file:///fixture'));
  assert.equal(a.preview().length,1);assert.equal(a.calls.length,2);a.edit('accepted text');assert.equal(a.preview().length,0);assert.equal(a.calls.length,2);
 });
@@ -87,6 +88,12 @@ test('missing token errors are static and no raw exception or secret is shown',a
  const a=fixture();a.setGet(async()=>undefined);await a.command('complete');assert.match(a.messages.at(-1),/Set Runtime Token/);
  a.setGet(async()=>{throw Error('SYNTHETIC_PRIVATE_PATH_AND_TOKEN');});await a.command('complete');assert.ok(a.messages.every(s=>!s.includes('SYNTHETIC_PRIVATE')));
 });
+test('known runtime failures give static guidance without leaking error details',async()=>{
+ for(const [code,expected] of [['HTTP_UNAUTHORIZED',/401/],['HTTP_BUSY',/429/],['HTTP_BACKEND_ERROR',/502/],['HTTP_UNAVAILABLE',/503/],['NOT_READY',/not ready/],['TIMEOUT',/deadline/]]){
+  const a=fixture();a.client.readiness=async()=>{const e=new realClient.ClientError(code);e.privateDetail='SYNTHETIC_PRIVATE_PATH_AND_TOKEN';throw e;};
+  await a.command('complete');assert.equal(a.preview().length,0);assert.match(a.messages.at(-1),expected);assert.match(a.messages.at(-1),/no suggestion was inserted/);assert.ok(!a.messages.at(-1).includes('SYNTHETIC_PRIVATE'));
+ }
+});
 test('bounded context reads and token prompt persistence never use normal configuration',async()=>{
  const a=fixture();await a.command('complete');assert.equal(a.reads.length,3);assert.ok(a.reads[0].end.character-a.reads[0].start.character<=1025);
  a.inputs.push('b'.repeat(64));let saved;a.setStore(async(k,v)=>{saved={k,v};});await a.command('setToken');assert.equal(saved.k,'axiomLite.runtimeToken');assert.equal(saved.v,'b'.repeat(64));
@@ -96,9 +103,9 @@ test('explicit slash instruction is sent as instruction and previews below retai
  const a=fixture(),source='// retain this earlier comment\nconst start = 1;\n  // create a sum function';
  a.edit(source);await a.command('complete');
  assert.equal(a.calls.length,2);const prompt=a.calls[1][2];
- assert.ok(prompt.includes('<USER_INSTRUCTION>\ncreate a sum function\n</USER_INSTRUCTION>'));
- assert.ok(prompt.includes('<PREFIX>\n// retain this earlier comment\nconst start = 1;\n\n</PREFIX>'));
- assert.ok(!prompt.includes('  // create a sum function'));
+ assert.ok(prompt.startsWith('Continue this javascript file by writing the code requested by its final // comment.'));
+ assert.ok(prompt.endsWith('\n\n// retain this earlier comment\nconst start = 1;\n  // create a sum function'));
+ assert.ok(!prompt.includes('<USER_INSTRUCTION>'));
  const item=a.preview()[0];assert.equal(item.insertText,'\n  return 42;');assert.equal(item.range.start,item.range.end);
  assert.equal(a.contents(),source);assert.equal(a.reads[0].end.character-a.reads[0].start.character,source.split('\n').at(-1).length);
  a.edit(source+' ');assert.equal(a.preview().length,0);assert.equal(a.calls.length,2);
@@ -142,4 +149,11 @@ test('comment inference still suppresses late output after prompt edits',async()
  const a=fixture(),d=deferred();a.edit('// original instruction');a.client.generate=async()=>d.promise;
  const p=a.command('complete');await tick();a.edit('// different instruction');d.resolve('stale');await p;
  assert.equal(a.preview().length,0);assert.ok(!a.executed.includes('editor.action.inlineSuggest.trigger'));
+});
+
+test('fenced model output previews and inserts without the enclosing fence',async()=>{
+ const a=fixture();a.edit('  // create a sum function');
+ a.client.generate=async(token,prompt)=>{a.calls.push(['generate',token,prompt]);return '```javascript\nreturn 42;\n```';};
+ await a.command('complete');
+ assert.equal(a.preview()[0].insertText,'\n  return 42;');
 });

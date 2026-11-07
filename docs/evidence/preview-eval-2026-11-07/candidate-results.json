@@ -1,0 +1,16 @@
+[
+  {
+    "variant": "candidate",
+    "task": "ipv4",
+    "model": "qwen2.5-coder:1.5b",
+    "result": "preview",
+    "elapsed_ms": 19374
+  },
+  {
+    "variant": "candidate",
+    "task": "method",
+    "model": "qwen2.5-coder:1.5b",
+    "result": "preview",
+    "elapsed_ms": 12488
+  }
+]

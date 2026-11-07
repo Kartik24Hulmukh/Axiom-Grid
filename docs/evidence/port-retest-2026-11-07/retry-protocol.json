@@ -1,0 +1,9 @@
+{
+ "name":"previously-seen-port-retest-2026-11-08",
+ "purpose":"Exploratory retest of a known failure, not a fresh benchmark; do not infer broad quality from this task.",
+ "task_and_cases":"Exact unchanged prior port-task.json and port-check.cjs, recovered from the earlier handoff. Original Qwen 1.5B result was 11/15 using the previous runtime prompt.",
+ "runtime":"The current experimental code prompt with temperature 0, seed 7, num_predict 1024 and think false; exact-name and expected manifest digest checked as reported only.",
+ "order":["qwen2.5-coder:1.5b once via the extension client and current runtime", "granite3.3:2b once through a fresh VS Code desktop profile using the 0.1.4 VSIX and current runtime"],
+ "procedure":"No prompt or case changes after request. Generate outputs without execution; inspect each complete output before executing the unchanged checker. No retries after outcomes. UI trial requires an explicit request and verifies no insertion before Tab. Output acceptance does not establish correctness. Test services use disposable credentials and basic password storage, not production security qualification.",
+ "limits":"Different models, potentially different cold/warm states and client/UI paths; no latency ranking. Granite's Apache-2.0 license must still be independently reviewed with all distribution obligations. Failed or timed-out attempts remain failures; do not exclude them."
+}

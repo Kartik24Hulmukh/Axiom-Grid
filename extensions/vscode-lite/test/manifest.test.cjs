@@ -15,8 +15,8 @@ const COMMANDS = Object.freeze([
 
 const sorted = values => [...values].sort();
 
-test('manifest release version is exactly 0.1.2', () => {
-  assert.equal(manifest.version, '0.1.2');
+test('manifest release version is exactly 0.1.4', () => {
+  assert.equal(manifest.version, '0.1.4');
 });
 
 test('manifest contributes exactly the established four commands', () => {

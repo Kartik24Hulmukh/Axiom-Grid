@@ -1,0 +1,9 @@
+# Known port-validation task: exploratory retest
+
+Recorded 2026-11-07 UTC on Linux, 2 vCPUs, 4.2 GiB host RAM (4 GiB cgroup limit), no GPU, no swap. The protocol identifier contains 2026-11-08; that is a mistaken label, not the observed UTC date. The frozen protocol and unchanged earlier task/checker were in place before generation. This is a previously seen task and these are single attempts, not a benchmark. Inputs and model order appear in the frozen protocol; case data were not sent to either model.
+
+Qwen2.5-Coder 1.5B through the extension client and runtime: 11/15 cases passed; the generated output was byte-identical to the earlier result and accepts whitespace, a plus sign and a decimal point. Granite 3.3 2B in a fresh VS Code 1.145.2 profile with the development 0.1.4 VSIX: preview appeared at 43.666 seconds; no edit before explicit Tab acceptance. The accepted output exports an object property instead of the requested function. The checker stopped at the export check: **all 15 functional cases unrun**. Results from different UI/client and cold/warm paths cannot support a latency comparison.
+
+After recording the original failure, a human changed only the export declaration; the separate reviewer-corrected copy passed 15/15. This is not a model success or an untouched output. Fixed cases are not exhaustive. The generated files and checker are stored as text; do not execute unreviewed output. The checker executes the loaded file, is not a sandbox, and requires review and a genuinely isolated environment without secrets. The namespace and timeout used for this exploratory run did not isolate the full filesystem.
+
+Granite model name was `granite3.3:2b` (Q4_K_M); Ollama-reported manifest digest `07bd1f170855240f9e162bf54ea494a8bc1c73d8cbd1365d7fccbeb7d2504947`. Identity checks were not independent byte attestation. The disposable basic-password-store profile and token do not qualify production credential security.

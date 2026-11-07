@@ -42,7 +42,7 @@ VSIX_ENTRIES = frozenset({
     'extension/comment.js', 'extension/client.js', 'extension/README.md',
     'extension/LICENSE',
 })
-IDENTITY = ('axiom-grid-lite', 'axiom-grid-local', '0.1.2')
+IDENTITY = ('axiom-grid-lite', 'axiom-grid-local', '0.1.4')
 FIXED_DATE = (1980, 1, 1, 0, 0, 0)
 ERROR = 'Development bundle packaging failed; verify trusted inputs and staging directories.'
 

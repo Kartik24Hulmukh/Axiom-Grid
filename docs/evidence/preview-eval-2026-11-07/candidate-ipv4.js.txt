@@ -1,0 +1,14 @@
+'use strict';
+
+// Export a function isCanonicalIPv4(text) using module.exports. Return true only if text is a string with exactly four dot-separated ASCII decimal octets, each from 0 through 255. An octet may not have a leading zero unless it is exactly 0. Return false for all other inputs.
+module.exports = function isCanonicalIPv4(text) {
+  if (typeof text !== 'string') return false;
+  const parts = text.split('.');
+  if (parts.length !== 4) return false;
+  for (let i = 0; i < 4; i++) {
+    const part = parts[i];
+    if (!/^\d+$/.test(part) || parseInt(part, 10) < 0 || parseInt(part, 10) > 255) return false;
+    if (part.length > 1 && part[0] === '0') return false;
+  }
+  return true;
+};
